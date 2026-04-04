@@ -3,11 +3,7 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import {
-  THEME_COOKIE_NAME,
-  THEME_STORAGE_KEY,
-  type ThemePreference,
-} from "@/lib/theme";
+import { THEME_COOKIE_NAME, THEME_STORAGE_KEY, type ThemePreference } from "@/lib/theme";
 
 type ThemeContextValue = {
   resolvedTheme: ThemePreference;
@@ -23,12 +19,8 @@ type ThemeProviderProps = {
   initialTheme: ThemePreference;
 };
 
-export function ThemeProvider({
-  children,
-  initialTheme,
-}: ThemeProviderProps) {
-  const [themePreference, setThemePreferenceState] =
-    useState<ThemePreference>(initialTheme);
+export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(initialTheme);
 
   useEffect(() => {
     document.documentElement.dataset.theme = themePreference;

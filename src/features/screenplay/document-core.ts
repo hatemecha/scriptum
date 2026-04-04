@@ -430,9 +430,7 @@ export function getOrderedScreenplayBlocks(
     .filter((block): block is ScreenplayDocumentBlock => block !== undefined);
 }
 
-export function rebuildScreenplayDocumentIndexes(
-  document: ScreenplayDocument,
-): ScreenplayDocument {
+export function rebuildScreenplayDocumentIndexes(document: ScreenplayDocument): ScreenplayDocument {
   return {
     ...document,
     indexes: {

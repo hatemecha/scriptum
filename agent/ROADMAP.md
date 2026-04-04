@@ -19,45 +19,45 @@
 
 ## Día 1 — Setup inicial
 
-- [ ] Crear repositorio
-- [ ] Definir rama principal
-- [ ] Inicializar proyecto con Next.js + TypeScript
-- [ ] Instalar dependencias base
-- [ ] Configurar ESLint
-- [ ] Configurar Prettier
-- [ ] Configurar alias de importación
-- [ ] Crear estructura inicial de carpetas
-- [ ] Crear `.env.example`
-- [ ] Crear README técnico inicial
+- [x] Crear repositorio
+- [x] Definir rama principal
+- [x] Inicializar proyecto con Next.js + TypeScript
+- [x] Instalar dependencias base
+- [x] Configurar ESLint
+- [x] Configurar Prettier
+- [x] Configurar alias de importación
+- [x] Crear estructura inicial de carpetas
+- [x] Crear `.env.example`
+- [x] Crear README técnico inicial
 
 ### Validación
 
-- [ ] El proyecto corre localmente
-- [ ] No hay errores de TypeScript
-- [ ] No hay errores de lint
-- [ ] La estructura base ya está definida
+- [x] El proyecto corre localmente
+- [x] No hay errores de TypeScript
+- [x] No hay errores de lint
+- [x] La estructura base ya está definida
 
 ---
 
 ## Día 2 — Base visual
 
-- [ ] Configurar sistema de estilos
-- [ ] Crear layout general
-- [ ] Crear sistema base de componentes UI
-- [ ] Crear botón base
-- [ ] Crear input base
-- [ ] Crear modal base
-- [ ] Crear toast o feedback visual base
-- [ ] Crear skeleton loader base
-- [ ] Definir espaciados base
-- [ ] Definir tipografía base
-- [ ] Definir paleta inicial
+- [x] Configurar sistema de estilos
+- [x] Crear layout general
+- [x] Crear sistema base de componentes UI
+- [x] Crear botón base
+- [x] Crear input base
+- [x] Crear modal base
+- [x] Crear toast o feedback visual base
+- [x] Crear skeleton loader base
+- [x] Definir espaciados base
+- [x] Definir tipografía base
+- [x] Definir paleta inicial
 
 ### Validación
 
-- [ ] Existe consistencia visual mínima
-- [ ] Los componentes base son reutilizables
-- [ ] La UI ya puede crecer sin desorden
+- [x] Existe consistencia visual mínima
+- [x] Los componentes base son reutilizables
+- [x] La UI ya puede crecer sin desorden
 
 ---
 

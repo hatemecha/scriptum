@@ -9,15 +9,7 @@ export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
   label: string;
 };
 
-export function Input({
-  className,
-  error,
-  hint,
-  id,
-  label,
-  required,
-  ...props
-}: InputProps) {
+export function Input({ className, error, hint, id, label, required, ...props }: InputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const hintId = hint ? `${inputId}-hint` : undefined;

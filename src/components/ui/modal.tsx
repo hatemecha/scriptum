@@ -61,11 +61,7 @@ export function Modal({
   }
 
   return (
-    <div
-      className="ui-modal"
-      role="presentation"
-      onMouseDown={handleBackdropMouseDown}
-    >
+    <div className="ui-modal" role="presentation" onMouseDown={handleBackdropMouseDown}>
       <div
         className={cn("ui-modal__surface", className)}
         role="dialog"

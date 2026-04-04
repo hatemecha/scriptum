@@ -55,9 +55,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
       timeoutIds.current.delete(id);
     }
 
-    setToasts((currentToasts) =>
-      currentToasts.filter((toast) => toast.id !== id),
-    );
+    setToasts((currentToasts) => currentToasts.filter((toast) => toast.id !== id));
   }
 
   function showToast({
@@ -116,9 +114,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
             <div className="toast__copy">
               <p className="toast__title">{toast.title}</p>
 
-              {toast.description ? (
-                <p className="toast__description">{toast.description}</p>
-              ) : null}
+              {toast.description ? <p className="toast__description">{toast.description}</p> : null}
             </div>
 
             <button

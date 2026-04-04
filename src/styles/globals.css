@@ -9,12 +9,11 @@
   --color-border-subtle: #c9c0b5;
   --color-danger: #9f4537;
   --color-danger-soft: rgba(159, 69, 55, 0.08);
-  --color-editor-surface:
-    linear-gradient(
-      180deg,
-      rgba(244, 238, 231, 0.96) 0%,
-      rgba(236, 228, 218, 0.9) 100%
-    );
+  --color-editor-surface: linear-gradient(
+    180deg,
+    rgba(244, 238, 231, 0.96) 0%,
+    rgba(236, 228, 218, 0.9) 100%
+  );
   --color-focus-ring: rgba(36, 71, 111, 0.34);
   --color-focus-shadow: rgba(36, 71, 111, 0.08);
   --color-foreground: #191613;
@@ -26,11 +25,7 @@
   --color-paper: #f6f1e8;
   --color-paper-border: rgba(196, 186, 175, 0.84);
   --color-paper-surface:
-    linear-gradient(
-      180deg,
-      rgba(248, 243, 236, 0.96),
-      rgba(243, 236, 227, 0.98)
-    ),
+    linear-gradient(180deg, rgba(248, 243, 236, 0.96), rgba(243, 236, 227, 0.98)),
     var(--color-paper);
   --color-page-end: #e7ddcf;
   --color-page-glow-1: rgba(36, 71, 111, 0.08);
@@ -52,14 +47,8 @@
   --control-primary-shadow: rgba(36, 71, 111, 0.08);
   --control-primary-start: #24476f;
   --control-primary-text: #f4efe8;
-  --font-script:
-    "Courier Prime",
-    "Courier New",
-    monospace;
-  --font-ui:
-    "Manrope",
-    "Segoe UI",
-    sans-serif;
+  --font-script: "Courier Prime", "Courier New", monospace;
+  --font-ui: "Manrope", "Segoe UI", sans-serif;
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
@@ -89,12 +78,11 @@ html[data-theme="dark"] {
   --color-border-subtle: #2c2c2e;
   --color-danger: #f97758;
   --color-danger-soft: rgba(249, 119, 88, 0.16);
-  --color-editor-surface:
-    linear-gradient(
-      180deg,
-      rgba(14, 14, 15, 0.96) 0%,
-      rgba(14, 14, 15, 0.9) 100%
-    );
+  --color-editor-surface: linear-gradient(
+    180deg,
+    rgba(14, 14, 15, 0.96) 0%,
+    rgba(14, 14, 15, 0.9) 100%
+  );
   --color-focus-ring: rgba(192, 202, 173, 0.42);
   --color-focus-shadow: rgba(192, 202, 173, 0.12);
   --color-foreground: #e7e5e7;
@@ -106,12 +94,7 @@ html[data-theme="dark"] {
   --color-paper: #101011;
   --color-paper-border: rgba(31, 31, 33, 0.88);
   --color-paper-surface:
-    linear-gradient(
-      180deg,
-      rgba(19, 19, 21, 0.98),
-      rgba(14, 14, 15, 0.98)
-    ),
-    var(--color-paper);
+    linear-gradient(180deg, rgba(19, 19, 21, 0.98), rgba(14, 14, 15, 0.98)), var(--color-paper);
   --color-page-end: #0e0e0f;
   --color-page-glow-1: rgba(192, 202, 173, 0.04);
   --color-page-glow-2: rgba(255, 255, 255, 0.02);
@@ -646,12 +629,7 @@ button:disabled {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--skeleton-shimmer) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--skeleton-shimmer) 50%, transparent 100%);
   transform: translateX(-100%);
   animation: skeleton-shimmer 1.6s ease infinite;
 }
@@ -761,11 +739,7 @@ button:disabled {
 }
 
 .toast[data-tone="info"] {
-  --color-toast-tone-border: color-mix(
-    in srgb,
-    var(--color-accent) 36%,
-    var(--color-toast-border)
-  );
+  --color-toast-tone-border: color-mix(in srgb, var(--color-accent) 36%, var(--color-toast-border));
 }
 
 .toast[data-tone="success"] {
@@ -777,11 +751,7 @@ button:disabled {
 }
 
 .toast[data-tone="error"] {
-  --color-toast-tone-border: color-mix(
-    in srgb,
-    var(--color-danger) 38%,
-    var(--color-toast-border)
-  );
+  --color-toast-tone-border: color-mix(in srgb, var(--color-danger) 38%, var(--color-toast-border));
 }
 
 .toast__copy {

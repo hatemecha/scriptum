@@ -507,9 +507,7 @@ export function getSecurityBaseValidationErrors(): string[] {
     const max = maxLengthByField.get(key);
 
     if (max !== undefined && min > max) {
-      errors.push(
-        `Input rule for "${key}" has min-length ${min} greater than max-length ${max}.`,
-      );
+      errors.push(`Input rule for "${key}" has min-length ${min} greater than max-length ${max}.`);
     }
   }
 

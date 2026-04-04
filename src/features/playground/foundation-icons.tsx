@@ -53,24 +53,9 @@ export function FoundationIcon({ name }: FoundationIconProps) {
     case "drafts":
       return (
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M6.5 7H14.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M6.5 12H14.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M6.5 17H12"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          <path d="M6.5 7H14.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M6.5 12H14.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M6.5 17H12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           <path
             d="M15 16L17.7 18.7"
             stroke="currentColor"
@@ -88,12 +73,7 @@ export function FoundationIcon({ name }: FoundationIconProps) {
     case "export":
       return (
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 4.5V14.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          <path d="M12 4.5V14.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           <path
             d="M8.5 8L12 4.5L15.5 8"
             stroke="currentColor"
@@ -116,24 +96,9 @@ export function FoundationIcon({ name }: FoundationIconProps) {
           <circle cx="6.5" cy="7" r="1.2" fill="currentColor" />
           <circle cx="6.5" cy="12" r="1.2" fill="currentColor" />
           <circle cx="6.5" cy="17" r="1.2" fill="currentColor" />
-          <path
-            d="M10 7H18"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M10 12H18"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M10 17H18"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          <path d="M10 7H18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M10 12H18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M10 17H18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
     case "research":
@@ -145,18 +110,8 @@ export function FoundationIcon({ name }: FoundationIconProps) {
             strokeWidth="1.6"
             strokeLinejoin="round"
           />
-          <path
-            d="M8.5 9.5H15.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M8.5 12.5H13.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          <path d="M8.5 9.5H15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M8.5 12.5H13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
     case "scenes":
@@ -171,24 +126,9 @@ export function FoundationIcon({ name }: FoundationIconProps) {
             stroke="currentColor"
             strokeWidth="1.6"
           />
-          <path
-            d="M8 5.5V15.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M16.5 8.5V12.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <path
-            d="M7.5 18.5H16.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          <path d="M8 5.5V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M16.5 8.5V12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M7.5 18.5H16.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
     case "settings":
@@ -200,13 +140,7 @@ export function FoundationIcon({ name }: FoundationIconProps) {
             strokeWidth="1.6"
             strokeLinejoin="round"
           />
-          <circle
-            cx="12"
-            cy="12"
-            r="3.1"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          />
+          <circle cx="12" cy="12" r="3.1" stroke="currentColor" strokeWidth="1.6" />
         </svg>
       );
   }

@@ -216,9 +216,7 @@ function deriveFoundationPreviewScenes(
 
 const foundationPreviewDocument = createFoundationPreviewDocument();
 
-export const foundationPreviewScenes = deriveFoundationPreviewScenes(
-  foundationPreviewDocument,
-);
+export const foundationPreviewScenes = deriveFoundationPreviewScenes(foundationPreviewDocument);
 
 export const defaultFoundationSceneId =
   foundationPreviewScenes[2]?.id ?? foundationPreviewScenes[0]?.id ?? "";

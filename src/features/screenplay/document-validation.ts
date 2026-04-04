@@ -96,9 +96,7 @@ export function getScreenplayDocumentValidationErrors(
   }
 
   if (document.schema.sceneIndexVersion !== screenplaySceneIndexVersion) {
-    errors.push(
-      `Scene index version must be ${screenplaySceneIndexVersion} in V1 documents.`,
-    );
+    errors.push(`Scene index version must be ${screenplaySceneIndexVersion} in V1 documents.`);
   }
 
   if (document.schema.syncVersion !== screenplaySyncSchemaVersion) {
@@ -209,7 +207,9 @@ export function getScreenplayDocumentValidationErrors(
     }
   }
 
-  if (new Set(document.sync.pendingOperationIds).size !== document.sync.pendingOperationIds.length) {
+  if (
+    new Set(document.sync.pendingOperationIds).size !== document.sync.pendingOperationIds.length
+  ) {
     errors.push("Sync pendingOperationIds cannot contain duplicates.");
   }
 
@@ -235,7 +235,8 @@ export function getScreenplayDocumentValidationErrors(
   }
 
   if (
-    document.indexes.scenes.unscenedBlockIds.length !== expectedSceneIndex.unscenedBlockIds.length ||
+    document.indexes.scenes.unscenedBlockIds.length !==
+      expectedSceneIndex.unscenedBlockIds.length ||
     document.indexes.scenes.unscenedBlockIds.some(
       (blockId, index) => expectedSceneIndex.unscenedBlockIds[index] !== blockId,
     )

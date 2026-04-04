@@ -7,10 +7,7 @@ import {
   type ScreenplayProjectId,
   type ScreenplayProjectStatus,
 } from "@/features/screenplay/document-model";
-import {
-  hasIdPrefix,
-  isNonNegativeInteger,
-} from "@/features/screenplay/document-core";
+import { hasIdPrefix, isNonNegativeInteger } from "@/features/screenplay/document-core";
 
 export const dataArchitectureProfilePlans = ["free", "premium"] as const;
 export const dataArchitectureSnapshotKinds = [
@@ -83,8 +80,7 @@ export interface CreateDataArchitectureReferenceGraphInput {
   blocks?: readonly CreateScreenplayBlockInput[];
 }
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function normalizeTimestamp(value: string | undefined, fallback: string): string {
   if (value === undefined) {
@@ -136,8 +132,7 @@ export function createDataArchitectureReferenceGraph(
   input: CreateDataArchitectureReferenceGraphInput = {},
 ): DataArchitectureGraph {
   const now = new Date("2026-04-04T00:00:00.000Z").toISOString();
-  const ownerProfileId =
-    input.ownerProfileId ?? "3f6b1be5-2de0-4b63-8c62-f4f4f4c7bc1d";
+  const ownerProfileId = input.ownerProfileId ?? "3f6b1be5-2de0-4b63-8c62-f4f4f4c7bc1d";
 
   if (!isValidDataArchitectureProfileId(ownerProfileId)) {
     throw new Error(`Profile id "${ownerProfileId}" must be a UUID.`);
@@ -284,9 +279,7 @@ export function createDataArchitectureReferenceGraph(
   };
 }
 
-export function getDataArchitectureValidationErrors(
-  graph: DataArchitectureGraph,
-): string[] {
+export function getDataArchitectureValidationErrors(graph: DataArchitectureGraph): string[] {
   const errors: string[] = [];
   const profileIds = new Set<string>();
   const projectIds = new Set<string>();
@@ -442,7 +435,9 @@ export function getDataArchitectureValidationErrors(
     }
 
     if (activeSnapshot.revision !== highestRevision) {
-      errors.push(`Project "${project.id}" active snapshot must be the highest persisted revision.`);
+      errors.push(
+        `Project "${project.id}" active snapshot must be the highest persisted revision.`,
+      );
     }
 
     if (project.title !== activeSnapshot.documentData.project.title) {

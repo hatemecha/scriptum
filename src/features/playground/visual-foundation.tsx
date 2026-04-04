@@ -42,8 +42,7 @@ export function VisualFoundation() {
       setExportFileNameError("Export file name is required.");
 
       showToast({
-        description:
-          "The modal primitive is already wired for inline validation and feedback.",
+        description: "The modal primitive is already wired for inline validation and feedback.",
         title: "Missing export file name",
         tone: "error",
       });
@@ -112,11 +111,7 @@ export function VisualFoundation() {
             ))}
           </nav>
 
-          <button
-            type="button"
-            className="foundation-rail__compose"
-            aria-label="Create new script"
-          >
+          <button type="button" className="foundation-rail__compose" aria-label="Create new script">
             <FoundationIcon name="compose" />
           </button>
         </aside>
@@ -127,19 +122,14 @@ export function VisualFoundation() {
               <p className="section-eyebrow">Internal Playground / Visual Foundation</p>
               <h1 className="foundation-header__title">{siteConfig.name}</h1>
               <p className="foundation-header__description">
-                This route keeps the visual exploration available without treating
-                it as the product shell. The script preview now renders from the
-                canonical screenplay model.
+                This route keeps the visual exploration available without treating it as the product
+                shell. The script preview now renders from the canonical screenplay model.
               </p>
             </div>
 
             <div className="foundation-header__actions">
               <ThemeToggle className="foundation-action foundation-action--theme" />
-              <button
-                type="button"
-                className="foundation-action"
-                onClick={handleOpenExportModal}
-              >
+              <button type="button" className="foundation-action" onClick={handleOpenExportModal}>
                 <FoundationIcon name="export" />
                 <span>Export</span>
               </button>
@@ -156,8 +146,7 @@ export function VisualFoundation() {
                 <div>
                   <p className="foundation-kicker">Writing Surface</p>
                   <h2 className="foundation-section-title">
-                    The page stays central while navigation and controls remain
-                    secondary.
+                    The page stays central while navigation and controls remain secondary.
                   </h2>
                 </div>
 
@@ -166,25 +155,17 @@ export function VisualFoundation() {
                   <span aria-hidden="true">/</span>
                   <span>Visual foundation</span>
                   <span aria-hidden="true">/</span>
-                  <span className="foundation-breadcrumbs__current">
-                    {activeScene.indexLabel}
-                  </span>
+                  <span className="foundation-breadcrumbs__current">{activeScene.indexLabel}</span>
                 </div>
               </div>
 
               <div className="foundation-editor-grid">
                 <div className="foundation-script-stage">
-                  <p className="foundation-script-stage__label">
-                    {activeScene.indexLabel}
-                  </p>
+                  <p className="foundation-script-stage__label">{activeScene.indexLabel}</p>
 
                   <article className="foundation-script-sheet">
                     {activeScene.scriptLines.map((line) => (
-                      <p
-                        key={line.id}
-                        className="script-line"
-                        data-line-type={line.type}
-                      >
+                      <p key={line.id} className="script-line" data-line-type={line.type}>
                         {line.text}
                       </p>
                     ))}
@@ -203,12 +184,8 @@ export function VisualFoundation() {
                           data-active={scene.id === activeScene.id ? "true" : "false"}
                           onClick={() => setActiveSceneId(scene.id)}
                         >
-                          <span className="foundation-scene-item__index">
-                            {scene.indexLabel}
-                          </span>
-                          <span className="foundation-scene-item__title">
-                            {scene.heading}
-                          </span>
+                          <span className="foundation-scene-item__index">{scene.indexLabel}</span>
+                          <span className="foundation-scene-item__title">{scene.heading}</span>
                         </button>
                       </li>
                     ))}
@@ -221,8 +198,7 @@ export function VisualFoundation() {
               <div className="foundation-system__intro">
                 <p className="foundation-kicker">Component Foundation</p>
                 <h2 className="foundation-section-title">
-                  Reusable primitives without turning the screen into a grid of
-                  boxes.
+                  Reusable primitives without turning the screen into a grid of boxes.
                 </h2>
               </div>
 
@@ -230,10 +206,7 @@ export function VisualFoundation() {
                 <section className="foundation-line">
                   <div className="foundation-line__meta">
                     <h3>Buttons</h3>
-                    <p>
-                      Primary, secondary and ghost actions with calmer hover
-                      states.
-                    </p>
+                    <p>Primary, secondary and ghost actions with calmer hover states.</p>
                   </div>
 
                   <div className="foundation-line__content foundation-line__content--inline">
@@ -246,10 +219,7 @@ export function VisualFoundation() {
                 <section className="foundation-line">
                   <div className="foundation-line__meta">
                     <h3>Inputs</h3>
-                    <p>
-                      Base field styling for metadata, auth and editor-adjacent
-                      settings.
-                    </p>
+                    <p>Base field styling for metadata, auth and editor-adjacent settings.</p>
                   </div>
 
                   <div className="foundation-line__content foundation-line__content--stack">
@@ -265,10 +235,7 @@ export function VisualFoundation() {
                 <section className="foundation-line">
                   <div className="foundation-line__meta">
                     <h3>Feedback</h3>
-                    <p>
-                      Modal and toast feedback exist as primitives, not as the
-                      core layout.
-                    </p>
+                    <p>Modal and toast feedback exist as primitives, not as the core layout.</p>
                   </div>
 
                   <div className="foundation-line__content foundation-line__content--inline">
@@ -290,10 +257,7 @@ export function VisualFoundation() {
                 <section className="foundation-line">
                   <div className="foundation-line__meta">
                     <h3>Loading</h3>
-                    <p>
-                      Skeletons should suggest structure without adding visual
-                      clutter.
-                    </p>
+                    <p>Skeletons should suggest structure without adding visual clutter.</p>
                   </div>
 
                   <div className="foundation-line__content foundation-line__content--stack">
