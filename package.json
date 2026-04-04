@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "validate:screenplay": "tsx scripts/validate-screenplay-foundation.ts",
+    "validate:data-architecture": "tsx scripts/validate-data-architecture.ts",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },

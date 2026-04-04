@@ -181,19 +181,19 @@
 
 ## Día 9 — Arquitectura de datos
 
-- [ ] Diseñar entidades principales
-- [ ] Diseñar relación usuario ↔ proyectos
-- [ ] Diseñar relación proyecto ↔ documento
-- [ ] Diseñar tabla de perfiles
-- [ ] Diseñar tabla de proyectos
-- [ ] Diseñar tabla de documentos o snapshots
-- [ ] Diseñar timestamps
-- [ ] Diseñar soft delete o archivado
+- [x] Diseñar entidades principales
+- [x] Diseñar relación usuario ↔ proyectos
+- [x] Diseñar relación proyecto ↔ documento
+- [x] Diseñar tabla de perfiles
+- [x] Diseñar tabla de proyectos
+- [x] Diseñar tabla de documentos o snapshots
+- [x] Diseñar timestamps
+- [x] Diseñar soft delete o archivado
 
 ### Validación
 
-- [ ] El modelo soporta MVP completo
-- [ ] No hay dudas sobre persistencia principal
+- [x] El modelo soporta MVP completo
+- [x] No hay dudas sobre persistencia principal
 
 ---
 
@@ -832,6 +832,7 @@
 - [x] Día 6: el documento interno queda definido en `SCREENPLAY_DOCUMENT_MODEL_V1.md` y `src/features/screenplay/document-model.ts` con `blockOrder` canónico, bloques por id, índice de escenas derivado y envelopes separados para `schema`, `document`, `project`, `sync` y `extensions`
 - [x] Día 7: el stack oficial queda fijado en `TECH_DECISIONS_DAY7.md` con `Next.js 16`, `React 19`, `TypeScript 5`, `Lexical`, `npm`, estrategia de entorno centralizada y compatibilidad futura con Supabase y Stripe
 - [x] Día 8: la arquitectura frontend queda fijada en `FRONTEND_ARCHITECTURE_DAY8.md` con grupos de rutas `public`, `authenticated` e `internal`, shell de dashboard, shell de editor, y fronteras claras para estado, formularios y errores de UI
+- [x] Día 9: la persistencia MVP queda fijada en `DATA_ARCHITECTURE_DAY9.md` y `src/features/data/data-architecture.ts` con `profiles`, `projects`, `document_snapshots`, ownership 1:N por usuario, snapshots append-only y `projects.current_snapshot_id` como puntero al documento persistido activo
 
 ## Cosas que NO entrarían en V1
 
