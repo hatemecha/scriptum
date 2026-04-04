@@ -217,19 +217,19 @@
 
 ## Día 11 — Pantallas principales
 
-- [ ] Diseñar landing básica
-- [ ] Diseñar login
-- [ ] Diseñar registro
-- [ ] Diseñar pantalla inicial
-- [ ] Diseñar lista de proyectos
-- [ ] Diseñar pantalla del editor
-- [ ] Diseñar sidebar de escenas
-- [ ] Diseñar ajustes mínimos
-- [ ] Diseñar modal de exportación
+- [x] Diseñar landing básica
+- [x] Diseñar login
+- [x] Diseñar registro
+- [x] Diseñar pantalla inicial
+- [x] Diseñar lista de proyectos
+- [x] Diseñar pantalla del editor
+- [x] Diseñar sidebar de escenas
+- [x] Diseñar ajustes mínimos
+- [x] Diseñar modal de exportación
 
 ### Validación
 
-- [ ] La experiencia visual principal ya está decidida
+- [x] La experiencia visual principal ya está decidida
 
 ---
 
@@ -834,6 +834,7 @@
 - [x] Día 8: la arquitectura frontend queda fijada en `FRONTEND_ARCHITECTURE_DAY8.md` con grupos de rutas `public`, `authenticated` e `internal`, shell de dashboard, shell de editor, y fronteras claras para estado, formularios y errores de UI
 - [x] Día 9: la persistencia MVP queda fijada en `DATA_ARCHITECTURE_DAY9.md` y `src/features/data/data-architecture.ts` con `profiles`, `projects`, `document_snapshots`, ownership 1:N por usuario, snapshots append-only y `projects.current_snapshot_id` como puntero al documento persistido activo
 - [x] Día 10: la base de seguridad queda fijada en `SECURITY_BASE_DAY10.md` y `src/features/security/security-base.ts` con email/password + cookie session, RLS para las 3 tablas con ownership estricto, validación de inputs críticos, estrategia de secretos y política de backups
+- [x] Día 11: las pantallas principales quedan especificadas en `SCREENS_DAY11.md` con layout, zonas, jerarquia de contenido, estados y comportamiento para landing, login, registro, lista de proyectos, editor, sidebar de escenas, ajustes y modal de exportacion
 
 ## Cosas que NO entrarían en V1
 
