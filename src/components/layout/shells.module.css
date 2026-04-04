@@ -1,0 +1,370 @@
+.surface {
+  border: 1px solid var(--color-overlay-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-overlay);
+  box-shadow: var(--shadow-subtle);
+  backdrop-filter: blur(12px);
+}
+
+.layoutEyebrow {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.layoutTitle {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+}
+
+.layoutDescription {
+  margin: var(--space-3) 0 0;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.publicShell {
+  min-height: 100vh;
+  display: grid;
+  gap: var(--space-5);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.publicHeader {
+  composes: surface;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.publicBrandBlock {
+  max-width: 30rem;
+}
+
+.brand {
+  color: var(--color-foreground);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.publicNote {
+  margin: var(--space-2) 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.publicNav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.navLink,
+.sidebarLink,
+.utilityLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-strong);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.navLink:hover,
+.sidebarLink:hover,
+.utilityLink:hover {
+  border-color: var(--color-accent-soft-strong);
+  background: var(--color-accent-soft);
+}
+
+.publicMain {
+  min-width: 0;
+}
+
+.dashboardShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  gap: var(--space-5);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.dashboardSidebar {
+  composes: surface;
+  position: sticky;
+  top: clamp(1rem, 3vw, 2rem);
+  align-self: start;
+  display: grid;
+  gap: var(--space-5);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.sidebarSection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sidebarLabel {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sidebarStack {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sidebarLink {
+  width: 100%;
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.sidebarLinkTitle {
+  font-weight: 700;
+}
+
+.sidebarLinkDescription,
+.sidebarText {
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.guardrailList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.75rem;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.dashboardMain {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.dashboardHeader {
+  composes: surface;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.dashboardHeaderCopy {
+  max-width: 38rem;
+}
+
+.dashboardHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.dashboardContent {
+  min-width: 0;
+}
+
+.editorShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.editorHeader,
+.editorSidebar,
+.editorContent,
+.editorStatusbar {
+  composes: surface;
+}
+
+.editorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.editorHeaderCopy {
+  max-width: 42rem;
+}
+
+.metaStack,
+.statusGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.metaChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.editorWorkspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.editorSidebar {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
+}
+
+.sceneList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sceneItem {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-strong);
+}
+
+.sceneIndex {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sceneTitle {
+  font-size: 0.94rem;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.sceneMeta {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.editorMain {
+  min-width: 0;
+}
+
+.editorContent {
+  min-height: 100%;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.editorStatusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.9rem 1.25rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.statusDot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--color-success);
+  box-shadow: 0 0 0 0.25rem var(--color-success-soft);
+}
+
+@media (max-width: 980px) {
+  .publicHeader,
+  .dashboardHeader,
+  .editorHeader {
+    flex-direction: column;
+  }
+
+  .publicNav,
+  .dashboardHeaderActions {
+    justify-content: flex-start;
+  }
+
+  .dashboardShell,
+  .editorWorkspace {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardSidebar {
+    position: static;
+  }
+
+  .editorStatusbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .publicShell,
+  .dashboardShell,
+  .editorShell {
+    padding: var(--space-3);
+  }
+
+  .publicHeader,
+  .dashboardSidebar,
+  .dashboardHeader,
+  .editorHeader,
+  .editorSidebar,
+  .editorContent,
+  .editorStatusbar {
+    padding: var(--space-4);
+  }
+
+  .navLink,
+  .sidebarLink,
+  .utilityLink {
+    width: 100%;
+    justify-content: center;
+  }
+}

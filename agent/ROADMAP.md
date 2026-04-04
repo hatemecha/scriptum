@@ -164,18 +164,18 @@
 
 ## Día 8 — Arquitectura frontend
 
-- [ ] Diseñar árbol general de la app
-- [ ] Definir rutas principales
-- [ ] Definir layout público
-- [ ] Definir layout autenticado
-- [ ] Definir separación entre UI y lógica
-- [ ] Definir estrategia de estado
-- [ ] Definir estrategia de formularios
-- [ ] Definir estrategia de errores en UI
+- [x] Diseñar árbol general de la app
+- [x] Definir rutas principales
+- [x] Definir layout público
+- [x] Definir layout autenticado
+- [x] Definir separación entre UI y lógica
+- [x] Definir estrategia de estado
+- [x] Definir estrategia de formularios
+- [x] Definir estrategia de errores en UI
 
 ### Validación
 
-- [ ] La estructura de frontend ya puede crecer ordenadamente
+- [x] La estructura de frontend ya puede crecer ordenadamente
 
 ---
 
@@ -831,6 +831,7 @@
 - [x] Día 5: el formato profesional queda cerrado en `SCREENPLAY_FORMAT_RULES_V1.md` y `src/features/screenplay/format-rules.ts` con métricas, mayúsculas y paginación deterministas
 - [x] Día 6: el documento interno queda definido en `SCREENPLAY_DOCUMENT_MODEL_V1.md` y `src/features/screenplay/document-model.ts` con `blockOrder` canónico, bloques por id, índice de escenas derivado y envelopes separados para `schema`, `document`, `project`, `sync` y `extensions`
 - [x] Día 7: el stack oficial queda fijado en `TECH_DECISIONS_DAY7.md` con `Next.js 16`, `React 19`, `TypeScript 5`, `Lexical`, `npm`, estrategia de entorno centralizada y compatibilidad futura con Supabase y Stripe
+- [x] Día 8: la arquitectura frontend queda fijada en `FRONTEND_ARCHITECTURE_DAY8.md` con grupos de rutas `public`, `authenticated` e `internal`, shell de dashboard, shell de editor, y fronteras claras para estado, formularios y errores de UI
 
 ## Cosas que NO entrarían en V1
 

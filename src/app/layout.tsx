@@ -3,14 +3,9 @@ import type { Metadata } from "next";
 import { Courier_Prime, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { ToastProvider } from "@/components/ui/toast";
+import { AppProviders } from "@/app/providers";
 import { siteConfig } from "@/config/site";
-import {
-  DEFAULT_THEME_PREFERENCE,
-  THEME_COOKIE_NAME,
-  isThemePreference,
-} from "@/lib/theme";
+import { DEFAULT_THEME_PREFERENCE, THEME_COOKIE_NAME, isThemePreference } from "@/lib/theme";
 
 import "@/styles/globals.css";
 
@@ -56,9 +51,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get(THEME_COOKIE_NAME)?.value;
-  const initialTheme = isThemePreference(themeCookie)
-    ? themeCookie
-    : DEFAULT_THEME_PREFERENCE;
+  const initialTheme = isThemePreference(themeCookie) ? themeCookie : DEFAULT_THEME_PREFERENCE;
 
   return (
     <html
@@ -67,9 +60,7 @@ export default async function RootLayout({
       className={`${uiFont.variable} ${scriptFont.variable}`}
     >
       <body className="app-body">
-        <ThemeProvider initialTheme={initialTheme}>
-          <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
+        <AppProviders initialTheme={initialTheme}>{children}</AppProviders>
       </body>
     </html>
   );
