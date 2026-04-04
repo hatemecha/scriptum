@@ -10,6 +10,7 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
+    "validate:screenplay": "tsx scripts/validate-screenplay-foundation.ts",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },
@@ -26,6 +27,7 @@
     "eslint-config-next": "16.2.2",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

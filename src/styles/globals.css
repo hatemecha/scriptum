@@ -440,13 +440,13 @@ button:disabled {
   margin-top: 0.55rem;
 }
 
-.script-line[data-line-type="scene"],
+.script-line[data-line-type="scene-heading"],
 .script-line[data-line-type="character"],
 .script-line[data-line-type="transition"] {
   text-transform: uppercase;
 }
 
-.script-line[data-line-type="scene"] {
+.script-line[data-line-type="scene-heading"] {
   letter-spacing: 0.04em;
 }
 
