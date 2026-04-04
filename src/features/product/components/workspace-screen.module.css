@@ -1,0 +1,743 @@
+.screen {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pageSection {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pageHeaderCopy {
+  max-width: 40rem;
+}
+
+.pageTitle {
+  margin: 0.55rem 0 0;
+  font-size: clamp(1.9rem, 4vw, 2.5rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.pageDescription {
+  margin: 0.6rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.65;
+}
+
+.pageActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.inlineNotice {
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--color-warning);
+  border-radius: 0.9rem;
+  background: var(--color-warning-soft);
+  color: var(--color-foreground);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.projectList {
+  display: grid;
+  border: 1px solid var(--color-overlay-border);
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  box-shadow: var(--shadow-subtle);
+}
+
+.projectRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-top: 1px solid var(--color-overlay-border);
+  transition:
+    background var(--transition-base),
+    transform var(--transition-base);
+}
+
+.projectRow:first-child {
+  border-top: 0;
+}
+
+.projectRow:hover {
+  background: color-mix(in srgb, var(--color-paper) 94%, transparent);
+  transform: translateY(-1px);
+}
+
+.projectRowMain {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.projectRowTitle {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+
+.projectRowMeta {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.projectRowSummary {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.projectRowTime {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.skeletonList {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--color-overlay-border);
+  border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--color-paper) 84%, transparent);
+}
+
+.skeletonRowMain {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.settingsLayout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.sectionCard {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-overlay-border);
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, var(--color-paper) 86%, transparent);
+  box-shadow: var(--shadow-subtle);
+}
+
+.sectionHeader {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+
+.sectionDescription {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.fieldRow {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.fieldInline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.fieldMessage {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.readonlyCard {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.readonlyLabel {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.readonlyValue {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.sectionFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.sectionNote {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.editorShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  background: var(--color-background);
+}
+
+.editorHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  min-height: 3.4rem;
+  padding: 0.9rem 1.5rem;
+  border-bottom: 1px solid var(--color-overlay-border);
+  background: var(--color-surface-overlay-strong);
+  backdrop-filter: blur(12px);
+}
+
+.editorHeaderStart,
+.editorHeaderCenter,
+.editorHeaderEnd {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.editorHeaderCenter {
+  justify-content: center;
+}
+
+.editorHeaderEnd {
+  justify-content: flex-end;
+}
+
+.editorBreadcrumb {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+
+.editorTitleInput {
+  width: min(100%, 20rem);
+  padding: 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--color-foreground);
+  font-size: 1rem;
+  font-weight: 700;
+  transition:
+    border-color var(--transition-base),
+    background var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.editorTitleInput:hover,
+.editorTitleInput:focus {
+  border-color: var(--color-overlay-border-strong);
+  background: color-mix(in srgb, var(--color-paper) 92%, transparent);
+  box-shadow: 0 0 0 4px var(--color-focus-shadow);
+  outline: none;
+}
+
+.editorStatus {
+  font-size: 0.86rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.editorStatusMuted {
+  color: var(--color-muted);
+}
+
+.editorStatusSuccess {
+  color: var(--color-success);
+}
+
+.editorStatusWarning {
+  color: var(--color-warning);
+}
+
+.editorStatusDanger {
+  color: var(--color-danger);
+}
+
+.editorWorkspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(230px, 260px) minmax(0, 1fr);
+}
+
+.editorSidebar {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.3rem 1.1rem 1.5rem;
+  border-right: 1px solid var(--color-overlay-border);
+  background: var(--color-surface-strong);
+}
+
+.editorSidebarHidden {
+  display: none;
+}
+
+.editorSidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.editorSidebarTitle {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.editorSidebarToggle {
+  border: 0;
+  background: transparent;
+  color: var(--color-accent-strong);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.35rem 0.4rem;
+}
+
+.sceneList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.sceneButton {
+  width: 100%;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  color: var(--color-foreground);
+  text-align: left;
+  transition:
+    background var(--transition-base),
+    box-shadow var(--transition-base),
+    color var(--transition-base);
+}
+
+.sceneButton:hover {
+  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  color: var(--color-accent);
+}
+
+.sceneButtonActive {
+  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
+}
+
+.sceneIndex {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sceneButtonActive .sceneIndex {
+  color: var(--color-accent);
+}
+
+.sceneHeading {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.sceneEmpty {
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.editorCanvas {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 2.25rem 1.5rem 3rem;
+}
+
+.editorCanvasStage {
+  width: min(100%, 58rem);
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.editorPaper {
+  min-height: 54rem;
+  padding: 3.5rem 3.8rem 4rem;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 6%, transparent);
+}
+
+.editorPaperLoading {
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+}
+
+.editorLoadingCopy {
+  color: var(--color-muted);
+  font-size: 1rem;
+}
+
+.editorLine {
+  margin: 0;
+  font-family: var(--font-script);
+  font-size: 1rem;
+  line-height: 1.62;
+  white-space: pre-wrap;
+}
+
+.editorLine + .editorLine {
+  margin-top: 0.6rem;
+}
+
+.editorLineSceneHeading,
+.editorLineCharacter,
+.editorLineTransition {
+  text-transform: uppercase;
+}
+
+.editorLineSceneHeading {
+  letter-spacing: 0.03em;
+}
+
+.editorLineCharacter {
+  margin-top: 1.7rem;
+  margin-left: 41%;
+}
+
+.editorLineDialogue {
+  max-width: 30ch;
+  margin-left: 30%;
+}
+
+.editorLineParenthetical {
+  max-width: 20ch;
+  margin-left: 34%;
+}
+
+.editorLineTransition {
+  margin-top: 1.7rem;
+  text-align: right;
+}
+
+.blankActionLine {
+  position: relative;
+  min-height: 1.62rem;
+}
+
+.blankCaret {
+  display: inline-flex;
+  width: 1px;
+  height: 1.2rem;
+  background: var(--color-foreground);
+  animation: caret-blink 1s step-end infinite;
+}
+
+.editorFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 1.5rem;
+  border-top: 1px solid var(--color-overlay-border);
+  background: var(--color-surface-strong);
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.editorFooterMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.modalSection {
+  display: grid;
+  gap: 1rem;
+}
+
+.modalSummary {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.modalSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.modalSummaryRow span {
+  color: var(--color-muted);
+}
+
+.modalMessage {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.modalMessageSuccess {
+  color: var(--color-success);
+}
+
+.modalMessageError {
+  color: var(--color-danger);
+}
+
+.modalHint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.statePanel {
+  width: min(100%, 44rem);
+  margin: clamp(2rem, 10vh, 5rem) auto;
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--color-overlay-border);
+  border-radius: 1.6rem;
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.statePanelDanger {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-paper) 90%, transparent),
+    color-mix(in srgb, var(--color-danger) 12%, var(--color-paper))
+  );
+}
+
+.statePanelCopy {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.statePanelEyebrow {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.statePanelTitle {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.statePanelDescription {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.statePanelActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 960px) {
+  .pageHeader,
+  .fieldInline,
+  .editorHeader,
+  .editorWorkspace,
+  .editorFooter {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pageActions {
+    justify-content: flex-start;
+  }
+
+  .editorHeader {
+    display: flex;
+  }
+
+  .editorHeaderCenter,
+  .editorHeaderEnd {
+    justify-content: flex-start;
+  }
+
+  .editorWorkspace {
+    display: grid;
+  }
+
+  .editorCanvas {
+    padding-inline: 1rem;
+  }
+
+  .editorPaper {
+    min-height: auto;
+    padding: 2.25rem 1.8rem 3rem;
+  }
+
+  .editorLineCharacter {
+    margin-left: 28%;
+  }
+
+  .editorLineDialogue {
+    margin-left: 16%;
+  }
+
+  .editorLineParenthetical {
+    margin-left: 21%;
+  }
+}
+
+@media (max-width: 640px) {
+  .projectRow {
+    flex-direction: column;
+  }
+
+  .projectRowTime {
+    white-space: normal;
+  }
+
+  .sectionCard,
+  .statePanel {
+    padding: 1.2rem;
+  }
+
+  .editorHeader,
+  .editorFooter {
+    padding-inline: 1rem;
+  }
+
+  .editorSidebar {
+    padding-inline: 1rem;
+  }
+
+  .editorCanvas {
+    padding: 1.25rem 0.75rem 2rem;
+  }
+
+  .editorPaper {
+    padding: 1.9rem 1.25rem 2.5rem;
+  }
+
+  .editorLine {
+    font-size: 0.96rem;
+  }
+
+  .editorLineCharacter {
+    margin-left: 24%;
+  }
+
+  .editorLineDialogue {
+    max-width: 28ch;
+    margin-left: 13%;
+  }
+
+  .editorLineParenthetical {
+    margin-left: 17%;
+  }
+
+  .statePanelTitle {
+    font-size: 1.85rem;
+  }
+}

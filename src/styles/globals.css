@@ -536,6 +536,30 @@ button:disabled {
   box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
 }
 
+.ui-button[data-variant="success"] {
+  border-color: color-mix(in srgb, var(--color-success) 28%, transparent);
+  background: var(--color-success);
+  color: #f4efe8;
+}
+
+.ui-button[data-variant="success"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-success) 88%, black);
+  box-shadow:
+    0 8px 20px rgba(51, 98, 75, 0.18),
+    0 0 0 2px var(--color-success-soft);
+}
+
+.ui-button[data-variant="danger"] {
+  border-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+  background: transparent;
+  color: var(--color-danger);
+}
+
+.ui-button[data-variant="danger"]:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 26%, transparent);
+}
+
 .ui-button__spinner {
   width: 0.9rem;
   height: 0.9rem;
@@ -717,12 +741,13 @@ button:disabled {
 
 .toast-viewport {
   position: fixed;
-  right: var(--space-5);
+  left: 50%;
   bottom: var(--space-5);
+  transform: translateX(-50%);
   z-index: 1100;
   display: grid;
   gap: var(--space-3);
-  width: min(100% - 2rem, 24rem);
+  width: min(100% - 2rem, 25rem);
 }
 
 .toast {
@@ -731,6 +756,7 @@ button:disabled {
   gap: var(--space-3);
   padding: 1rem 1rem 1rem 1.1rem;
   border: 1px solid var(--color-toast-tone-border);
+  border-left-width: 4px;
   border-radius: var(--radius-md);
   background: var(--color-toast-surface);
   box-shadow: var(--shadow-soft);
@@ -752,6 +778,14 @@ button:disabled {
 
 .toast[data-tone="error"] {
   --color-toast-tone-border: color-mix(in srgb, var(--color-danger) 38%, var(--color-toast-border));
+}
+
+.toast[data-tone="warning"] {
+  --color-toast-tone-border: color-mix(
+    in srgb,
+    var(--color-warning) 40%,
+    var(--color-toast-border)
+  );
 }
 
 .toast__copy {
@@ -1902,7 +1936,7 @@ button:disabled {
   }
 
   .toast-viewport {
-    right: var(--space-3);
+    left: 50%;
     bottom: var(--space-3);
     width: min(100% - 1.5rem, 24rem);
   }

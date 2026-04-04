@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 import { PublicLayout } from "@/components/layout/public-layout";
 import { routes } from "@/config/routes";
-import { RouteBlueprintPage } from "@/features/architecture/components/route-blueprint-page";
+import { StatePanel } from "@/features/product/components/state-panel";
 
 type GlobalErrorPageProps = {
   error: Error & { digest?: string };
@@ -21,30 +21,12 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
     <html lang="en">
       <body className="app-body">
         <PublicLayout>
-          <RouteBlueprintPage
-            eyebrow="Global / Error boundary"
-            title="The application shell failed"
-            description="This is the last-resort fallback for provider or app-wide failures. Most UI errors should recover before reaching this boundary."
-            status="Global fallback active"
-            tone="error"
-            sections={[
-              {
-                items: [
-                  "Use route boundaries for route-specific failures.",
-                  "Use inline feedback for expected validation and mutation errors.",
-                  "Reserve the global fallback for provider, hydration, or shell-level problems.",
-                ],
-                title: "Escalation rules",
-              },
-              {
-                items: [
-                  "Always offer a retry path.",
-                  "Always offer a route back to the landing page.",
-                  "Keep copy concise so the user understands this is not a data-loss notice by default.",
-                ],
-                title: "User-facing contract",
-              },
-            ]}
+          <StatePanel
+            eyebrow="Global / Error"
+            title="Algo salio mal"
+            description="La aplicacion encontro un error inesperado."
+            secondaryDescription="Recarga la pagina o vuelve al inicio."
+            tone="danger"
             actions={
               <>
                 <button
@@ -54,7 +36,7 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
                   data-variant="primary"
                   onClick={() => reset()}
                 >
-                  Retry application shell
+                  Recargar pagina
                 </button>
                 <Link
                   href={routes.home}
@@ -62,7 +44,7 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
                   data-size="md"
                   data-variant="secondary"
                 >
-                  Back to landing
+                  Ir al inicio
                 </Link>
               </>
             }

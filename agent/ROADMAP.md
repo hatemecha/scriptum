@@ -235,17 +235,17 @@
 
 ## Día 12 — Estados visuales
 
-- [ ] Diseñar estado vacío
-- [ ] Diseñar estado cargando
-- [ ] Diseñar estado error
-- [ ] Diseñar estado sin conexión
-- [ ] Diseñar estado guardando
-- [ ] Diseñar estado sincronizado
-- [ ] Diseñar estado de exportación en progreso
+- [x] Diseñar estado vacío
+- [x] Diseñar estado cargando
+- [x] Diseñar estado error
+- [x] Diseñar estado sin conexión
+- [x] Diseñar estado guardando
+- [x] Diseñar estado sincronizado
+- [x] Diseñar estado de exportación en progreso
 
 ### Validación
 
-- [ ] No faltan estados críticos de UX
+- [x] No faltan estados críticos de UX
 
 ---
 

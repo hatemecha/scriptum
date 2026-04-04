@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
-type ToastTone = "error" | "info" | "success";
+type ToastTone = "error" | "info" | "success" | "warning";
 
 type ToastRecord = {
   description?: string;
@@ -24,11 +24,24 @@ type ToastContextValue = {
   showToast: (options: ShowToastOptions) => string;
 };
 
+const MAX_VISIBLE_TOASTS = 3;
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 type ToastProviderProps = {
   children: ReactNode;
 };
+
+function getDefaultToastDuration(tone: ToastTone): number {
+  switch (tone) {
+    case "success":
+      return 3000;
+    case "warning":
+    case "error":
+      return 5000;
+    default:
+      return 4000;
+  }
+}
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastRecord[]>([]);
@@ -58,30 +71,42 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts((currentToasts) => currentToasts.filter((toast) => toast.id !== id));
   }
 
-  function showToast({
-    description,
-    duration = 4000,
-    title,
-    tone = "info",
-  }: ShowToastOptions): string {
+  function showToast({ description, duration, title, tone = "info" }: ShowToastOptions): string {
     nextToastId.current += 1;
 
     const id = `toast-${nextToastId.current}`;
+    const resolvedDuration = duration ?? getDefaultToastDuration(tone);
 
-    setToasts((currentToasts) => [
-      ...currentToasts,
-      {
-        description,
-        id,
-        title,
-        tone,
-      },
-    ]);
+    setToasts((currentToasts) => {
+      const nextToasts = [
+        ...currentToasts,
+        {
+          description,
+          id,
+          title,
+          tone,
+        },
+      ];
 
-    if (duration > 0) {
+      if (nextToasts.length <= MAX_VISIBLE_TOASTS) {
+        return nextToasts;
+      }
+
+      const trimmedToast = nextToasts[0];
+      const trimmedTimeoutId = timeoutIds.current.get(trimmedToast.id);
+
+      if (trimmedTimeoutId) {
+        window.clearTimeout(trimmedTimeoutId);
+        timeoutIds.current.delete(trimmedToast.id);
+      }
+
+      return nextToasts.slice(-MAX_VISIBLE_TOASTS);
+    });
+
+    if (resolvedDuration > 0) {
       const timeoutId = window.setTimeout(() => {
         dismissToast(id);
-      }, duration);
+      }, resolvedDuration);
 
       timeoutIds.current.set(id, timeoutId);
     }
@@ -121,9 +146,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
               type="button"
               className="toast__dismiss"
               onClick={() => dismissToast(toast.id)}
-              aria-label={`Dismiss notification: ${toast.title}`}
+              aria-label={`Cerrar notificacion: ${toast.title}`}
             >
-              Dismiss
+              Cerrar
             </button>
           </section>
         ))}

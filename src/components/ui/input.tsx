@@ -7,9 +7,19 @@ export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
   error?: string;
   hint?: string;
   label: string;
+  requiredLabel?: string;
 };
 
-export function Input({ className, error, hint, id, label, required, ...props }: InputProps) {
+export function Input({
+  className,
+  error,
+  hint,
+  id,
+  label,
+  required,
+  requiredLabel = "Required",
+  ...props
+}: InputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const hintId = hint ? `${inputId}-hint` : undefined;
@@ -23,7 +33,7 @@ export function Input({ className, error, hint, id, label, required, ...props }:
           {label}
         </label>
 
-        {required ? <span className="ui-field__meta">Required</span> : null}
+        {required ? <span className="ui-field__meta">{requiredLabel}</span> : null}
       </div>
 
       <input
