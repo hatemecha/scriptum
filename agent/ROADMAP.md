@@ -145,20 +145,20 @@
 
 ## Día 7 — Decisiones técnicas finales
 
-- [ ] Confirmar stack oficial
-- [ ] Confirmar Next.js
-- [ ] Confirmar React
-- [ ] Confirmar TypeScript
-- [ ] Confirmar Supabase
-- [ ] Confirmar Stripe
-- [ ] Confirmar Lexical
-- [ ] Definir gestor de paquetes
-- [ ] Definir convenciones de nombres
-- [ ] Definir estrategia de variables de entorno
+- [x] Confirmar stack oficial
+- [x] Confirmar Next.js
+- [x] Confirmar React
+- [x] Confirmar TypeScript
+- [x] Confirmar futura compatibilidad con Supabase
+- [x] Confirmar futura compatibilidad con Stripe
+- [x] Confirmar Lexical
+- [x] Definir gestor de paquetes
+- [x] Definir convenciones de nombres
+- [x] Definir estrategia de variables de entorno
 
 ### Validación
 
-- [ ] No quedan decisiones técnicas base abiertas
+- [x] No quedan decisiones técnicas base abiertas y las skills necesarias a futuro ya están disponibles en el entorno
 
 ---
 
@@ -830,6 +830,7 @@
 - [x] Día 4: V1 fija una matriz cerrada de `Enter`, `Tab`, `Shift + Tab`, pegado, selección y borrado en `SCREENPLAY_WRITING_RULES_V1.md`
 - [x] Día 5: el formato profesional queda cerrado en `SCREENPLAY_FORMAT_RULES_V1.md` y `src/features/screenplay/format-rules.ts` con métricas, mayúsculas y paginación deterministas
 - [x] Día 6: el documento interno queda definido en `SCREENPLAY_DOCUMENT_MODEL_V1.md` y `src/features/screenplay/document-model.ts` con `blockOrder` canónico, bloques por id, índice de escenas derivado y envelopes separados para `schema`, `document`, `project`, `sync` y `extensions`
+- [x] Día 7: el stack oficial queda fijado en `TECH_DECISIONS_DAY7.md` con `Next.js 16`, `React 19`, `TypeScript 5`, `Lexical`, `npm`, estrategia de entorno centralizada y compatibilidad futura con Supabase y Stripe
 
 ## Cosas que NO entrarían en V1
 

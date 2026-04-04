@@ -6,14 +6,16 @@ Technical foundation for the `SCRIPTUM` web app.
 
 Scriptum is a screenplay writing tool focused on being simple, fast, minimal, and professional. This repository contains the current technical foundation and internal product documentation for the app.
 
-## Current Stack
+## Official Stack (Day 7)
 
 - Next.js 16 with App Router
 - React 19
-- TypeScript 5
+- TypeScript 5 in strict mode
+- Lexical as the future editor engine
 - ESLint 9 with `eslint-config-next`
 - Prettier 3
 - npm as the package manager
+- Future-compatible architecture for Supabase and Stripe integrations
 
 ## Getting Started
 
@@ -57,6 +59,18 @@ NEXT_PUBLIC_APP_NAME=Scriptum
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
+Environment rules:
+
+- Use `NEXT_PUBLIC_` only for values that are safe in the client bundle.
+- Keep secrets server-only without the public prefix.
+- Add every new variable to `.env.example`.
+- Centralize environment reads in `src/config/env.ts`.
+
+Planned future integration names:
+
+- Supabase: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- Stripe: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+
 ## Import Aliases
 
 - `@/*` maps to `src/*`
@@ -87,6 +101,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ## Conventions
 
 - Use English names for modules, files, and exported symbols.
+- Use `kebab-case` for files and folders.
+- Use `PascalCase` for React components and exported domain types.
+- Use `camelCase` for functions, variables, and object properties.
+- Use `UPPER_SNAKE_CASE` for environment variables and module-level constants.
 - Keep modules small and focused.
 - Prefer shared utilities under `src/lib` and feature-specific code under `src/features`.
+- Keep external integrations isolated under `src/services`.
 - Add environment variables to `.env.example` whenever a new integration is introduced.
