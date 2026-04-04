@@ -6,62 +6,62 @@
 */
 :root {
   color-scheme: light;
-  --color-accent: #355a4d;
-  --color-accent-strong: #284238;
-  --color-accent-soft: rgba(53, 90, 77, 0.1);
-  --color-accent-soft-strong: rgba(53, 90, 77, 0.18);
-  --color-background: #ebe3d7;
+  --color-accent: #284c7a;
+  --color-accent-strong: #1d385a;
+  --color-accent-soft: rgba(40, 76, 122, 0.08);
+  --color-accent-soft-strong: rgba(40, 76, 122, 0.15);
+  --color-background: #f4efe8;
   --color-backdrop: rgba(28, 26, 24, 0.3);
-  --color-border-subtle: #c9c0b5;
-  --color-danger: #9f4537;
-  --color-danger-soft: rgba(159, 69, 55, 0.08);
+  --color-border-subtle: #d8d1c8;
+  --color-danger: #a23d3d;
+  --color-danger-soft: rgba(162, 61, 61, 0.08);
   --color-editor-surface: linear-gradient(
     180deg,
-    rgba(244, 238, 231, 0.96) 0%,
-    rgba(236, 228, 218, 0.9) 100%
+    rgba(251, 248, 244, 0.96) 0%,
+    rgba(244, 239, 232, 0.9) 100%
   );
-  --color-focus-ring: rgba(53, 90, 77, 0.38);
-  --color-focus-shadow: rgba(53, 90, 77, 0.08);
-  --color-foreground: #191613;
-  --color-input-background: rgba(246, 240, 233, 0.96);
-  --color-input-background-hover: rgba(250, 245, 239, 1);
-  --color-muted: #575048;
-  --color-overlay-border: rgba(201, 192, 181, 0.88);
-  --color-overlay-border-strong: rgba(191, 181, 170, 0.98);
-  --color-paper: #f6f1e8;
-  --color-paper-border: rgba(196, 186, 175, 0.84);
+  --color-focus-ring: rgba(40, 76, 122, 0.38);
+  --color-focus-shadow: rgba(40, 76, 122, 0.08);
+  --color-foreground: #1c1a18;
+  --color-input-background: rgba(255, 253, 249, 0.96);
+  --color-input-background-hover: #ffffff;
+  --color-muted: #6a645c;
+  --color-overlay-border: rgba(216, 209, 200, 0.88);
+  --color-overlay-border-strong: rgba(206, 199, 190, 0.98);
+  --color-paper: #fffdf9;
+  --color-paper-border: rgba(216, 209, 200, 0.84);
   --color-paper-surface:
-    linear-gradient(180deg, rgba(248, 243, 236, 0.96), rgba(243, 236, 227, 0.98)),
+    linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(251, 248, 244, 0.98)),
     var(--color-paper);
-  --color-page-end: #e7ddcf;
-  --color-page-glow-1: rgba(53, 90, 77, 0.07);
-  --color-page-glow-2: rgba(159, 69, 55, 0.04);
-  --color-page-start: #f1e8dc;
-  --color-placeholder: rgba(87, 80, 72, 0.76);
-  --color-success: #33624b;
-  --color-success-soft: rgba(51, 98, 75, 0.1);
-  --color-surface: #f1e8dc;
-  --color-surface-strong: rgba(239, 231, 222, 0.92);
-  --color-surface-overlay: rgba(238, 230, 220, 0.9);
-  --color-surface-overlay-strong: rgba(243, 237, 230, 0.98);
-  --color-toast-border: rgba(191, 181, 170, 0.92);
-  --color-toast-surface: rgba(241, 233, 224, 0.98);
-  --color-warning: #8d6221;
-  --color-warning-soft: rgba(141, 98, 33, 0.1);
-  --control-primary-border: rgba(53, 90, 77, 0.22);
-  --control-primary-hover: #2d4d42;
-  --control-primary-shadow: rgba(53, 90, 77, 0.1);
-  --control-primary-start: #355a4d;
-  --control-primary-text: #f4efe8;
+  --color-page-end: #eae4db;
+  --color-page-glow-1: rgba(40, 76, 122, 0.04);
+  --color-page-glow-2: rgba(162, 61, 61, 0.03);
+  --color-page-start: #f4efe8;
+  --color-placeholder: rgba(106, 100, 92, 0.76);
+  --color-success: #2f6b4f;
+  --color-success-soft: rgba(47, 107, 79, 0.1);
+  --color-surface: #fbf8f4;
+  --color-surface-strong: rgba(246, 241, 236, 0.92);
+  --color-surface-overlay: rgba(251, 248, 244, 0.95);
+  --color-surface-overlay-strong: rgba(255, 253, 249, 0.98);
+  --color-toast-border: rgba(206, 199, 190, 0.92);
+  --color-toast-surface: rgba(255, 253, 249, 0.98);
+  --color-warning: #9a6a1d;
+  --color-warning-soft: rgba(154, 106, 29, 0.1);
+  --control-primary-border: rgba(40, 76, 122, 0.22);
+  --control-primary-hover: #1f3b5f;
+  --control-primary-shadow: rgba(40, 76, 122, 0.15);
+  --control-primary-start: #284c7a;
+  --control-primary-text: #ffffff;
   --font-script: "Courier Prime", "Courier New", monospace;
   --font-ui: "Manrope", "Segoe UI", sans-serif;
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
-  --skeleton-base: rgba(216, 209, 200, 0.65);
-  --skeleton-shimmer: rgba(255, 255, 255, 0.55);
-  --shadow-soft: 0 22px 60px rgba(37, 33, 27, 0.08);
-  --shadow-subtle: 0 8px 24px rgba(37, 33, 27, 0.05);
+  --skeleton-base: rgba(216, 209, 200, 0.45);
+  --skeleton-shimmer: rgba(255, 255, 255, 0.65);
+  --shadow-soft: 0 24px 64px rgba(28, 26, 24, 0.06);
+  --shadow-subtle: 0 8px 24px rgba(28, 26, 24, 0.04);
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

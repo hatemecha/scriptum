@@ -35,38 +35,69 @@ export function LandingPage() {
   return (
     <div className={styles.landing}>
       <section className={styles.hero}>
-        <p className={styles.heroKicker}>Editor de guion cinematográfico</p>
-        <h1 className={styles.headline}>
-          Tu historia, con formato profesional desde el primer párrafo.
-        </h1>
-        <p className={styles.subheadline}>
-          Abrí un proyecto, escribí en una página clara y bajá un PDF listo para leer o enviar. Sin
-          suites recargadas ni curva de aprendizaje absurda.
-        </p>
-        <p className={styles.heroProof} aria-hidden="true">
-          <span>Escenas</span>
-          <span className={styles.heroProofDot} />
-          <span>Autoguardado</span>
-          <span className={styles.heroProofDot} />
-          <span>Exportación PDF</span>
-        </p>
-        <div className={styles.actions}>
-          <Link
-            href={routes.register}
-            className="ui-button"
-            data-size="lg"
-            data-variant="primary"
-          >
-            Empezar gratis
-          </Link>
-          <Link
-            href={routes.login}
-            className="ui-button"
-            data-size="lg"
-            data-variant="secondary"
-          >
-            Iniciar sesión
-          </Link>
+        <div className={styles.heroContent}>
+          <p className={styles.heroKicker}>Editor de guion cinematográfico</p>
+          <h1 className={styles.headline}>
+            Tu historia, con formato profesional desde el primer párrafo.
+          </h1>
+          <p className={styles.subheadline}>
+            Abrí un proyecto, escribí en una página clara y bajá un PDF listo para leer o enviar. Sin
+            suites recargadas ni curva de aprendizaje absurda.
+          </p>
+          <div className={styles.actions}>
+            <Link
+              href={routes.register}
+              className="ui-button"
+              data-size="lg"
+              data-variant="primary"
+            >
+              Empezar gratis
+            </Link>
+            <Link
+              href={routes.login}
+              className="ui-button"
+              data-size="lg"
+              data-variant="secondary"
+            >
+              Iniciar sesión
+            </Link>
+          </div>
+          <p className={styles.heroProof} aria-hidden="true">
+            <span>Escenas</span>
+            <span className={styles.heroProofDot} />
+            <span>Autoguardado</span>
+            <span className={styles.heroProofDot} />
+            <span>Exportación PDF</span>
+          </p>
+        </div>
+
+        <div className={styles.heroVisual} aria-hidden="true">
+          <div className={`${styles.mockupCard} ${styles.mockupMain}`}>
+            <div className={styles.mockupHeader}>
+              <div className={styles.mockupDot} />
+              <div className={styles.mockupDot} />
+              <div className={styles.mockupDot} />
+            </div>
+            <div className={styles.mockupBody}>
+              <div className={styles.mockupLine} style={{ width: '40%', margin: '0 auto', marginBottom: '1rem' }} />
+              <div className={styles.mockupLine} style={{ width: '80%' }} />
+              <div className={styles.mockupLine} style={{ width: '75%' }} />
+              <div className={styles.mockupLine} style={{ width: '85%', marginBottom: '1.25rem' }} />
+              <div className={styles.mockupLine} style={{ width: '30%', margin: '0 auto' }} />
+              <div className={styles.mockupLine} style={{ width: '50%', margin: '0 auto' }} />
+              <div className={styles.mockupLine} style={{ width: '45%', margin: '0 auto' }} />
+            </div>
+          </div>
+          <div className={`${styles.mockupCard} ${styles.mockupSecondary}`}>
+            <div className={styles.mockupHeader}>
+              <div className={styles.mockupLine} style={{ width: '35%' }} />
+            </div>
+            <div className={styles.mockupSidebar}>
+              <div className={styles.mockupLine} style={{ width: '85%' }} />
+              <div className={styles.mockupLine} style={{ width: '60%' }} />
+              <div className={styles.mockupLine} style={{ width: '75%' }} />
+            </div>
+          </div>
         </div>
       </section>
 
