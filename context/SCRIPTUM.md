@@ -176,6 +176,10 @@ Tipos de bloque:
 - Parenthetical
     
 - Transition
+
+Referencia operativa cerrada del MVP:
+
+- [SCREENPLAY_BLOCKS_V1.md](SCREENPLAY_BLOCKS_V1.md)
     
 
 Ejemplo conceptual:

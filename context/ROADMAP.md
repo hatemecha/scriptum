@@ -59,19 +59,19 @@
 # FASE 1 — Definición funcional del editor
 
 ## Día 3 — Bloques del guion
-- [ ] Definir lista oficial de bloques permitidos
-- [ ] Confirmar `Scene Heading`
-- [ ] Confirmar `Action`
-- [ ] Confirmar `Character`
-- [ ] Confirmar `Dialogue`
-- [ ] Confirmar `Parenthetical`
-- [ ] Confirmar `Transition`
-- [ ] Definir qué bloques quedan fuera de V1
-- [ ] Documentar reglas de cada bloque
+- [x] Definir lista oficial de bloques permitidos
+- [x] Confirmar `Scene Heading`
+- [x] Confirmar `Action`
+- [x] Confirmar `Character`
+- [x] Confirmar `Dialogue`
+- [x] Confirmar `Parenthetical`
+- [x] Confirmar `Transition`
+- [x] Definir qué bloques quedan fuera de V1
+- [x] Documentar reglas de cada bloque
 
 ### Validación
-- [ ] Existe una lista cerrada de bloques de V1
-- [ ] No hay dudas sobre qué entra y qué no entra
+- [x] Existe una lista cerrada de bloques de V1
+- [x] No hay dudas sobre qué entra y qué no entra
 
 ---
 
@@ -729,6 +729,7 @@
 - [ ] Decisión 1
 - [ ] Decisión 2
 - [ ] Decisión 3
+- [x] Día 3: V1 queda cerrada a `Scene Heading`, `Action`, `Character`, `Dialogue`, `Parenthetical` y `Transition`
 
 ## Cosas que NO entrarían en V1
 - [ ] Colaboración en tiempo real

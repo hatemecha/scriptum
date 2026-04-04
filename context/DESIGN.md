@@ -186,6 +186,10 @@ Tipos de bloque del MVP:
 - `Parenthetical`
 - `Transition`
 
+Referencia cerrada para reglas, alcance y exclusiones:
+
+- [SCREENPLAY_BLOCKS_V1.md](SCREENPLAY_BLOCKS_V1.md)
+
 Reglas de producto para el editor:
 
 - Cada bloque tiene un tipo claro y una funcion concreta.
