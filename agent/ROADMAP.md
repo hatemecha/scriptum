@@ -124,20 +124,20 @@
 
 ## Día 6 — Documento interno
 
-- [ ] Diseñar estructura JSON del documento
-- [ ] Diseñar estructura de bloques
-- [ ] Diseñar metadatos del proyecto
-- [ ] Diseñar representación interna de escenas
-- [ ] Diseñar identificadores únicos por bloque
-- [ ] Diseñar orden lógico de bloques
-- [ ] Diseñar estructura preparada para versionado futuro
-- [ ] Diseñar estructura preparada para sincronización futura
+- [x] Diseñar estructura JSON del documento
+- [x] Diseñar estructura de bloques
+- [x] Diseñar metadatos del proyecto
+- [x] Diseñar representación interna de escenas
+- [x] Diseñar identificadores únicos por bloque
+- [x] Diseñar orden lógico de bloques
+- [x] Diseñar estructura preparada para versionado futuro
+- [x] Diseñar estructura preparada para sincronización futura
 
 ### Validación
 
-- [ ] El documento puede guardar un guion completo
-- [ ] La estructura es extensible
-- [ ] No hay acoplamiento innecesario
+- [x] El documento puede guardar un guion completo
+- [x] La estructura es extensible
+- [x] No hay acoplamiento innecesario
 
 ---
 
@@ -829,6 +829,7 @@
 - [x] Día 3: V1 queda cerrada a `Scene Heading`, `Action`, `Character`, `Dialogue`, `Parenthetical` y `Transition`
 - [x] Día 4: V1 fija una matriz cerrada de `Enter`, `Tab`, `Shift + Tab`, pegado, selección y borrado en `SCREENPLAY_WRITING_RULES_V1.md`
 - [x] Día 5: el formato profesional queda cerrado en `SCREENPLAY_FORMAT_RULES_V1.md` y `src/features/screenplay/format-rules.ts` con métricas, mayúsculas y paginación deterministas
+- [x] Día 6: el documento interno queda definido en `SCREENPLAY_DOCUMENT_MODEL_V1.md` y `src/features/screenplay/document-model.ts` con `blockOrder` canónico, bloques por id, índice de escenas derivado y envelopes separados para `schema`, `document`, `project`, `sync` y `extensions`
 
 ## Cosas que NO entrarían en V1
 

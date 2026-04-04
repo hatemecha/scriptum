@@ -4,7 +4,7 @@ Technical foundation for the `SCRIPTUM` web app.
 
 ## Project Goal
 
-Scriptum is a screenplay writing tool focused on being simple, fast, minimal, and professional. This repository currently contains the Day 1 base setup from Phase 0 of the roadmap.
+Scriptum is a screenplay writing tool focused on being simple, fast, minimal, and professional. This repository contains the current technical foundation and internal product documentation for the app.
 
 ## Current Stack
 
@@ -65,7 +65,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```text
 .
-|-- context/
+|-- agent/
 |-- public/
 |-- src/
 |   |-- app/
