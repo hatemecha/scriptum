@@ -3,6 +3,7 @@ import {
   type ScreenplayBlockBoundary,
   type ScreenplayBlockType,
 } from "@/features/screenplay/blocks";
+import { getScreenplayBlockFormatRule } from "@/features/screenplay/format-rules";
 
 export const screenplayStructuredClipboardMimeType =
   "application/x-scriptum-screenplay-blocks+json";
@@ -212,8 +213,9 @@ export function isCharacterPasteCandidate(
   previousBlockType: ScreenplayBlockBoundary,
 ): boolean {
   const trimmedText = text.trim();
+  const characterCueWidth = getScreenplayBlockFormatRule("character").widthColumns;
 
-  if (trimmedText.length === 0 || trimmedText.length > 38) {
+  if (trimmedText.length === 0 || trimmedText.length > characterCueWidth) {
     return false;
   }
 
