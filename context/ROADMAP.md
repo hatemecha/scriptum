@@ -76,20 +76,20 @@
 ---
 
 ## Día 4 — Reglas de escritura
-- [ ] Definir qué hace `Enter` en cada bloque
-- [ ] Definir qué hace `Tab` en cada bloque
-- [ ] Definir qué hace `Shift + Tab` en cada bloque
-- [ ] Definir creación automática del siguiente bloque
-- [ ] Definir comportamiento de bloques vacíos
-- [ ] Definir comportamiento de borrado entre bloques
-- [ ] Definir conversión manual de bloque
-- [ ] Definir comportamiento al pegar texto
-- [ ] Definir comportamiento de cortar/copiar/pegar múltiples bloques
-- [ ] Definir comportamiento de selección múltiple
+- [x] Definir qué hace `Enter` en cada bloque
+- [x] Definir qué hace `Tab` en cada bloque
+- [x] Definir qué hace `Shift + Tab` en cada bloque
+- [x] Definir creación automática del siguiente bloque
+- [x] Definir comportamiento de bloques vacíos
+- [x] Definir comportamiento de borrado entre bloques
+- [x] Definir conversión manual de bloque
+- [x] Definir comportamiento al pegar texto
+- [x] Definir comportamiento de cortar/copiar/pegar múltiples bloques
+- [x] Definir comportamiento de selección múltiple
 
 ### Validación
-- [ ] Las reglas están escritas de forma cerrada
-- [ ] Se puede implementar sin improvisación
+- [x] Las reglas están escritas de forma cerrada
+- [x] Se puede implementar sin improvisación
 
 ---
 
@@ -730,6 +730,7 @@
 - [ ] Decisión 2
 - [ ] Decisión 3
 - [x] Día 3: V1 queda cerrada a `Scene Heading`, `Action`, `Character`, `Dialogue`, `Parenthetical` y `Transition`
+- [x] Día 4: V1 fija una matriz cerrada de `Enter`, `Tab`, `Shift + Tab`, pegado, selección y borrado en `SCREENPLAY_WRITING_RULES_V1.md`
 
 ## Cosas que NO entrarían en V1
 - [ ] Colaboración en tiempo real

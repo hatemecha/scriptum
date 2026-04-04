@@ -189,6 +189,7 @@ Tipos de bloque del MVP:
 Referencia cerrada para reglas, alcance y exclusiones:
 
 - [SCREENPLAY_BLOCKS_V1.md](SCREENPLAY_BLOCKS_V1.md)
+- [SCREENPLAY_WRITING_RULES_V1.md](SCREENPLAY_WRITING_RULES_V1.md)
 
 Reglas de producto para el editor:
 

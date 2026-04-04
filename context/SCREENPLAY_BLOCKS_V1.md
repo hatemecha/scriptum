@@ -116,5 +116,6 @@ Day 3 is considered closed only if all of the following remain true:
 
 - `SCRIPTUM.md`
 - `DESIGN.md`
+- `SCREENPLAY_WRITING_RULES_V1.md`
 - KIT Scenarist desktop help: <https://kitscenarist.ru/en/help/first_glance.html>
 - KIT Scenarist mobile help: <https://kitscenarist.ru/en/help/howto_mobile_version.html>

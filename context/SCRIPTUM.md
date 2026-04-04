@@ -180,6 +180,7 @@ Tipos de bloque:
 Referencia operativa cerrada del MVP:
 
 - [SCREENPLAY_BLOCKS_V1.md](SCREENPLAY_BLOCKS_V1.md)
+- [SCREENPLAY_WRITING_RULES_V1.md](SCREENPLAY_WRITING_RULES_V1.md)
     
 
 Ejemplo conceptual:
