@@ -1,9 +1,5 @@
-import { ProjectOverview } from "@/components/home/project-overview";
+import { VisualFoundation } from "@/components/home/visual-foundation";
 
 export default function Home() {
-  return (
-    <main className="page-shell">
-      <ProjectOverview />
-    </main>
-  );
+  return <VisualFoundation />;
 }
