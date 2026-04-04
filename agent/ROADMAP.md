@@ -199,17 +199,17 @@
 
 ## Día 10 — Seguridad base
 
-- [ ] Definir modelo de autenticación
-- [ ] Definir reglas RLS en Supabase
-- [ ] Definir permisos por usuario
-- [ ] Asegurar aislamiento de proyectos por usuario
-- [ ] Definir validación de inputs críticos
-- [ ] Definir estrategia de secretos y claves
-- [ ] Definir política básica de backups
+- [x] Definir modelo de autenticación
+- [x] Definir reglas RLS en Supabase
+- [x] Definir permisos por usuario
+- [x] Asegurar aislamiento de proyectos por usuario
+- [x] Definir validación de inputs críticos
+- [x] Definir estrategia de secretos y claves
+- [x] Definir política básica de backups
 
 ### Validación
 
-- [ ] La base de seguridad mínima existe antes de avanzar
+- [x] La base de seguridad mínima existe antes de avanzar
 
 ---
 
@@ -833,6 +833,7 @@
 - [x] Día 7: el stack oficial queda fijado en `TECH_DECISIONS_DAY7.md` con `Next.js 16`, `React 19`, `TypeScript 5`, `Lexical`, `npm`, estrategia de entorno centralizada y compatibilidad futura con Supabase y Stripe
 - [x] Día 8: la arquitectura frontend queda fijada en `FRONTEND_ARCHITECTURE_DAY8.md` con grupos de rutas `public`, `authenticated` e `internal`, shell de dashboard, shell de editor, y fronteras claras para estado, formularios y errores de UI
 - [x] Día 9: la persistencia MVP queda fijada en `DATA_ARCHITECTURE_DAY9.md` y `src/features/data/data-architecture.ts` con `profiles`, `projects`, `document_snapshots`, ownership 1:N por usuario, snapshots append-only y `projects.current_snapshot_id` como puntero al documento persistido activo
+- [x] Día 10: la base de seguridad queda fijada en `SECURITY_BASE_DAY10.md` y `src/features/security/security-base.ts` con email/password + cookie session, RLS para las 3 tablas con ownership estricto, validación de inputs críticos, estrategia de secretos y política de backups
 
 ## Cosas que NO entrarían en V1
 

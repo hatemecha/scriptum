@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "validate:screenplay": "tsx scripts/validate-screenplay-foundation.ts",
     "validate:data-architecture": "tsx scripts/validate-data-architecture.ts",
+    "validate:security-base": "tsx scripts/validate-security-base.ts",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },
