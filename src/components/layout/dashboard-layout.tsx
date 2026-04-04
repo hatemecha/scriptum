@@ -24,7 +24,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className={styles.dashboardShell}>
       {isOffline ? (
         <div className={styles.connectionBanner} role="status">
-          Sin conexion. Tus cambios se guardan localmente.
+          Sin conexión. Tus cambios se guardan en local.
         </div>
       ) : null}
 
@@ -33,9 +33,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <Link href={routes.projects} className={styles.brand}>
             SCRIPTUM
           </Link>
-          <span className={styles.brandNote}>
-            La vista principal prioriza abrir, escribir y exportar.
-          </span>
+          <span className={styles.brandNote}>Abrir, escribir, exportar.</span>
         </div>
 
         <div className={styles.headerMid}>

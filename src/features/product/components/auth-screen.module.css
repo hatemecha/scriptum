@@ -1,8 +1,17 @@
 .page {
-  min-height: calc(100vh - 8rem);
+  min-height: calc(100vh - 10rem);
   display: grid;
   place-items: center;
   padding: 1rem 0 2rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .card {
@@ -19,15 +28,6 @@
 .cardHeader {
   display: grid;
   gap: 0.45rem;
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--color-accent);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
 
 .title {

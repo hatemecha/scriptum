@@ -19,8 +19,8 @@ export default function AuthenticatedErrorPage({ error, reset }: AuthenticatedEr
   return (
     <StatePanel
       eyebrow="Authenticated / Error"
-      title="Algo salio mal"
-      description="No pudimos cargar esta pagina."
+      title="Algo salió mal"
+      description="No pudimos cargar esta página."
       secondaryDescription="Intenta recargar o vuelve al inicio."
       tone="danger"
       actions={

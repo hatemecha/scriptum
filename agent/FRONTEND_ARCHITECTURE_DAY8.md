@@ -42,6 +42,7 @@ src/app
       page.tsx
   (internal)/
     playground/foundation/page.tsx
+    playground/prototype/page.tsx
 
 src/components
   layout/
@@ -74,13 +75,14 @@ src/services
 
 | Route                   | Audience        | Responsibility                                               |
 | ----------------------- | --------------- | ------------------------------------------------------------ |
-| `/`                     | Public          | Landing and architecture checkpoint                          |
+| `/`                     | Public          | Marketing landing                                            |
 | `/login`                | Public          | Login flow                                                   |
 | `/register`             | Public          | Registration flow                                            |
 | `/projects`             | Authenticated   | Project list, empty state, entry point after login           |
 | `/projects/[projectId]` | Authenticated   | Editor workspace                                             |
 | `/settings`             | Authenticated   | Account, plan, and editor preferences                        |
 | `/playground/foundation`| Internal        | Visual exploration isolated from product routes              |
+| `/playground/prototype` | Internal        | Navigable map of product routes and preview states (Day 13)    |
 
 ## Layout Decisions
 

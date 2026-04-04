@@ -21,7 +21,7 @@ function CreateProjectAction({ disabled }: { disabled: boolean }) {
         data-size="md"
         data-variant="primary"
         disabled
-        title="Necesitas conexion para crear un proyecto."
+        title="Necesitas conexión para crear un proyecto."
       >
         + Nuevo proyecto
       </button>
@@ -63,7 +63,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
     return (
       <StatePanel
         eyebrow="Authenticated / Projects"
-        title="Algo salio mal"
+        title="Algo salió mal"
         description="No pudimos cargar tus proyectos."
         secondaryDescription="Intenta recargar o vuelve al inicio."
         tone="danger"
@@ -93,7 +93,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
           <p className="section-eyebrow">Dashboard / Proyectos</p>
           <h1 className={styles.pageTitle}>Tus proyectos</h1>
           <p className={styles.pageDescription}>
-            Abre el ultimo borrador en segundos o crea un proyecto nuevo sin pasos extra.
+            Abre un borrador o crea uno nuevo.
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
 
       {isOffline ? (
         <p className={styles.inlineNotice}>
-          Sin conexion. Mostrando la ultima version disponible y pausando la creacion de proyectos.
+          Sin conexión. Última copia en pantalla; crear proyectos en pausa.
         </p>
       ) : null}
 
@@ -113,7 +113,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
       ) : viewState === "empty" ? (
         <StatePanel
           eyebrow="Projects / Empty"
-          title="Todavia no tienes proyectos"
+          title="Todavía no tienes proyectos"
           description="Crea tu primer guion para empezar."
           actions={<CreateProjectAction disabled={false} />}
         />

@@ -59,7 +59,7 @@ function getStatusPresentation({
 }): StatusPresentation {
   if (viewState === "offline") {
     return {
-      label: "Sin conexion",
+      label: "Sin conexión",
       tone: "warning",
     };
   }
@@ -189,7 +189,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     return (
       <StatePanel
         eyebrow="Authenticated / Editor"
-        title="Algo salio mal"
+        title="Algo salió mal"
         description="No pudimos cargar este proyecto."
         secondaryDescription="Intenta recargar o vuelve al inicio."
         tone="danger"
@@ -298,7 +298,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     exportTimeoutRef.current = window.setTimeout(() => {
       setExportState("success");
       showToast({
-        description: "La descarga queda lista desde el modal de exportacion.",
+        description: "La descarga queda lista desde el modal de exportación.",
         title: "PDF listo",
         tone: "success",
       });
@@ -322,7 +322,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     <div className={styles.editorShell}>
       {isOffline ? (
         <div className={styles.inlineNotice}>
-          Sin conexion. Tus cambios se guardan localmente y la sincronizacion queda en espera.
+          Sin conexión. Cambios en local; la sincronización espera red.
         </div>
       ) : null}
 
@@ -334,7 +334,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <input
             type="text"
             className={styles.editorTitleInput}
-            aria-label="Titulo del proyecto"
+            aria-label="Título del proyecto"
             value={projectTitle}
             onChange={(event) => handleTitleChange(event.target.value)}
           />
@@ -379,7 +379,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           {previewScenes.length === 0 ? (
             <div className={styles.sceneEmpty}>
               <div>
-                <div>Sin escenas todavia</div>
+                <div>Sin escenas todavía</div>
                 <div>Escribe un encabezado de escena para empezar.</div>
               </div>
             </div>
@@ -408,7 +408,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <div className={styles.editorCanvasStage}>
             <article className={styles.editorPaper}>
               {viewState === "empty" ? (
-                <div className={styles.blankActionLine} aria-label="Bloque Action vacio">
+                <div className={styles.blankActionLine} aria-label="Bloque Action vacío">
                   <span className={styles.blankCaret} aria-hidden="true" />
                 </div>
               ) : (
@@ -436,7 +436,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
       <footer className={styles.editorFooter}>
         <div className={styles.editorFooterMeta}>
           <span>{visibleBlockType}</span>
-          <span>{project.estimatedPages} paginas aprox.</span>
+          <span>~{project.estimatedPages} páginas</span>
         </div>
         <div className={styles.editorFooterMeta}>
           <span>{previewScenes.length} escenas</span>
@@ -467,7 +467,11 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
               {exportState === "error" ? (
                 <Button onClick={handleRetryExport}>Reintentar</Button>
               ) : (
-                <Button onClick={handleExport} disabled={isOffline} variant="primary">
+                <Button
+                  onClick={handleExport}
+                  disabled={isOffline || exportState === "exporting"}
+                  variant="primary"
+                >
                   {exportState === "exporting" ? "Exportando..." : "Exportar PDF"}
                 </Button>
               )}
@@ -479,18 +483,18 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           {exportState === "success" ? (
             <>
               <p className={cn(styles.modalMessage, styles.modalMessageSuccess)}>
-                Tu PDF esta listo.
+                Tu PDF está listo.
               </p>
               <p className={styles.modalHint}>
-                Si la descarga no inicio automaticamente, usa el boton para bajarlo manualmente.
+                Si la descarga no se inició sola, usa el botón para bajarla.
               </p>
             </>
           ) : (
             <>
               <div className={styles.modalSummary}>
                 <div className={styles.modalSummaryRow}>
-                  <span>Titulo</span>
-                  <strong>{projectTitle.trim() || "Sin titulo"}</strong>
+                  <span>Título</span>
+                  <strong>{projectTitle.trim() || "Sin título"}</strong>
                 </div>
                 <div className={styles.modalSummaryRow}>
                   <span>Autor</span>
@@ -501,7 +505,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
                   <strong>{previewScenes.length}</strong>
                 </div>
                 <div className={styles.modalSummaryRow}>
-                  <span>Paginas</span>
+                  <span>Páginas</span>
                   <strong>~{project.estimatedPages}</strong>
                 </div>
               </div>

@@ -11,13 +11,13 @@ import "@/styles/globals.css";
 
 const uiFont = Manrope({
   preload: false,
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-ui",
 });
 
 const scriptFont = Courier_Prime({
   preload: false,
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-script",
   weight: ["400"],
 });
@@ -55,7 +55,7 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang="es"
       data-theme={initialTheme}
       className={`${uiFont.variable} ${scriptFont.variable}`}
     >

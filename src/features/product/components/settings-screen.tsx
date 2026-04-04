@@ -58,7 +58,7 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
     return (
       <StatePanel
         eyebrow="Authenticated / Settings"
-        title="Algo salio mal"
+        title="Algo salió mal"
         description="No pudimos cargar tus ajustes."
         secondaryDescription="Intenta recargar o vuelve al inicio."
         tone="danger"
@@ -113,7 +113,7 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
       setDisplayName(trimmedName);
       setIsSaving(false);
       showToast({
-        description: "Tu perfil quedo actualizado sin salir de esta pantalla.",
+        description: "Tu perfil quedó actualizado sin salir de esta pantalla.",
         title: "Cambios guardados",
         tone: "success",
       });
@@ -127,15 +127,14 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
           <p className="section-eyebrow">Dashboard / Ajustes</p>
           <h1 className={styles.pageTitle}>Ajustes</h1>
           <p className={styles.pageDescription}>
-            Solo lo minimo para mantener la cuenta clara y fuera del camino de escritura.
+            Lo mínimo para la cuenta, fuera del camino al escribir.
           </p>
         </div>
       </header>
 
       {isOffline ? (
         <p className={styles.inlineNotice}>
-          Sin conexion. Puedes revisar tu cuenta, pero los cambios quedan en pausa hasta recuperar
-          la red.
+          Sin conexión. Puedes revisar la cuenta; los cambios quedan en pausa hasta volver la red.
         </p>
       ) : null}
 
@@ -154,6 +153,8 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
             <form className={styles.fieldRow} onSubmit={handleSave} noValidate>
               <div className={styles.fieldInline}>
                 <Input
+                  name="displayName"
+                  autoComplete="name"
                   label="Nombre"
                   value={displayName}
                   error={nameError}
@@ -181,8 +182,7 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
             <header className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Cuenta</h2>
               <p className={styles.sectionDescription}>
-                El MVP conserva la configuracion al minimo: plan, cierre de sesion y una nota sobre
-                recuperacion.
+                Plan, cierre de sesión y recuperación de acceso. Sin más por ahora.
               </p>
             </header>
 
@@ -192,12 +192,12 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
             </div>
 
             <p className={styles.sectionNote}>
-              Para cambiar tu contrasena, usa la opcion de recuperacion.
+              Para cambiar la contraseña, usa recuperación de acceso.
             </p>
 
             <div className={styles.sectionFooter}>
               <Link href={routes.home} className="ui-button" data-size="md" data-variant="danger">
-                Cerrar sesion
+                Cerrar sesión
               </Link>
               <Link href={routes.home} className="ui-button" data-size="md" data-variant="ghost">
                 Volver al inicio

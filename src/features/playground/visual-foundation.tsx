@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import {
   defaultFoundationSceneId,
@@ -23,6 +25,7 @@ export function VisualFoundation() {
   const [exportFileName, setExportFileName] = useState("foundation-preview");
   const [exportFileNameError, setExportFileNameError] = useState<string>();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [demoProjectTitle, setDemoProjectTitle] = useState("The Silent Editor");
   const { showToast } = useToast();
 
   const activeScene =
@@ -125,6 +128,11 @@ export function VisualFoundation() {
                 This route keeps the visual exploration available without treating it as the product
                 shell. The script preview now renders from the canonical screenplay model.
               </p>
+              <p className="foundation-header__description">
+                <Link href={routes.playgroundPrototype} className="foundation-prototype-link">
+                  Mapa del prototipo producto (rutas y estados)
+                </Link>
+              </p>
             </div>
 
             <div className="foundation-header__actions">
@@ -225,9 +233,10 @@ export function VisualFoundation() {
                   <div className="foundation-line__content foundation-line__content--stack">
                     <Input
                       label="Project title"
-                      value="The Silent Editor"
-                      hint="Shared input styling for forms and secondary settings."
-                      readOnly
+                      name="demoProjectTitle"
+                      value={demoProjectTitle}
+                      hint="Campo editable para probar foco, texto y estilos."
+                      onChange={(event) => setDemoProjectTitle(event.target.value)}
                     />
                   </div>
                 </section>

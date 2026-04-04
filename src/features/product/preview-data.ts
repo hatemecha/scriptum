@@ -65,7 +65,7 @@ function createProjectTitleFromId(projectId: string): string {
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
 
-  return readableTitle || "Sin titulo";
+  return readableTitle || "Sin título";
 }
 
 function createProject(project: Omit<PreviewProject, "estimatedPages">): PreviewProject {
@@ -222,7 +222,7 @@ export const previewProjects: readonly PreviewProject[] = [
     blocks: silentEditorBlocks,
     id: "the-silent-editor",
     lastEditedLabel: "hace 2 horas",
-    summary: "Un guion sobre una pagina que exige silencio antes de dejarse terminar.",
+    summary: "Un guión sobre una página que exige silencio antes de dejarse terminar.",
     title: "The Silent Editor",
   }),
   createProject({
@@ -230,15 +230,15 @@ export const previewProjects: readonly PreviewProject[] = [
     blocks: unmarkedMorningBlocks,
     id: "manana-sin-mapa",
     lastEditedLabel: "ayer",
-    summary: "Una salida sin mapa que convierte cada desvio en una declaracion.",
-    title: "Manana sin mapa",
+    summary: "Una salida sin mapa que convierte cada desvío en una declaración.",
+    title: "Mañana sin mapa",
   }),
   createProject({
     author: "Elena Costa",
     blocks: lateCallBlocks,
     id: "last-call",
     lastEditedLabel: "3 abr 2026",
-    summary: "La ultima llamada de un estudio que no sabe si esta a punto de cerrar o de empezar.",
+    summary: "La última llamada de un estudio que no sabe si está a punto de cerrar o de empezar.",
     title: "Last Call",
   }),
 ] as const;

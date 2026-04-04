@@ -8,6 +8,7 @@ export const routes = {
   home: "/",
   login: "/login",
   playgroundFoundation: "/playground/foundation",
+  playgroundPrototype: "/playground/prototype",
   projects: "/projects",
   register: "/register",
   settings: "/settings",
@@ -16,7 +17,7 @@ export const routes = {
 
 export const publicNavigation: NavigationItem[] = [
   {
-    description: "Architecture checkpoint and product direction.",
+    description: "Marketing landing and product entry.",
     href: routes.home,
     label: "Home",
   },

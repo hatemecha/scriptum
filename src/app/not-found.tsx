@@ -8,7 +8,7 @@ export default function NotFoundPage() {
     <StatePanel
       eyebrow="Routing / 404"
       title="Esta ruta no existe"
-      description="La pagina que buscas quedo fuera del flujo principal del producto."
+      description="La página que buscas no está en este flujo."
       secondaryDescription="Vuelve al inicio o abre tus proyectos."
       tone="danger"
       actions={

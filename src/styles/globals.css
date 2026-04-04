@@ -1,9 +1,15 @@
+/*
+  Acento (tema claro): verde bosque sobre papel, sin azul frío.
+  Futuro (cuenta / ajustes): el usuario podrá sobrescribir --color-accent,
+  --color-accent-strong, --color-accent-soft y --color-accent-soft-strong en <html>
+  (misma firma que abajo) desde preferencias persistidas.
+*/
 :root {
   color-scheme: light;
-  --color-accent: #24476f;
-  --color-accent-strong: #1b3654;
-  --color-accent-soft: rgba(36, 71, 111, 0.08);
-  --color-accent-soft-strong: rgba(36, 71, 111, 0.14);
+  --color-accent: #355a4d;
+  --color-accent-strong: #284238;
+  --color-accent-soft: rgba(53, 90, 77, 0.1);
+  --color-accent-soft-strong: rgba(53, 90, 77, 0.18);
   --color-background: #ebe3d7;
   --color-backdrop: rgba(28, 26, 24, 0.3);
   --color-border-subtle: #c9c0b5;
@@ -14,8 +20,8 @@
     rgba(244, 238, 231, 0.96) 0%,
     rgba(236, 228, 218, 0.9) 100%
   );
-  --color-focus-ring: rgba(36, 71, 111, 0.34);
-  --color-focus-shadow: rgba(36, 71, 111, 0.08);
+  --color-focus-ring: rgba(53, 90, 77, 0.38);
+  --color-focus-shadow: rgba(53, 90, 77, 0.08);
   --color-foreground: #191613;
   --color-input-background: rgba(246, 240, 233, 0.96);
   --color-input-background-hover: rgba(250, 245, 239, 1);
@@ -28,7 +34,7 @@
     linear-gradient(180deg, rgba(248, 243, 236, 0.96), rgba(243, 236, 227, 0.98)),
     var(--color-paper);
   --color-page-end: #e7ddcf;
-  --color-page-glow-1: rgba(36, 71, 111, 0.08);
+  --color-page-glow-1: rgba(53, 90, 77, 0.07);
   --color-page-glow-2: rgba(159, 69, 55, 0.04);
   --color-page-start: #f1e8dc;
   --color-placeholder: rgba(87, 80, 72, 0.76);
@@ -42,10 +48,10 @@
   --color-toast-surface: rgba(241, 233, 224, 0.98);
   --color-warning: #8d6221;
   --color-warning-soft: rgba(141, 98, 33, 0.1);
-  --control-primary-border: rgba(36, 71, 111, 0.18);
-  --control-primary-hover: #1f3f62;
-  --control-primary-shadow: rgba(36, 71, 111, 0.08);
-  --control-primary-start: #24476f;
+  --control-primary-border: rgba(53, 90, 77, 0.22);
+  --control-primary-hover: #2d4d42;
+  --control-primary-shadow: rgba(53, 90, 77, 0.1);
+  --control-primary-start: #355a4d;
   --control-primary-text: #f4efe8;
   --font-script: "Courier Prime", "Courier New", monospace;
   --font-ui: "Manrope", "Segoe UI", sans-serif;
@@ -577,6 +583,8 @@ button:disabled {
 .ui-field {
   display: grid;
   gap: var(--space-2);
+  min-width: 0;
+  width: 100%;
 }
 
 .ui-field__label-row {
@@ -612,16 +620,28 @@ button:disabled {
 
 .ui-input {
   width: 100%;
+  min-width: 0;
   min-height: 3rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--color-overlay-border-strong);
   border-radius: var(--radius-sm);
   background: var(--color-input-background);
   color: var(--color-foreground);
+  cursor: text;
+  -webkit-appearance: none;
+  appearance: none;
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base),
     background var(--transition-base);
+}
+
+.ui-input:-webkit-autofill,
+.ui-input:-webkit-autofill:hover,
+.ui-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-foreground);
+  box-shadow: 0 0 0 100rem var(--color-input-background) inset;
+  transition: background-color 9999s ease-out;
 }
 
 .ui-input::placeholder {
@@ -962,6 +982,19 @@ button:disabled {
   color: var(--color-muted);
   font-size: 1rem;
   line-height: 1.75;
+}
+
+.foundation-prototype-link {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-accent-soft-strong);
+  transition: color var(--transition-base), border-color var(--transition-base);
+}
+
+.foundation-prototype-link:hover {
+  color: var(--color-accent-strong);
+  border-bottom-color: var(--color-accent-strong);
 }
 
 .foundation-header__actions {

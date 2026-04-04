@@ -18,14 +18,14 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
   }, [error]);
 
   return (
-    <html lang="en">
+    <html lang="es">
       <body className="app-body">
         <PublicLayout>
           <StatePanel
             eyebrow="Global / Error"
-            title="Algo salio mal"
-            description="La aplicacion encontro un error inesperado."
-            secondaryDescription="Recarga la pagina o vuelve al inicio."
+            title="Algo salió mal"
+            description="La aplicación encontró un error inesperado."
+            secondaryDescription="Recarga la página o vuelve al inicio."
             tone="danger"
             actions={
               <>
@@ -36,7 +36,7 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
                   data-variant="primary"
                   onClick={() => reset()}
                 >
-                  Recargar pagina
+                  Recargar página
                 </button>
                 <Link
                   href={routes.home}

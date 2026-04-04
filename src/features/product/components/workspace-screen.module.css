@@ -181,6 +181,10 @@
   gap: 0.75rem;
 }
 
+.fieldInline :global(.ui-field) {
+  min-width: 0;
+}
+
 .fieldMessage {
   margin: 0;
   color: var(--color-danger);
@@ -266,6 +270,7 @@
 
 .editorTitleInput {
   width: min(100%, 20rem);
+  min-width: 0;
   padding: 0.35rem 0.45rem;
   border: 1px solid transparent;
   border-radius: 0.7rem;
@@ -273,6 +278,9 @@
   color: var(--color-foreground);
   font-size: 1rem;
   font-weight: 700;
+  cursor: text;
+  -webkit-appearance: none;
+  appearance: none;
   transition:
     border-color var(--transition-base),
     background var(--transition-base),

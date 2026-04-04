@@ -251,14 +251,22 @@
 
 ## Día 13 — Prototipo interno
 
-- [ ] Crear wireframes rápidos
-- [ ] Crear prototipo navegable básico
-- [ ] Revisar flujo de escritura completo
-- [ ] Ajustar diseño antes del desarrollo fuerte
+- [x] Crear wireframes rápidos
+- [x] Crear prototipo navegable básico
+- [x] Revisar flujo de escritura completo
+- [x] Ajustar diseño antes del desarrollo fuerte
 
 ### Validación
 
-- [ ] El flujo principal está claro antes de programar fuerte
+- [x] El flujo principal está claro antes de programar fuerte
+
+---
+
+## Puerta a Fase 4 (auditoría de código)
+
+Última revisión: **2026-04-04**. El repositorio cumple **Fase 3 (Días 11–13)** en código: pantallas principales con vista previa, estados visuales vía `?state=` y `?export=` (`src/features/product/view-states.ts`), modal de exportación en el editor, playground interno con mapa en `/playground/prototype`, y documentación alineada (`SCREENS_DAY11.md`, `VISUAL_STATES_DAY12.md`, `PROTOTYPE_DAY13.md`). Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS).
+
+Antes de arrancar Fase 4 en una sesión nueva: ejecutar en local `npm run lint` y `npm run build`, y recorrer el mapa del prototipo para validar estados críticos.
 
 ---
 

@@ -9,95 +9,154 @@ import {
 
 import styles from "./landing-page.module.css";
 
-const landingHighlights = [
+const highlights = [
   {
-    description: "Tu guion sigue el estandar sin que tengas que pensar en ello.",
-    title: "Formato profesional",
+    description:
+      "Te ocupas de la historia; nosotros de sangrías, mayúsculas y ritmo visual. Sin plantillas rígidas ni menús eternos.",
+    title: "Formato de estudio",
   },
   {
-    description: "Descarga tu guion listo para enviar en un solo paso.",
-    title: "Exporta a PDF",
+    description:
+      "Un clic y tenés un PDF presentable para leer, compartir o enviar. Nada de retoques manuales antes de la lectura.",
+    title: "PDF listo",
   },
   {
-    description: "Abre, escribe, exporta. Nada mas.",
-    title: "Sin friccion",
+    description:
+      "Menos paneles, más páginas. Pensado para escribir con el teclado y no perder el hilo.",
+    title: "Flujo limpio",
   },
 ] as const;
 
 export function LandingPage() {
-  const previewProject = getPreviewProject("the-silent-editor");
-  const previewScenes = getPreviewScenes(previewProject.blocks).slice(0, 3);
-  const previewLines = getPreviewLines(previewProject.blocks).slice(0, 6);
+  const project = getPreviewProject("the-silent-editor");
+  const scenes = getPreviewScenes(project.blocks).slice(0, 3);
+  const lines = getPreviewLines(project.blocks).slice(0, 6);
 
   return (
-    <div className={styles.page}>
+    <div className={styles.landing}>
       <section className={styles.hero}>
-        <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Paper-first screenplay editor</p>
-          <h1 className={styles.title}>Escribe guiones con formato profesional.</h1>
-          <p className={styles.description}>
-            Un editor limpio para abrir un proyecto, entrar al texto y salir con un PDF listo.
-          </p>
+        <p className={styles.heroKicker}>Editor de guion cinematográfico</p>
+        <h1 className={styles.headline}>
+          Tu historia, con formato profesional desde el primer párrafo.
+        </h1>
+        <p className={styles.subheadline}>
+          Abrí un proyecto, escribí en una página clara y bajá un PDF listo para leer o enviar. Sin
+          suites recargadas ni curva de aprendizaje absurda.
+        </p>
+        <p className={styles.heroProof} aria-hidden="true">
+          <span>Escenas</span>
+          <span className={styles.heroProofDot} />
+          <span>Autoguardado</span>
+          <span className={styles.heroProofDot} />
+          <span>Exportación PDF</span>
+        </p>
+        <div className={styles.actions}>
+          <Link
+            href={routes.register}
+            className="ui-button"
+            data-size="lg"
+            data-variant="primary"
+          >
+            Empezar gratis
+          </Link>
+          <Link
+            href={routes.login}
+            className="ui-button"
+            data-size="lg"
+            data-variant="secondary"
+          >
+            Iniciar sesión
+          </Link>
+        </div>
+      </section>
 
-          <div className={styles.heroActions}>
+      <section className={styles.preview} aria-labelledby="preview-heading">
+        <div className={styles.previewLead}>
+          <div>
+            <p className={styles.kicker}>Así se ve adentro</p>
+            <h2 id="preview-heading" className={styles.sectionTitle}>
+              El guion al centro. El resto, en segundo plano.
+            </h2>
+            <p className={styles.previewLeadCopy}>
+              Vista previa real del modelo de bloques: encabezados, personaje, dialogo y escenas
+              ordenadas como en un guion de verdad.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.previewGrid}>
+          <div className={styles.scriptStage}>
+            <article className={styles.paper}>
+              {lines.map((line) => (
+                <p key={line.id} className={styles.scriptLine} data-line-type={line.type}>
+                  {line.text}
+                </p>
+              ))}
+            </article>
+          </div>
+
+          <aside className={styles.sceneColumn}>
+            <p className={styles.kicker}>Escenas</p>
+            <ol className={styles.sceneList}>
+              {scenes.map((scene, index) => (
+                <li
+                  key={scene.id}
+                  className={styles.sceneItem}
+                  data-active={index === 0 ? "true" : "false"}
+                >
+                  <span className={styles.sceneIndex}>{scene.indexLabel}</span>
+                  <span className={styles.sceneTitle}>{scene.heading}</span>
+                </li>
+              ))}
+            </ol>
+            <div className={styles.sceneMeta}>
+              <span>Guardado</span>
+              <span>~{project.estimatedPages} páginas</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section className={styles.values} aria-labelledby="values-heading">
+        <div className={styles.valuesIntro}>
+          <p className={styles.kicker}>Por qué elegir Scriptum</p>
+          <h2 id="values-heading" className={styles.sectionTitle}>
+            Menos fricción. Más páginas que valgan la pena.
+          </h2>
+        </div>
+        <ul className={styles.valueList}>
+          {highlights.map((item) => (
+            <li key={item.title} className={styles.valueItem}>
+              <h3 className={styles.valueTitle}>{item.title}</h3>
+              <p className={styles.valueDescription}>{item.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className={styles.closing} aria-label="Llamada a la accion">
+        <div className={styles.closingInner}>
+          <h2 className={styles.closingTitle}>¿Listo para tu próximo borrador?</h2>
+          <p className={styles.closingCopy}>
+            Creá tu cuenta gratis y entra al editor en minutos. Sin tarjeta para empezar.
+          </p>
+          <div className={styles.closingActions}>
             <Link
               href={routes.register}
               className="ui-button"
               data-size="lg"
               data-variant="primary"
             >
-              Empezar gratis
+              Crear cuenta
             </Link>
-            <Link href={routes.login} className="ui-button" data-size="lg" data-variant="secondary">
-              Iniciar sesion
+            <Link href={routes.login} className={styles.closingLink}>
+              Ya tengo cuenta
             </Link>
           </div>
         </div>
-
-        <div className={styles.heroPreview}>
-          <div className={styles.previewSidebar}>
-            <div>
-              <p className={styles.previewLabel}>Escenas</p>
-              <ol className={styles.sceneList}>
-                {previewScenes.map((scene, index) => (
-                  <li
-                    key={scene.id}
-                    className={styles.sceneItem}
-                    data-active={index === 0 ? "true" : "false"}
-                  >
-                    <span className={styles.sceneIndex}>{scene.indexLabel}</span>
-                    <span className={styles.sceneTitle}>{scene.heading}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className={styles.previewMeta}>
-              <span>Guardado</span>
-              <span>{previewProject.estimatedPages} paginas aprox.</span>
-            </div>
-          </div>
-
-          <article className={styles.previewPaper}>
-            {previewLines.map((line) => (
-              <p key={line.id} className={styles.scriptLine} data-line-type={line.type}>
-                {line.text}
-              </p>
-            ))}
-          </article>
-        </div>
       </section>
 
-      <section className={styles.values}>
-        {landingHighlights.map((highlight) => (
-          <article key={highlight.title} className={styles.valueCard}>
-            <h2 className={styles.valueTitle}>{highlight.title}</h2>
-            <p className={styles.valueDescription}>{highlight.description}</p>
-          </article>
-        ))}
-      </section>
-
-      <footer className={styles.footer}>(c) 2026 SCRIPTUM</footer>
+      <footer className={styles.footer}>&copy; 2026 SCRIPTUM</footer>
     </div>
   );
 }

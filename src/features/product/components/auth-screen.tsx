@@ -34,10 +34,10 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
     password: "",
   });
   const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>(() =>
-    isRegister && viewState === "error" ? { email: "Este correo ya esta registrado." } : {},
+    isRegister && viewState === "error" ? { email: "Este correo ya está registrado." } : {},
   );
   const [formError, setFormError] = useState<string | undefined>(
-    !isRegister && viewState === "error" ? "Correo o contrasena incorrectos." : undefined,
+    !isRegister && viewState === "error" ? "Correo o contraseña incorrectos." : undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -76,13 +76,13 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
     if (values.email.trim().length === 0) {
       nextErrors.email = "Este campo es obligatorio.";
     } else if (!values.email.includes("@")) {
-      nextErrors.email = "Ingresa un correo valido.";
+      nextErrors.email = "Ingresa un correo válido.";
     }
 
     if (values.password.trim().length === 0) {
       nextErrors.password = "Este campo es obligatorio.";
     } else if (isRegister && values.password.trim().length < 8) {
-      nextErrors.password = "La contrasena debe tener al menos 8 caracteres.";
+      nextErrors.password = "La contraseña debe tener al menos 8 caracteres.";
     }
 
     return nextErrors;
@@ -107,10 +107,10 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
     if (viewState === "error") {
       if (isRegister) {
         setFieldErrors({
-          email: "Este correo ya esta registrado.",
+          email: "Este correo ya está registrado.",
         });
       } else {
-        setFormError("Correo o contrasena incorrectos.");
+        setFormError("Correo o contraseña incorrectos.");
       }
 
       return;
@@ -129,7 +129,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
       <div className={styles.card}>
         <header className={styles.cardHeader}>
           <p className={styles.eyebrow}>Public / {isRegister ? "Registro" : "Login"}</p>
-          <h1 className={styles.title}>{isRegister ? "Crea tu cuenta" : "Inicia sesion"}</h1>
+          <h1 className={styles.title}>{isRegister ? "Crea tu cuenta" : "Inicia sesión"}</h1>
           <p className={styles.description}>
             {isRegister
               ? "Crea una cuenta minima para abrir proyectos y empezar a escribir."
@@ -141,8 +141,9 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
           {isRegister ? (
             <Input
               autoComplete="name"
+              name="name"
               label="Nombre"
-              placeholder="Como quieres que te llamemos"
+              placeholder="Cómo quieres que te llamemos"
               value={values.name}
               error={fieldErrors.name}
               onChange={(event) => handleFieldChange("name", event.target.value)}
@@ -153,7 +154,8 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
 
           <Input
             autoComplete="email"
-            label="Correo electronico"
+            name="email"
+            label="Correo electrónico"
             placeholder="tu@correo.com"
             type="email"
             value={values.email}
@@ -165,7 +167,8 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
 
           <Input
             autoComplete={isRegister ? "new-password" : "current-password"}
-            label="Contrasena"
+            name="password"
+            label="Contraseña"
             type="password"
             value={values.password}
             error={fieldErrors.password}
@@ -181,16 +184,16 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
               {isPending
                 ? isRegister
                   ? "Creando cuenta..."
-                  : "Iniciando sesion..."
+                  : "Iniciando sesión..."
                 : isRegister
                   ? "Crear cuenta"
-                  : "Iniciar sesion"}
+                  : "Iniciar sesión"}
             </Button>
 
             <div className={styles.secondaryLinks}>
               {!isRegister ? (
                 <Link href={routes.home} className={styles.supportLink}>
-                  Olvidaste tu contrasena?
+                  ¿Olvidaste tu contraseña?
                 </Link>
               ) : null}
 
@@ -201,7 +204,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
                     href={isRegister ? routes.login : routes.register}
                     className={styles.secondaryLink}
                   >
-                    {isRegister ? "Iniciar sesion" : "Crear cuenta"}
+                    {isRegister ? "Iniciar sesión" : "Crear cuenta"}
                   </Link>
                 </span>
               </p>
@@ -211,7 +214,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
 
         <footer className={styles.cardFooter}>
           {isOffline
-            ? "Puedes completar los campos, pero necesitas conexion para continuar."
+            ? "Puedes rellenar el formulario; hace falta conexión para continuar."
             : "Sin friccion: una sola accion, una sola pantalla, un solo siguiente paso."}
         </footer>
       </div>

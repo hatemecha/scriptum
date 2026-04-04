@@ -26,50 +26,39 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     <div className={styles.publicShell}>
       {isOffline ? (
         <div className={styles.connectionBanner} role="status">
-          Sin conexion. Tus cambios se guardan localmente.
+          Sin conexión. Tus cambios se guardan en local.
         </div>
       ) : null}
 
       <header className={styles.publicHeader}>
-        <div className={styles.brandBlock}>
-          <Link href={routes.home} className={styles.brand}>
-            {siteConfig.name}
-          </Link>
-          <span className={styles.brandNote}>
-            Editor limpio, formato automatico, exportacion PDF.
-          </span>
-        </div>
+        <Link href={routes.home} className={styles.publicBrand}>
+          {siteConfig.name}
+        </Link>
 
-        <div className={styles.headerMid}>
-          <nav className={styles.publicNav} aria-label="Public navigation">
-            {isHomeRoute ? (
-              <Link href={routes.login} className={styles.navLink}>
-                Iniciar sesion
-              </Link>
-            ) : isRegisterRoute ? (
-              <Link href={routes.login} className={styles.navLink}>
-                Iniciar sesion
-              </Link>
-            ) : null}
+        <nav className={styles.publicNav} aria-label="Navegación pública">
+          {isHomeRoute || isRegisterRoute ? (
+            <Link href={routes.login} className={styles.publicLink}>
+              Iniciar sesión
+            </Link>
+          ) : null}
 
-            {isHomeRoute ? (
-              <Link
-                href={routes.register}
-                className="ui-button"
-                data-size="md"
-                data-variant="primary"
-              >
-                Crear cuenta
-              </Link>
-            ) : isLoginRoute ? (
-              <Link href={routes.register} className={styles.navLink}>
-                Crear cuenta
-              </Link>
-            ) : null}
-          </nav>
+          {isHomeRoute ? (
+            <Link
+              href={routes.register}
+              className="ui-button"
+              data-size="md"
+              data-variant="primary"
+            >
+              Crear cuenta
+            </Link>
+          ) : isLoginRoute ? (
+            <Link href={routes.register} className={styles.publicLink}>
+              Crear cuenta
+            </Link>
+          ) : null}
 
           <ThemeToggle />
-        </div>
+        </nav>
       </header>
 
       <main className={styles.publicMain}>{children}</main>

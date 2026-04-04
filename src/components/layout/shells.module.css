@@ -1,4 +1,52 @@
-.publicShell,
+/* Public shell — open, transparent, foundation philosophy without foundation markup */
+
+.publicShell {
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
+  padding: clamp(1.25rem, 3vw, 2.2rem) clamp(1.25rem, 4vw, 2.8rem);
+  background: var(--color-background);
+}
+
+.publicHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.publicBrand {
+  color: var(--color-foreground);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.publicNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.publicLink {
+  color: var(--color-muted);
+  font-size: 0.94rem;
+  font-weight: 600;
+  transition: color var(--transition-base);
+}
+
+.publicLink:hover {
+  color: var(--color-accent);
+}
+
+.publicMain {
+  min-width: 0;
+}
+
+/* Dashboard shell — container header, authenticated chrome */
+
 .dashboardShell {
   min-height: 100vh;
   display: grid;
@@ -18,7 +66,6 @@
   line-height: 1.6;
 }
 
-.publicHeader,
 .dashboardHeader {
   display: flex;
   align-items: center;
@@ -60,7 +107,6 @@
   line-height: 1.5;
 }
 
-.publicNav,
 .dashboardNav {
   display: flex;
   align-items: center;
@@ -68,7 +114,6 @@
   flex-wrap: wrap;
 }
 
-.navLink,
 .dashboardLink,
 .userLink {
   display: inline-flex;
@@ -88,7 +133,6 @@
     color var(--transition-base);
 }
 
-.navLink:hover,
 .dashboardLink:hover,
 .userLink:hover {
   border-color: var(--color-accent-soft-strong);
@@ -136,13 +180,11 @@
   line-height: 1.2;
 }
 
-.publicMain,
 .dashboardMain {
   min-width: 0;
 }
 
 @media (max-width: 880px) {
-  .publicHeader,
   .dashboardHeader {
     flex-direction: column;
     align-items: flex-start;
@@ -150,7 +192,11 @@
 }
 
 @media (max-width: 640px) {
-  .publicShell,
+  .publicShell {
+    padding: var(--space-4) var(--space-3);
+    gap: var(--space-5);
+  }
+
   .dashboardShell {
     padding: var(--space-3);
   }
@@ -159,12 +205,10 @@
     width: 100%;
   }
 
-  .publicNav,
   .dashboardNav {
     width: 100%;
   }
 
-  .navLink,
   .dashboardLink,
   .userLink {
     width: 100%;
