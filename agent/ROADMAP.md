@@ -317,45 +317,45 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 17 — Gestión de proyectos
 
-- [ ] Implementar crear proyecto
-- [ ] Implementar listar proyectos
-- [ ] Implementar abrir proyecto
-- [ ] Implementar renombrar proyecto
-- [ ] Implementar eliminar proyecto
-- [ ] Implementar archivado si entra en V1
-- [ ] Ordenar por fecha de edición
+- [x] Implementar crear proyecto
+- [x] Implementar listar proyectos
+- [x] Implementar abrir proyecto
+- [x] Implementar renombrar proyecto
+- [x] Implementar eliminar proyecto
+- [x] Implementar archivado si entra en V1
+- [x] Ordenar por fecha de edición
 
 ### Validación
 
-- [ ] El ciclo completo de proyecto ya funciona
+- [x] El ciclo completo de proyecto ya funciona
 
 ---
 
 ## Día 18 — Metadatos del proyecto
 
-- [ ] Guardar título del guion
-- [ ] Guardar autor
-- [ ] Guardar descripción opcional
-- [ ] Guardar fecha de modificación
-- [ ] Guardar estado del proyecto
+- [x] Guardar título del guion
+- [x] Guardar autor
+- [x] Guardar descripción opcional
+- [x] Guardar fecha de modificación
+- [x] Guardar estado del proyecto
 
 ### Validación
 
-- [ ] Los proyectos tienen información útil y consistente
+- [x] Los proyectos tienen información útil y consistente
 
 ---
 
 ## Día 19 — UX del dashboard
 
-- [ ] Asegurar carga rápida
-- [ ] Mostrar proyectos recientes
-- [ ] Mostrar estado vacío claro
-- [ ] Mostrar botón claro de nuevo proyecto
+- [x] Asegurar carga rápida
+- [x] Mostrar proyectos recientes
+- [x] Mostrar estado vacío claro
+- [x] Mostrar botón claro de nuevo proyecto
 
 ### Validación
 
-- [ ] El dashboard no estorba
-- [ ] El usuario entiende qué hacer en segundos
+- [x] El dashboard no estorba
+- [x] El usuario entiende qué hacer en segundos
 
 ---
 
@@ -363,67 +363,67 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 20 — Integración del editor
 
-- [ ] Integrar Lexical
-- [ ] Crear instancia base del editor
-- [ ] Configurar tema visual del editor
-- [ ] Implementar documento inicial vacío
-- [ ] Implementar render básico
-- [ ] Verificar estabilidad mínima de edición
+- [x] Integrar Lexical
+- [x] Crear instancia base del editor
+- [x] Configurar tema visual del editor
+- [x] Implementar documento inicial vacío
+- [x] Implementar render básico
+- [x] Verificar estabilidad mínima de edición
 
 ### Validación
 
-- [ ] El editor abre
-- [ ] El cursor funciona bien
-- [ ] No hay glitches graves
+- [x] El editor abre
+- [x] El cursor funciona bien
+- [x] No hay glitches graves
 
 ---
 
 ## Día 21 — Implementación de bloques
 
-- [ ] Implementar `Scene Heading`
-- [ ] Implementar `Action`
-- [ ] Implementar `Character`
-- [ ] Implementar `Dialogue`
-- [ ] Implementar `Parenthetical`
-- [ ] Implementar `Transition`
-- [ ] Implementar conversión entre bloques
-- [ ] Verificar estilos correctos de cada bloque
+- [x] Implementar `Scene Heading`
+- [x] Implementar `Action`
+- [x] Implementar `Character`
+- [x] Implementar `Dialogue`
+- [x] Implementar `Parenthetical`
+- [x] Implementar `Transition`
+- [x] Implementar conversión entre bloques
+- [x] Verificar estilos correctos de cada bloque
 
 ### Validación
 
-- [ ] Todos los bloques renderizan correctamente
-- [ ] El documento conserva estructura válida
+- [x] Todos los bloques renderizan correctamente
+- [x] El documento conserva estructura válida
 
 ---
 
 ## Día 22 — Teclado y flujo
 
-- [ ] Implementar `Enter`
-- [ ] Implementar `Tab`
-- [ ] Implementar `Shift + Tab`
-- [ ] Implementar navegación con flechas
-- [ ] Implementar borrado consistente
-- [ ] Implementar creación automática del siguiente bloque
-- [ ] Implementar casos borde iniciales
+- [x] Implementar `Enter`
+- [x] Implementar `Tab`
+- [x] Implementar `Shift + Tab`
+- [x] Implementar navegación con flechas
+- [x] Implementar borrado consistente
+- [x] Implementar creación automática del siguiente bloque
+- [x] Implementar casos borde iniciales
 
 ### Validación
 
-- [ ] Se puede escribir sin pelear con el editor
-- [ ] El flujo se siente natural
+- [x] Se puede escribir sin pelear con el editor
+- [x] El flujo se siente natural
 
 ---
 
 ## Día 23 — Experiencia real de escritura
 
-- [ ] Eliminar latencia perceptible
-- [ ] Asegurar foco correcto del cursor
-- [ ] Corregir inconsistencias entre bloques
-- [ ] Eliminar saltos visuales molestos
-- [ ] Probar sesiones de escritura largas
+- [x] Eliminar latencia perceptible
+- [x] Asegurar foco correcto del cursor
+- [x] Corregir inconsistencias entre bloques
+- [x] Eliminar saltos visuales molestos
+- [x] Probar sesiones de escritura largas
 
 ### Validación
 
-- [ ] El editor ya se siente cómodo de verdad
+- [x] El editor ya se siente cómodo de verdad
 
 ---
 
@@ -844,6 +844,8 @@ _(ninguno registrado hasta la fecha)_
 - [x] Día 13 (auditoría): el idioma de la interfaz de usuario queda fijado en español (`lang="es"` en el HTML root); los identificadores y comentarios de código se mantienen en inglés según Day 7
 - [x] Día 15: tabla `public.profiles` (migración `supabase/migrations`), trigger post-registro en `auth.users`, RLS alineada con Day 10, tipos `Database` en `src/lib/supabase/types.ts`, módulo `src/features/user/profile.ts` (`ensureUserProfile`, preferencias JSON, plan, onboarding, fechas), sincronización en layout autenticado y `auth/callback`, y ajustes leyendo/escribiendo perfil real
 - [x] Día 16: middleware alineado con `securityBaseProtectedRoutePrefixes`, bloqueo de `/projects` y `/settings` sin sesión (también si falta config pública de Supabase), `next` sanitizado (`getSafeRedirectPath`), comprobación de propiedad en `projects/[projectId]` con tabla `public.projects` + RLS (`canAccessProjectEditor`), demos de editor acotadas por `authenticatedEditorPrototypeProjectIds`
+- [x] Pre-Día 17: migración `document_snapshots` agregada con RLS (`SELECT/INSERT` owner-only), inmutabilidad por diseño (sin `UPDATE/DELETE` grants), unicidad por `(project_id, revision)` y FK diferida `projects(id,current_snapshot_id) -> document_snapshots(project_id,id)` para asegurar que el snapshot activo pertenezca al mismo proyecto
+- [x] Día 17–19: módulo `src/features/projects/projects.ts` con CRUD completo contra `public.projects` (create, list, get, rename, updateMetadata, archive/unarchive, delete soft), `projects-screen.tsx` reescrito de datos preview a datos reales vía Supabase, acciones inline (menú ⋯ con renombrar, detalles, archivar, eliminar), modales de rename/delete/metadata, filtro Todos/Activos/Archivados, `DashboardLayout` usa perfil real del usuario en lugar de `previewUser`, page server-side fetcha proyectos y determina viewState, build y lint pasan sin errores
 
 ## Cosas que NO entrarían en V1
 

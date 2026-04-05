@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { routes } from "@/config/routes";
+import { ScreenplayEditor } from "@/features/editor/components/ScreenplayEditor";
+import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import {
   getPreviewLines,
   getPreviewProject,
@@ -109,20 +111,21 @@ function EditorLoadingScreen({ title }: { title: string }) {
   return (
     <div className={styles.editorShell}>
       <header className={styles.editorHeader}>
-        <div className={styles.editorHeaderStart}>
-          <Link href={routes.projects} className={styles.editorBreadcrumb}>
-            SCRIPTUM
+        <div className={styles.editorHeaderLeading}>
+          <Link href={routes.projects} className={styles.editorBack}>
+            ← Proyectos
           </Link>
-          <Skeleton height="1.2rem" width="12rem" radius="999px" />
+          <div className={styles.editorTitleCluster}>
+            <Skeleton height="1.35rem" width="min(14rem, 42vw)" radius="0.5rem" />
+            <span className={cn(styles.editorStatus, styles.editorStatusMuted)}>Cargando…</span>
+          </div>
         </div>
 
-        <div className={styles.editorHeaderCenter}>
-          <span className={cn(styles.editorStatus, styles.editorStatusMuted)}>Cargando...</span>
-        </div>
-
-        <div className={styles.editorHeaderEnd}>
-          <ThemeToggle />
-          <Skeleton height="2.5rem" width="7rem" radius="0.75rem" />
+        <div className={styles.editorHeaderActions}>
+          <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
+          <Skeleton height="2.25rem" width="4.5rem" radius="0.65rem" />
+          <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
+          <Skeleton height="2.25rem" width="5.5rem" radius="0.75rem" />
         </div>
       </header>
 
@@ -188,6 +191,14 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
   const [isExportModalOpen, setIsExportModalOpen] = useState(initialExportState !== "closed");
   const [exportState, setExportState] = useState<LocalExportState>(
     initialExportState === "closed" ? "ready" : initialExportState,
+  );
+  const [activeBlockType, setActiveBlockType] = useState<ScreenplayBlockType>("action");
+
+  const handleBlockTypeChange = useCallback(
+    (blockType: ScreenplayBlockType) => {
+      setActiveBlockType(blockType);
+    },
+    [],
   );
 
   useEffect(() => {
@@ -262,8 +273,6 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     : (previewScenes[0]?.id ?? null);
   const activeScene =
     previewScenes.find((scene) => scene.id === resolvedSceneId) ?? previewScenes[0] ?? null;
-  const visibleBlockType =
-    viewState === "empty" ? "Action" : activeScene ? "Scene Heading" : "Action";
 
   function queueSaveConfirmation() {
     if (saveTimeoutRef.current) {
@@ -357,40 +366,72 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
       ) : null}
 
       <header className={styles.editorHeader}>
-        <div className={styles.editorHeaderStart}>
-          <Link href={routes.projects} className={styles.editorBreadcrumb}>
-            SCRIPTUM
+        <div className={styles.editorHeaderLeading}>
+          <Link href={routes.projects} className={styles.editorBack}>
+            ← Proyectos
           </Link>
-          <input
-            type="text"
-            className={styles.editorTitleInput}
-            aria-label="Título del proyecto"
-            value={projectTitle}
-            onChange={(event) => handleTitleChange(event.target.value)}
-          />
+          <div className={styles.editorTitleCluster}>
+            <input
+              type="text"
+              className={styles.editorTitleInput}
+              aria-label="Título del proyecto"
+              value={projectTitle}
+              onChange={(event) => handleTitleChange(event.target.value)}
+            />
+            <span
+              className={cn(styles.editorStatus, getStatusClassName(status.tone))}
+              role="status"
+              aria-live="polite"
+            >
+              {status.label}
+            </span>
+          </div>
         </div>
 
-        <div className={styles.editorHeaderCenter}>
-          <span className={cn(styles.editorStatus, getStatusClassName(status.tone))}>
-            {status.label}
-          </span>
-        </div>
-
-        <div className={styles.editorHeaderEnd}>
-          <ThemeToggle />
-          <Button variant="ghost" onClick={() => setIsSidebarVisible((current) => !current)}>
-            {isSidebarVisible ? "Ocultar escenas" : "Ver escenas"}
-          </Button>
-          <Button variant="secondary" onClick={handleOpenExportModal} disabled={isOffline}>
-            Exportar
-          </Button>
-          <Link href={routes.settings} className={styles.editorBreadcrumb}>
+        <div className={styles.editorHeaderActions}>
+          <button
+            type="button"
+            className={styles.editorIconButton}
+            onClick={() => setIsSidebarVisible((current) => !current)}
+            aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
+            aria-pressed={isSidebarVisible}
+          >
+            <svg
+              className={styles.editorScenesIcon}
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              aria-hidden={true}
+            >
+              <path
+                fill="currentColor"
+                d="M4 5h16v2H4V5zm0 6h10v2H4v-2zm0 6h16v2H4v-2z"
+              />
+            </svg>
+          </button>
+          <Link href={routes.settings} className={styles.editorHeaderQuiet}>
             Ajustes
           </Link>
+          <div className={styles.editorThemeToggle}>
+            <ThemeToggle />
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleOpenExportModal}
+            disabled={isOffline}
+          >
+            Exportar
+          </Button>
         </div>
       </header>
 
-      <div className={styles.editorWorkspace}>
+      <div
+        className={cn(
+          styles.editorWorkspace,
+          !isSidebarVisible && styles.editorWorkspaceSolo,
+        )}
+      >
         <aside
           className={cn(styles.editorSidebar, !isSidebarVisible && styles.editorSidebarHidden)}
           aria-label="Sidebar de escenas"
@@ -437,27 +478,19 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
         <main className={styles.editorCanvas}>
           <div className={styles.editorCanvasStage}>
             <article className={styles.editorPaper}>
-              {viewState === "empty" ? (
-                <div className={styles.blankActionLine} aria-label="Bloque Action vacío">
-                  <span className={styles.blankCaret} aria-hidden="true" />
-                </div>
-              ) : (
-                previewLines.map((line) => (
-                  <p
-                    key={line.id}
-                    className={cn(
-                      styles.editorLine,
-                      line.type === "scene-heading" && styles.editorLineSceneHeading,
-                      line.type === "character" && styles.editorLineCharacter,
-                      line.type === "dialogue" && styles.editorLineDialogue,
-                      line.type === "parenthetical" && styles.editorLineParenthetical,
-                      line.type === "transition" && styles.editorLineTransition,
-                    )}
-                  >
-                    {line.text}
-                  </p>
-                ))
-              )}
+              <ScreenplayEditor
+                initialBlocks={
+                  viewState === "empty"
+                    ? []
+                    : previewLines.map((line) => ({
+                        id: line.id,
+                        text: line.text,
+                        type: line.type,
+                      }))
+                }
+                onBlockTypeChange={handleBlockTypeChange}
+                placeholder="Empieza a escribir tu guión..."
+              />
             </article>
           </div>
         </main>
@@ -465,7 +498,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
 
       <footer className={styles.editorFooter}>
         <div className={styles.editorFooterMeta}>
-          <span>{visibleBlockType}</span>
+          <span>{activeBlockType.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
           <span>~{project.estimatedPages} páginas</span>
         </div>
         <div className={styles.editorFooterMeta}>

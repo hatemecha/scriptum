@@ -99,9 +99,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      document_snapshots: {
+        Row: {
+          id: string;
+          project_id: string;
+          owner_profile_id: string;
+          document_id: string;
+          revision: number;
+          snapshot_kind: string;
+          document_schema_version: number;
+          document_data: Json;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          project_id: string;
+          owner_profile_id: string;
+          document_id: string;
+          revision: number;
+          snapshot_kind?: string;
+          document_schema_version: number;
+          document_data: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          owner_profile_id?: string;
+          document_id?: string;
+          revision?: number;
+          snapshot_kind?: string;
+          document_schema_version?: number;
+          document_data?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      soft_delete_project: {
+        Args: { p_project_id: string };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

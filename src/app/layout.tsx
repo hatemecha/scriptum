@@ -8,6 +8,7 @@ import { siteConfig } from "@/config/site";
 import { DEFAULT_THEME_PREFERENCE, THEME_COOKIE_NAME, isThemePreference } from "@/lib/theme";
 
 import "@/styles/globals.css";
+import "@/features/editor/editor-blocks.css";
 
 const uiFont = Manrope({
   preload: false,

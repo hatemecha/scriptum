@@ -1,0 +1,191 @@
+/*
+  Screenplay block styles for the Lexical editor.
+  Applied via className strings on DOM nodes created by ScreenplayBlockNode.
+  Margins follow standard screenplay format (US Letter, Courier 12pt equivalent).
+*/
+
+.screenplay-editor-root {
+  outline: none;
+  min-height: 48rem;
+  caret-color: var(--color-foreground);
+  font-family: var(--font-script);
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--color-foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.screenplay-editor-root:focus {
+  outline: none;
+}
+
+.screenplay-editor-root::selection,
+.screenplay-editor-root *::selection {
+  background: var(--color-accent-soft-strong);
+}
+
+.screenplay-block {
+  margin: 0;
+  padding: 2px 0;
+  font-family: var(--font-script);
+  font-size: 1rem;
+  line-height: 1.62;
+  white-space: pre-wrap;
+  position: relative;
+  min-height: 1.62em;
+  border-radius: 2px;
+  transition:
+    margin-left 120ms ease,
+    margin-top 120ms ease,
+    text-align 120ms ease,
+    max-width 120ms ease;
+}
+
+.screenplay-block + .screenplay-block {
+  margin-top: 0.6rem;
+}
+
+/* Scene Heading */
+.screenplay-block--scene-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.screenplay-block--scene-heading + .screenplay-block {
+  margin-top: 0.6rem;
+}
+
+/* Action (default) */
+.screenplay-block--action {
+  /* full-width, preserve case — no extra rules needed */
+}
+
+/* Character */
+.screenplay-block--character {
+  text-transform: uppercase;
+  margin-top: 1.7rem;
+  margin-left: 41%;
+}
+
+.screenplay-block--character:first-child {
+  margin-top: 0;
+}
+
+.screenplay-block--scene-heading + .screenplay-block--character {
+  margin-top: 1.1rem;
+}
+
+/* Dialogue */
+.screenplay-block--dialogue {
+  max-width: 30ch;
+  margin-left: 30%;
+  margin-top: 0;
+}
+
+/* Parenthetical */
+.screenplay-block--parenthetical {
+  max-width: 20ch;
+  margin-left: 34%;
+  margin-top: 0;
+}
+
+/* Transition */
+.screenplay-block--transition {
+  text-transform: uppercase;
+  margin-top: 1.7rem;
+  text-align: right;
+}
+
+.screenplay-block--transition:first-child {
+  margin-top: 0;
+}
+
+/* Empty block placeholder hints */
+.screenplay-block:empty::before,
+.screenplay-block br:only-child {
+  color: var(--color-placeholder);
+}
+
+.screenplay-block--scene-heading:empty::after {
+  content: "INT./EXT. LOCATION - TIME";
+  color: var(--color-placeholder);
+  font-style: italic;
+  pointer-events: none;
+}
+
+.screenplay-block--character:empty::after {
+  content: "CHARACTER NAME";
+  color: var(--color-placeholder);
+  font-style: italic;
+  pointer-events: none;
+}
+
+.screenplay-block--dialogue:empty::after {
+  content: "Dialogue...";
+  color: var(--color-placeholder);
+  font-style: italic;
+  pointer-events: none;
+  text-transform: none;
+}
+
+.screenplay-block--parenthetical:empty::after {
+  content: "(beat)";
+  color: var(--color-placeholder);
+  font-style: italic;
+  pointer-events: none;
+}
+
+.screenplay-block--transition:empty::after {
+  content: "CUT TO:";
+  color: var(--color-placeholder);
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Text format classes (rarely used in screenplays, but available) */
+.screenplay-text-bold {
+  font-weight: 700;
+}
+
+.screenplay-text-italic {
+  font-style: italic;
+}
+
+.screenplay-text-underline {
+  text-decoration: underline;
+}
+
+/* Responsive overrides */
+@media (max-width: 960px) {
+  .screenplay-block--character {
+    margin-left: 28%;
+  }
+
+  .screenplay-block--dialogue {
+    margin-left: 16%;
+  }
+
+  .screenplay-block--parenthetical {
+    margin-left: 21%;
+  }
+}
+
+@media (max-width: 640px) {
+  .screenplay-block {
+    font-size: 0.96rem;
+  }
+
+  .screenplay-block--character {
+    margin-left: 24%;
+  }
+
+  .screenplay-block--dialogue {
+    max-width: 28ch;
+    margin-left: 13%;
+  }
+
+  .screenplay-block--parenthetical {
+    margin-left: 17%;
+  }
+}

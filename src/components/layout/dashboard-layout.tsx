@@ -6,19 +6,30 @@ import type { ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { routes } from "@/config/routes";
-import { previewUser } from "@/features/product/preview-data";
 import { cn } from "@/lib/cn";
 
 import styles from "./shells.module.css";
 
 type DashboardLayoutProps = {
   children: ReactNode;
+  userEmail: string;
+  userName: string;
 };
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+function createInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((segment) => segment.charAt(0).toUpperCase())
+    .join("");
+}
+
+export function DashboardLayout({ children, userEmail, userName }: DashboardLayoutProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isOffline = searchParams.get("state") === "offline";
+  const initials = createInitials(userName) || "U";
 
   return (
     <div className={styles.dashboardShell}>
@@ -61,10 +72,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         <Link href={routes.settings} className={styles.userLink}>
-          <span className={styles.userAvatar}>{previewUser.initials}</span>
+          <span className={styles.userAvatar}>{initials}</span>
           <span className={styles.userMeta}>
-            <span className={styles.userName}>{previewUser.name}</span>
-            <span className={styles.userSecondary}>{previewUser.email}</span>
+            <span className={styles.userName}>{userName}</span>
+            <span className={styles.userSecondary}>{userEmail}</span>
           </span>
         </Link>
       </header>
