@@ -264,9 +264,9 @@
 
 ## Puerta a Fase 4 (auditoría de código)
 
-Última revisión: **2026-04-04**. El repositorio cumple **Fase 3 (Días 11–13)** en código: pantallas principales con vista previa, estados visuales vía `?state=` y `?export=` (`src/features/product/view-states.ts`), modal de exportación en el editor, playground interno con mapa en `/playground/prototype`, y documentación alineada (`SCREENS_DAY11.md`, `VISUAL_STATES_DAY12.md`, `PROTOTYPE_DAY13.md`). Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS).
+Última revisión: **2026-04-05**. Auditoría completa contra especificaciones Días 1–13 ejecutada. Hallazgos corregidos: acento de marca documentado (verde #1e4d2b), paleta CSS sincronizada con DESIGN.md y SCREENS_DAY11.md, favicon actualizado, copy de pantallas alineado con Day 11 (título proyectos, empty state, nombre opcional en registro), estados del editor completados (Sin guardar, Error al guardar, Sincronizando...), toast de reconexión agregado, dead code eliminado (`RouteBlueprintPage`), referencia a `favicon.ico` inexistente removida, comentarios de código normalizados a inglés, y reference samples de screenplay ampliados.
 
-Antes de arrancar Fase 4 en una sesión nueva: ejecutar en local `npm run lint` y `npm run build`, y recorrer el mapa del prototipo para validar estados críticos.
+Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS). Antes de arrancar Fase 4: ejecutar `npm run lint` y `npm run build` para confirmar zero errors.
 
 ---
 
@@ -825,15 +825,10 @@ Antes de arrancar Fase 4 en una sesión nueva: ejecutar en local `npm run lint` 
 
 ## Bugs encontrados
 
-- [ ] Bug 1
-- [ ] Bug 2
-- [ ] Bug 3
+_(ninguno registrado hasta la fecha)_
 
 ## Decisiones tomadas
 
-- [ ] Decisión 1
-- [ ] Decisión 2
-- [ ] Decisión 3
 - [x] Día 3: V1 queda cerrada a `Scene Heading`, `Action`, `Character`, `Dialogue`, `Parenthetical` y `Transition`
 - [x] Día 4: V1 fija una matriz cerrada de `Enter`, `Tab`, `Shift + Tab`, pegado, selección y borrado en `SCREENPLAY_WRITING_RULES_V1.md`
 - [x] Día 5: el formato profesional queda cerrado en `SCREENPLAY_FORMAT_RULES_V1.md` y `src/features/screenplay/format-rules.ts` con métricas, mayúsculas y paginación deterministas
@@ -843,6 +838,10 @@ Antes de arrancar Fase 4 en una sesión nueva: ejecutar en local `npm run lint` 
 - [x] Día 9: la persistencia MVP queda fijada en `DATA_ARCHITECTURE_DAY9.md` y `src/features/data/data-architecture.ts` con `profiles`, `projects`, `document_snapshots`, ownership 1:N por usuario, snapshots append-only y `projects.current_snapshot_id` como puntero al documento persistido activo
 - [x] Día 10: la base de seguridad queda fijada en `SECURITY_BASE_DAY10.md` y `src/features/security/security-base.ts` con email/password + cookie session, RLS para las 3 tablas con ownership estricto, validación de inputs críticos, estrategia de secretos y política de backups
 - [x] Día 11: las pantallas principales quedan especificadas en `SCREENS_DAY11.md` con layout, zonas, jerarquia de contenido, estados y comportamiento para landing, login, registro, lista de proyectos, editor, sidebar de escenas, ajustes y modal de exportacion
+- [x] Día 13 (auditoría): el acento de marca pasa de azul (#284c7a) a verde botella profundo (#1e4d2b) — literario, cinematográfico, sin azul frío; decisión registrada en DESIGN.md y reflejada en `globals.css`, favicon y tokens
+- [x] Día 13 (auditoría): la paleta CSS evoluciona desde los valores sugeridos iniciales de DESIGN.md a los valores implementados en `globals.css` (background #e8e2d9, surface #f0ebe3, etc.); DESIGN.md y SCREENS_DAY11.md actualizados para reflejar los valores reales
+- [x] Día 13 (auditoría): el modo oscuro se establece como tema por defecto del producto; la paleta oscura usa sage desaturado (#c0caad) como acento para mantener identidad cálida
+- [x] Día 13 (auditoría): el idioma de la interfaz de usuario queda fijado en español (`lang="es"` en el HTML root); los identificadores y comentarios de código se mantienen en inglés según Day 7
 
 ## Cosas que NO entrarían en V1
 

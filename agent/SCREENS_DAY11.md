@@ -18,18 +18,18 @@ Define the layout, content hierarchy, zones, and behavior of every main screen s
 
 ## Color and Typography Reference
 
-Tokens from DESIGN.md apply everywhere:
+Tokens from DESIGN.md apply everywhere (values match `src/styles/globals.css`):
 
-- `background` (#f4efe8): app-wide body.
-- `surface` (#fbf8f4): cards, panels, elevated containers.
+- `background` (#e8e2d9): app-wide body.
+- `surface` (#f0ebe3): cards, panels, elevated containers.
 - `paper` (#fffdf9): editor canvas, form containers on public pages.
-- `foreground` (#1c1a18): primary text.
-- `muted` (#6a645c): secondary text, metadata, placeholders.
-- `accent` (#284c7a): links, primary buttons, active states.
-- `success` (#2f6b4f): saved, synced, exported confirmations.
-- `warning` (#9a6a1d): attention states, soft warnings.
-- `danger` (#a23d3d): errors, destructive actions.
-- `border-subtle` (#d8d1c8): minimal separators when spacing alone is not enough.
+- `foreground` (#1a1815): primary text.
+- `muted` (#5e584f): secondary text, metadata, placeholders.
+- `accent` (#1e4d2b): links, primary buttons, active states.
+- `success` (#1e6644): saved, synced, exported confirmations.
+- `warning` (#8a5e18): attention states, soft warnings.
+- `danger` (#923535): errors, destructive actions.
+- `border-subtle` (#b8b0a4): minimal separators when spacing alone is not enough.
 
 Typography:
 

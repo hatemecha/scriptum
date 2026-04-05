@@ -49,6 +49,9 @@ npm run dev
 - `npm run typecheck`: run the TypeScript compiler without emitting files
 - `npm run format`: format the repository with Prettier
 - `npm run format:check`: validate formatting with Prettier
+- `npm run validate:screenplay`: validate the screenplay foundation (blocks, format, writing rules, document model)
+- `npm run validate:data-architecture`: validate the data architecture reference graph
+- `npm run validate:security-base`: validate the security base specification
 
 ## Environment Variables
 

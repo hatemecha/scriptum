@@ -1,43 +1,43 @@
 /*
-  Acento de marca: verde botella profundo — literario, cinematográfico, sin azul frío.
-  Contrasta limpiamente sobre el papel cálido. Mismo tono familiar que el modo oscuro (sage).
-  Futuro: el usuario podrá sobrescribir las variables de acento desde preferencias persistidas.
+  Brand accent: deep bottle green — literary, cinematic, no cold blue.
+  Contrasts cleanly against the warm paper. Same familiar tone as the dark mode (sage).
+  Future: users will be able to override accent variables from persisted preferences.
 */
 :root {
   color-scheme: light;
 
-  /* Acento de marca */
+  /* Brand accent */
   --color-accent: #1e4d2b;
   --color-accent-strong: #133320;
   --color-accent-soft: rgba(30, 77, 43, 0.08);
   --color-accent-soft-strong: rgba(30, 77, 43, 0.16);
 
-  /* Fondos y superficies — con jerarquía clara */
+  /* Backgrounds and surfaces */
   --color-background: #e8e2d9;
   --color-surface: #f0ebe3;
   --color-surface-strong: rgba(228, 221, 210, 0.95);
   --color-surface-overlay: rgba(245, 240, 233, 0.96);
   --color-surface-overlay-strong: rgba(255, 253, 249, 0.99);
 
-  /* Papel */
+  /* Paper */
   --color-paper: #fffdf9;
   --color-paper-border: rgba(190, 182, 170, 0.9);
   --color-paper-surface:
     linear-gradient(180deg, rgba(255, 253, 249, 0.97), rgba(250, 246, 240, 0.98)),
     var(--color-paper);
 
-  /* Gradiente de página */
+  /* Page gradient */
   --color-page-start: #eae4dc;
   --color-page-end: #ddd7ce;
   --color-page-glow-1: rgba(30, 77, 43, 0.05);
   --color-page-glow-2: rgba(162, 61, 61, 0.03);
 
-  /* Texto */
+  /* Text */
   --color-foreground: #1a1815;
   --color-muted: #5e584f;
   --color-placeholder: rgba(94, 88, 79, 0.72);
 
-  /* Bordes — visibles sin ser agresivos */
+  /* Borders */
   --color-border-subtle: #b8b0a4;
   --color-overlay-border: rgba(170, 162, 150, 0.88);
   --color-overlay-border-strong: rgba(155, 147, 136, 0.98);
@@ -45,7 +45,7 @@
   /* Backdrop */
   --color-backdrop: rgba(26, 24, 21, 0.35);
 
-  /* Estados semánticos */
+  /* Semantic states */
   --color-danger: #923535;
   --color-danger-soft: rgba(146, 53, 53, 0.09);
   --color-success: #1e6644;
@@ -72,7 +72,7 @@
   --color-toast-border: rgba(175, 167, 156, 0.92);
   --color-toast-surface: rgba(255, 253, 249, 0.98);
 
-  /* Controles primarios */
+  /* Primary controls */
   --control-primary-start: #1e4d2b;
   --control-primary-hover: #133320;
   --control-primary-border: rgba(30, 77, 43, 0.24);
@@ -83,11 +83,11 @@
   --skeleton-base: rgba(185, 177, 166, 0.5);
   --skeleton-shimmer: rgba(255, 255, 255, 0.6);
 
-  /* Sombras */
+  /* Shadows */
   --shadow-soft: 0 24px 64px rgba(26, 24, 21, 0.10);
   --shadow-subtle: 0 6px 20px rgba(26, 24, 21, 0.07);
 
-  /* Tipografía */
+  /* Typography */
   --font-script: "Courier Prime", "Courier New", monospace;
   --font-ui: "Manrope", "Segoe UI", sans-serif;
 
@@ -96,7 +96,7 @@
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
 
-  /* Espaciado */
+  /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

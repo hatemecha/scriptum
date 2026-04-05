@@ -30,17 +30,10 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: {
-    icon: [
-      {
-        type: "image/svg+xml",
-        url: "/favicon.svg",
-      },
-      {
-        sizes: "any",
-        url: "/favicon.ico",
-      },
-    ],
-    shortcut: "/favicon.ico",
+    icon: {
+      type: "image/svg+xml",
+      url: "/favicon.svg",
+    },
   },
 };
 

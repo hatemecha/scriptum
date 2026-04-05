@@ -64,6 +64,27 @@ function getStatusPresentation({
     };
   }
 
+  if (viewState === "save-error") {
+    return {
+      label: "Error al guardar",
+      tone: "danger",
+    };
+  }
+
+  if (viewState === "unsaved") {
+    return {
+      label: "Sin guardar",
+      tone: "warning",
+    };
+  }
+
+  if (viewState === "syncing") {
+    return {
+      label: "Sincronizando...",
+      tone: "muted",
+    };
+  }
+
   if (viewState === "saving") {
     return {
       label: "Guardando...",
@@ -184,6 +205,16 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (viewState === "syncing") {
+      showToast({
+        description: "Sincronizando cambios pendientes.",
+        title: "Conexión restaurada",
+        tone: "success",
+      });
+    }
+  }, [viewState, showToast]);
 
   if (viewState === "error") {
     return (

@@ -7,8 +7,11 @@ export type EditorViewState =
   | "error"
   | "loading"
   | "offline"
+  | "save-error"
   | "saving"
-  | "synced";
+  | "synced"
+  | "syncing"
+  | "unsaved";
 export type ExportViewState = "closed" | "error" | "exporting" | "ready" | "success";
 export type ProjectsViewState = "default" | "empty" | "error" | "loading" | "offline";
 export type SettingsViewState = "default" | "error" | "loading" | "offline" | "saving";
@@ -56,7 +59,7 @@ export function getSettingsViewState(searchParams: RouteSearchParams): SettingsV
 export function getEditorViewState(searchParams: RouteSearchParams): EditorViewState {
   return parseEnumValue(
     searchParams.state,
-    ["default", "empty", "error", "loading", "offline", "saving", "synced"],
+    ["default", "empty", "error", "loading", "offline", "save-error", "saving", "synced", "syncing", "unsaved"],
     "default",
   );
 }

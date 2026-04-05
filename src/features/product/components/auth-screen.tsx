@@ -69,10 +69,6 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
   function validateFields(): AuthFieldErrors {
     const nextErrors: AuthFieldErrors = {};
 
-    if (isRegister && values.name.trim().length === 0) {
-      nextErrors.name = "Este campo es obligatorio.";
-    }
-
     if (values.email.trim().length === 0) {
       nextErrors.email = "Este campo es obligatorio.";
     } else if (!values.email.includes("@")) {
@@ -138,11 +134,10 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
               name="name"
               label="Nombre"
               placeholder="Cómo quieres que te llamemos"
+              hint="Opcional"
               value={values.name}
               error={fieldErrors.name}
               onChange={(event) => handleFieldChange("name", event.target.value)}
-              required
-              requiredLabel="Obligatorio"
             />
           ) : null}
 

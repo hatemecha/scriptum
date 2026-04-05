@@ -233,6 +233,12 @@ export const screenplayFormatReferenceSamples = [
     expectedDisplayText: "INT. KITCHEN - NIGHT",
   },
   {
+    label: "Action whitespace collapse",
+    type: "action",
+    sourceText: "The kettle   screams    on the stove.",
+    expectedDisplayText: "The kettle screams on the stove.",
+  },
+  {
     label: "Character normalization",
     type: "character",
     sourceText: "maria",
@@ -245,6 +251,17 @@ export const screenplayFormatReferenceSamples = [
     options: {
       character: {
         interruptedSameSpeakerContinuation: true,
+      },
+    },
+    expectedDisplayText: "MARIA (CONT'D)",
+  },
+  {
+    label: "Character continuation on page break",
+    type: "character",
+    sourceText: "maria",
+    options: {
+      character: {
+        pageBreakContinuation: true,
       },
     },
     expectedDisplayText: "MARIA (CONT'D)",

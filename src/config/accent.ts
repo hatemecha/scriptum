@@ -1,10 +1,10 @@
 /**
- * Punto de enganche para acento personalizado (p. ej. ajustes con cuenta).
- * Hoy los valores por defecto viven en `src/styles/globals.css` (:root y tema oscuro).
+ * Hook point for user-customizable accent color (e.g. from account preferences).
+ * Default values live in `src/styles/globals.css` (:root and dark theme).
  *
- * Implementación futura típica: leer preferencia del usuario, validar hex, y en el cliente
- * asignar en `document.documentElement` las mismas custom properties que ya consume la UI
- * (`--color-accent`, `--color-accent-strong`, sombras y botón primario, etc.).
+ * Future implementation: read user preference, validate hex, and on the client
+ * assign these custom properties on `document.documentElement` so the UI picks
+ * them up (`--color-accent`, `--color-accent-strong`, shadows, primary button, etc.).
  */
 export const ACCENT_CSS_VARIABLE_NAMES = [
   "--color-accent",

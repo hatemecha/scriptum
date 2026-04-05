@@ -89,7 +89,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
     <section className={styles.pageSection}>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeaderCopy}>
-          <h1 className={styles.pageTitle}>Proyectos</h1>
+          <h1 className={styles.pageTitle}>Tus proyectos</h1>
         </div>
 
         <div className={styles.pageActions}>
@@ -107,8 +107,8 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
         <ProjectsLoadingState />
       ) : viewState === "empty" ? (
         <StatePanel
-          title="Sin proyectos"
-          description="Creá uno nuevo para empezar."
+          title="Todavía no tienes proyectos"
+          description="Crea tu primer guion para empezar."
           actions={<CreateProjectAction disabled={false} />}
         />
       ) : (

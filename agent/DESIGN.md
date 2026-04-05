@@ -263,20 +263,20 @@ Tokens sugeridos para MVP:
 - `danger`: errores y bloqueos.
 - `border-subtle`: separaciones minimas cuando hagan falta.
 
-Referencia cromatica sugerida:
+Referencia cromatica oficial (implementada en `src/styles/globals.css`):
 
-- `background`: `#f4efe8`
-- `surface`: `#fbf8f4`
+- `background`: `#e8e2d9`
+- `surface`: `#f0ebe3`
 - `paper`: `#fffdf9`
-- `foreground`: `#1c1a18`
-- `muted`: `#6a645c`
-- `accent`: `#284c7a`
-- `success`: `#2f6b4f`
-- `warning`: `#9a6a1d`
-- `danger`: `#a23d3d`
-- `border-subtle`: `#d8d1c8`
+- `foreground`: `#1a1815`
+- `muted`: `#5e584f`
+- `accent`: `#1e4d2b` (verde botella profundo — literario, cinematografico)
+- `success`: `#1e6644`
+- `warning`: `#8a5e18`
+- `danger`: `#923535`
+- `border-subtle`: `#b8b0a4`
 
-El modo oscuro puede existir mas adelante, pero no debe condicionar el MVP.
+El modo oscuro ya existe como alternativa (dark mode como default). La paleta oscura usa un sage desaturado como acento (`#c0caad`) que mantiene la identidad calida del producto.
 
 ### Tipografia
 
