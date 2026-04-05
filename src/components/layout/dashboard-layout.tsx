@@ -33,7 +33,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <Link href={routes.projects} className={styles.brand}>
             SCRIPTUM
           </Link>
-          <span className={styles.brandNote}>Abrir, escribir, exportar.</span>
         </div>
 
         <div className={styles.headerMid}>

@@ -57,7 +57,6 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
   if (viewState === "error") {
     return (
       <StatePanel
-        eyebrow="Authenticated / Settings"
         title="Algo salió mal"
         description="No pudimos cargar tus ajustes."
         secondaryDescription="Intenta recargar o vuelve al inicio."
@@ -113,8 +112,8 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
       setDisplayName(trimmedName);
       setIsSaving(false);
       showToast({
-        description: "Tu perfil quedó actualizado sin salir de esta pantalla.",
-        title: "Cambios guardados",
+        description: "El nombre se actualizó correctamente.",
+        title: "Guardado",
         tone: "success",
       });
     }, 1000);
@@ -124,11 +123,7 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
     <section className={styles.pageSection}>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeaderCopy}>
-          <p className="section-eyebrow">Dashboard / Ajustes</p>
           <h1 className={styles.pageTitle}>Ajustes</h1>
-          <p className={styles.pageDescription}>
-            Lo mínimo para la cuenta, fuera del camino al escribir.
-          </p>
         </div>
       </header>
 
@@ -182,7 +177,7 @@ export function SettingsScreen({ viewState }: SettingsScreenProps) {
             <header className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Cuenta</h2>
               <p className={styles.sectionDescription}>
-                Plan, cierre de sesión y recuperación de acceso. Sin más por ahora.
+                Plan y acceso a la cuenta.
               </p>
             </header>
 

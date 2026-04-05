@@ -1,67 +1,102 @@
 /*
-  Acento (tema claro): verde bosque sobre papel, sin azul frío.
-  Futuro (cuenta / ajustes): el usuario podrá sobrescribir --color-accent,
-  --color-accent-strong, --color-accent-soft y --color-accent-soft-strong en <html>
-  (misma firma que abajo) desde preferencias persistidas.
+  Acento de marca: verde botella profundo — literario, cinematográfico, sin azul frío.
+  Contrasta limpiamente sobre el papel cálido. Mismo tono familiar que el modo oscuro (sage).
+  Futuro: el usuario podrá sobrescribir las variables de acento desde preferencias persistidas.
 */
 :root {
   color-scheme: light;
-  --color-accent: #284c7a;
-  --color-accent-strong: #1d385a;
-  --color-accent-soft: rgba(40, 76, 122, 0.08);
-  --color-accent-soft-strong: rgba(40, 76, 122, 0.15);
-  --color-background: #f4efe8;
-  --color-backdrop: rgba(28, 26, 24, 0.3);
-  --color-border-subtle: #d8d1c8;
-  --color-danger: #a23d3d;
-  --color-danger-soft: rgba(162, 61, 61, 0.08);
+
+  /* Acento de marca */
+  --color-accent: #1e4d2b;
+  --color-accent-strong: #133320;
+  --color-accent-soft: rgba(30, 77, 43, 0.08);
+  --color-accent-soft-strong: rgba(30, 77, 43, 0.16);
+
+  /* Fondos y superficies — con jerarquía clara */
+  --color-background: #e8e2d9;
+  --color-surface: #f0ebe3;
+  --color-surface-strong: rgba(228, 221, 210, 0.95);
+  --color-surface-overlay: rgba(245, 240, 233, 0.96);
+  --color-surface-overlay-strong: rgba(255, 253, 249, 0.99);
+
+  /* Papel */
+  --color-paper: #fffdf9;
+  --color-paper-border: rgba(190, 182, 170, 0.9);
+  --color-paper-surface:
+    linear-gradient(180deg, rgba(255, 253, 249, 0.97), rgba(250, 246, 240, 0.98)),
+    var(--color-paper);
+
+  /* Gradiente de página */
+  --color-page-start: #eae4dc;
+  --color-page-end: #ddd7ce;
+  --color-page-glow-1: rgba(30, 77, 43, 0.05);
+  --color-page-glow-2: rgba(162, 61, 61, 0.03);
+
+  /* Texto */
+  --color-foreground: #1a1815;
+  --color-muted: #5e584f;
+  --color-placeholder: rgba(94, 88, 79, 0.72);
+
+  /* Bordes — visibles sin ser agresivos */
+  --color-border-subtle: #b8b0a4;
+  --color-overlay-border: rgba(170, 162, 150, 0.88);
+  --color-overlay-border-strong: rgba(155, 147, 136, 0.98);
+
+  /* Backdrop */
+  --color-backdrop: rgba(26, 24, 21, 0.35);
+
+  /* Estados semánticos */
+  --color-danger: #923535;
+  --color-danger-soft: rgba(146, 53, 53, 0.09);
+  --color-success: #1e6644;
+  --color-success-soft: rgba(30, 102, 68, 0.09);
+  --color-warning: #8a5e18;
+  --color-warning-soft: rgba(138, 94, 24, 0.09);
+
+  /* Editor */
   --color-editor-surface: linear-gradient(
     180deg,
-    rgba(251, 248, 244, 0.96) 0%,
-    rgba(244, 239, 232, 0.9) 100%
+    rgba(250, 246, 240, 0.97) 0%,
+    rgba(240, 235, 227, 0.92) 100%
   );
-  --color-focus-ring: rgba(40, 76, 122, 0.38);
-  --color-focus-shadow: rgba(40, 76, 122, 0.08);
-  --color-foreground: #1c1a18;
-  --color-input-background: rgba(255, 253, 249, 0.96);
+
+  /* Inputs */
+  --color-input-background: rgba(255, 253, 249, 0.97);
   --color-input-background-hover: #ffffff;
-  --color-muted: #6a645c;
-  --color-overlay-border: rgba(216, 209, 200, 0.88);
-  --color-overlay-border-strong: rgba(206, 199, 190, 0.98);
-  --color-paper: #fffdf9;
-  --color-paper-border: rgba(216, 209, 200, 0.84);
-  --color-paper-surface:
-    linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(251, 248, 244, 0.98)),
-    var(--color-paper);
-  --color-page-end: #eae4db;
-  --color-page-glow-1: rgba(40, 76, 122, 0.04);
-  --color-page-glow-2: rgba(162, 61, 61, 0.03);
-  --color-page-start: #f4efe8;
-  --color-placeholder: rgba(106, 100, 92, 0.76);
-  --color-success: #2f6b4f;
-  --color-success-soft: rgba(47, 107, 79, 0.1);
-  --color-surface: #fbf8f4;
-  --color-surface-strong: rgba(246, 241, 236, 0.92);
-  --color-surface-overlay: rgba(251, 248, 244, 0.95);
-  --color-surface-overlay-strong: rgba(255, 253, 249, 0.98);
-  --color-toast-border: rgba(206, 199, 190, 0.92);
+
+  /* Focus */
+  --color-focus-ring: rgba(30, 77, 43, 0.36);
+  --color-focus-shadow: rgba(30, 77, 43, 0.08);
+
+  /* Toasts */
+  --color-toast-border: rgba(175, 167, 156, 0.92);
   --color-toast-surface: rgba(255, 253, 249, 0.98);
-  --color-warning: #9a6a1d;
-  --color-warning-soft: rgba(154, 106, 29, 0.1);
-  --control-primary-border: rgba(40, 76, 122, 0.22);
-  --control-primary-hover: #1f3b5f;
-  --control-primary-shadow: rgba(40, 76, 122, 0.15);
-  --control-primary-start: #284c7a;
-  --control-primary-text: #ffffff;
+
+  /* Controles primarios */
+  --control-primary-start: #1e4d2b;
+  --control-primary-hover: #133320;
+  --control-primary-border: rgba(30, 77, 43, 0.24);
+  --control-primary-shadow: rgba(30, 77, 43, 0.18);
+  --control-primary-text: #f5f2ec;
+
+  /* Skeletons */
+  --skeleton-base: rgba(185, 177, 166, 0.5);
+  --skeleton-shimmer: rgba(255, 255, 255, 0.6);
+
+  /* Sombras */
+  --shadow-soft: 0 24px 64px rgba(26, 24, 21, 0.10);
+  --shadow-subtle: 0 6px 20px rgba(26, 24, 21, 0.07);
+
+  /* Tipografía */
   --font-script: "Courier Prime", "Courier New", monospace;
   --font-ui: "Manrope", "Segoe UI", sans-serif;
+
+  /* Radio */
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
-  --skeleton-base: rgba(216, 209, 200, 0.45);
-  --skeleton-shimmer: rgba(255, 255, 255, 0.65);
-  --shadow-soft: 0 24px 64px rgba(28, 26, 24, 0.06);
-  --shadow-subtle: 0 8px 24px rgba(28, 26, 24, 0.04);
+
+  /* Espaciado */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -70,6 +105,7 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4rem;
+
   --transition-base: 180ms ease;
 }
 

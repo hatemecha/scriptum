@@ -188,7 +188,6 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
   if (viewState === "error") {
     return (
       <StatePanel
-        eyebrow="Authenticated / Editor"
         title="Algo salió mal"
         description="No pudimos cargar este proyecto."
         secondaryDescription="Intenta recargar o vuelve al inicio."

@@ -62,7 +62,6 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
   if (viewState === "error") {
     return (
       <StatePanel
-        eyebrow="Authenticated / Projects"
         title="Algo salió mal"
         description="No pudimos cargar tus proyectos."
         secondaryDescription="Intenta recargar o vuelve al inicio."
@@ -90,11 +89,7 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
     <section className={styles.pageSection}>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeaderCopy}>
-          <p className="section-eyebrow">Dashboard / Proyectos</p>
-          <h1 className={styles.pageTitle}>Tus proyectos</h1>
-          <p className={styles.pageDescription}>
-            Abre un borrador o crea uno nuevo.
-          </p>
+          <h1 className={styles.pageTitle}>Proyectos</h1>
         </div>
 
         <div className={styles.pageActions}>
@@ -112,9 +107,8 @@ export function ProjectsScreen({ viewState }: ProjectsScreenProps) {
         <ProjectsLoadingState />
       ) : viewState === "empty" ? (
         <StatePanel
-          eyebrow="Projects / Empty"
-          title="Todavía no tienes proyectos"
-          description="Crea tu primer guion para empezar."
+          title="Sin proyectos"
+          description="Creá uno nuevo para empezar."
           actions={<CreateProjectAction disabled={false} />}
         />
       ) : (

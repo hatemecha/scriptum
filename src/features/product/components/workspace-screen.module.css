@@ -51,11 +51,7 @@
 
 .projectList {
   display: grid;
-  border: 1px solid var(--color-overlay-border);
-  border-radius: 1.4rem;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
-  box-shadow: var(--shadow-subtle);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .projectRow {
@@ -63,20 +59,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.15rem 1.25rem;
-  border-top: 1px solid var(--color-overlay-border);
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
   transition:
-    background var(--transition-base),
-    transform var(--transition-base);
-}
-
-.projectRow:first-child {
-  border-top: 0;
+    color var(--transition-base),
+    opacity var(--transition-base);
 }
 
 .projectRow:hover {
-  background: color-mix(in srgb, var(--color-paper) 94%, transparent);
-  transform: translateY(-1px);
+  opacity: 0.75;
 }
 
 .projectRowMain {
@@ -123,10 +114,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.15rem 1.25rem;
-  border: 1px solid var(--color-overlay-border);
-  border-radius: 1.2rem;
-  background: color-mix(in srgb, var(--color-paper) 84%, transparent);
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .skeletonRowMain {
@@ -138,17 +127,15 @@
 
 .settingsLayout {
   display: grid;
-  gap: 1.25rem;
+  gap: 0;
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .sectionCard {
   display: grid;
-  gap: 1rem;
-  padding: 1.5rem;
-  border: 1px solid var(--color-overlay-border);
-  border-radius: 1.4rem;
-  background: color-mix(in srgb, var(--color-paper) 86%, transparent);
-  box-shadow: var(--shadow-subtle);
+  gap: 1.25rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .sectionHeader {
@@ -195,9 +182,8 @@
 .readonlyCard {
   display: grid;
   gap: 0.35rem;
-  padding: 1rem;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .readonlyLabel {
@@ -580,24 +566,15 @@
 }
 
 .statePanel {
-  width: min(100%, 44rem);
-  margin: clamp(2rem, 10vh, 5rem) auto;
+  width: min(100%, 36rem);
+  margin: clamp(3rem, 12vh, 6rem) auto;
   display: grid;
-  gap: 1.5rem;
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  border: 1px solid var(--color-overlay-border);
-  border-radius: 1.6rem;
-  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
-  box-shadow: var(--shadow-soft);
+  gap: 1.75rem;
   text-align: center;
 }
 
-.statePanelDanger {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-paper) 90%, transparent),
-    color-mix(in srgb, var(--color-danger) 12%, var(--color-paper))
-  );
+.statePanelDanger .statePanelTitle {
+  color: var(--color-danger);
 }
 
 .statePanelCopy {

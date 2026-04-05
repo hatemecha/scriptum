@@ -128,13 +128,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
     <section className={styles.page}>
       <div className={styles.card}>
         <header className={styles.cardHeader}>
-          <p className={styles.eyebrow}>Public / {isRegister ? "Registro" : "Login"}</p>
           <h1 className={styles.title}>{isRegister ? "Crea tu cuenta" : "Inicia sesión"}</h1>
-          <p className={styles.description}>
-            {isRegister
-              ? "Crea una cuenta minima para abrir proyectos y empezar a escribir."
-              : "Accede a tus proyectos sin salir del flujo principal del producto."}
-          </p>
         </header>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -212,11 +206,11 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
           </div>
         </form>
 
-        <footer className={styles.cardFooter}>
-          {isOffline
-            ? "Puedes rellenar el formulario; hace falta conexión para continuar."
-            : "Sin friccion: una sola accion, una sola pantalla, un solo siguiente paso."}
-        </footer>
+        {isOffline ? (
+          <footer className={styles.cardFooter}>
+            Hace falta conexión para continuar.
+          </footer>
+        ) : null}
       </div>
     </section>
   );
