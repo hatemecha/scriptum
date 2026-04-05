@@ -1,18 +1,18 @@
 const FALLBACK_APP_NAME = "Scriptum";
 const FALLBACK_APP_URL = "http://localhost:3000";
 
-function readOptionalEnvironmentVariable(name: string): string | undefined {
-  const value = process.env[name]?.trim();
+function normalizeOptionalString(value: string | undefined): string | undefined {
+  const normalizedValue = value?.trim();
 
-  return value && value.length > 0 ? value : undefined;
+  return normalizedValue && normalizedValue.length > 0 ? normalizedValue : undefined;
 }
 
 function normalizePublicAppName(): string {
-  return readOptionalEnvironmentVariable("NEXT_PUBLIC_APP_NAME") ?? FALLBACK_APP_NAME;
+  return normalizeOptionalString(process.env.NEXT_PUBLIC_APP_NAME) ?? FALLBACK_APP_NAME;
 }
 
 function normalizePublicAppUrl(): string {
-  const configuredUrl = readOptionalEnvironmentVariable("NEXT_PUBLIC_APP_URL");
+  const configuredUrl = normalizeOptionalString(process.env.NEXT_PUBLIC_APP_URL);
 
   if (!configuredUrl) {
     return FALLBACK_APP_URL;
@@ -25,9 +25,31 @@ function normalizePublicAppUrl(): string {
   }
 }
 
+function normalizeOptionalPublicSupabaseUrl(): string | undefined {
+  const configuredUrl = normalizeOptionalString(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
+  if (!configuredUrl) {
+    return undefined;
+  }
+
+  try {
+    return new URL(configuredUrl).toString().replace(/\/$/, "");
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeOptionalPublicSupabasePublishableKey(): string | undefined {
+  return normalizeOptionalString(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+}
+
 export const appEnvironment = {
   public: {
     appName: normalizePublicAppName(),
     appUrl: normalizePublicAppUrl(),
+    supabase: {
+      publishableKey: normalizeOptionalPublicSupabasePublishableKey(),
+      url: normalizeOptionalPublicSupabaseUrl(),
+    },
   },
 } as const;

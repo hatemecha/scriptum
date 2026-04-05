@@ -243,6 +243,21 @@ export const previewProjects: readonly PreviewProject[] = [
   }),
 ] as const;
 
+/**
+ * Editor routes under `/projects/[id]` that are static prototypes (no `projects` row).
+ * Real cloud projects use DB ownership checks instead.
+ */
+export const authenticatedEditorPrototypeProjectIds: readonly string[] = [
+  ...previewProjects.map((project) => project.id),
+  "sin-titulo",
+];
+
+const authenticatedEditorPrototypeIdSet = new Set(authenticatedEditorPrototypeProjectIds);
+
+export function isAuthenticatedEditorPrototypeProjectId(projectId: string): boolean {
+  return authenticatedEditorPrototypeIdSet.has(projectId);
+}
+
 export function getPreviewProject(projectId: string): PreviewProject {
   const matchingProject = previewProjects.find((project) => project.id === projectId);
 

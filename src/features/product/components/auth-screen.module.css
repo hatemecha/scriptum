@@ -45,6 +45,16 @@
   line-height: 1.6;
 }
 
+.formSuccess {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .actions {
   display: grid;
   gap: 0.9rem;

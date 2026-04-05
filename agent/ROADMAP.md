@@ -289,27 +289,27 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 15 — Modelo de usuario
 
-- [ ] Crear perfil de usuario
-- [ ] Guardar preferencias básicas
-- [ ] Guardar estado free/premium
-- [ ] Guardar fecha de creación
-- [ ] Guardar estado de onboarding
+- [x] Crear perfil de usuario
+- [x] Guardar preferencias básicas
+- [x] Guardar estado free/premium
+- [x] Guardar fecha de creación
+- [x] Guardar estado de onboarding
 
 ### Validación
 
-- [ ] El usuario ya tiene identidad persistente completa
+- [x] El usuario ya tiene identidad persistente completa
 
 ---
 
 ## Día 16 — Protección de rutas
 
-- [ ] Proteger rutas privadas
-- [ ] Redirigir usuarios no autenticados
-- [ ] Bloquear acceso a proyectos ajenos
+- [x] Proteger rutas privadas
+- [x] Redirigir usuarios no autenticados
+- [x] Bloquear acceso a proyectos ajenos
 
 ### Validación
 
-- [ ] La app no expone rutas privadas
+- [x] La app no expone rutas privadas
 
 ---
 
@@ -842,6 +842,8 @@ _(ninguno registrado hasta la fecha)_
 - [x] Día 13 (auditoría): la paleta CSS evoluciona desde los valores sugeridos iniciales de DESIGN.md a los valores implementados en `globals.css` (background #e8e2d9, surface #f0ebe3, etc.); DESIGN.md y SCREENS_DAY11.md actualizados para reflejar los valores reales
 - [x] Día 13 (auditoría): el modo oscuro se establece como tema por defecto del producto; la paleta oscura usa sage desaturado (#c0caad) como acento para mantener identidad cálida
 - [x] Día 13 (auditoría): el idioma de la interfaz de usuario queda fijado en español (`lang="es"` en el HTML root); los identificadores y comentarios de código se mantienen en inglés según Day 7
+- [x] Día 15: tabla `public.profiles` (migración `supabase/migrations`), trigger post-registro en `auth.users`, RLS alineada con Day 10, tipos `Database` en `src/lib/supabase/types.ts`, módulo `src/features/user/profile.ts` (`ensureUserProfile`, preferencias JSON, plan, onboarding, fechas), sincronización en layout autenticado y `auth/callback`, y ajustes leyendo/escribiendo perfil real
+- [x] Día 16: middleware alineado con `securityBaseProtectedRoutePrefixes`, bloqueo de `/projects` y `/settings` sin sesión (también si falta config pública de Supabase), `next` sanitizado (`getSafeRedirectPath`), comprobación de propiedad en `projects/[projectId]` con tabla `public.projects` + RLS (`canAccessProjectEditor`), demos de editor acotadas por `authenticatedEditorPrototypeProjectIds`
 
 ## Cosas que NO entrarían en V1
 

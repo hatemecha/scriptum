@@ -35,6 +35,8 @@ export interface DataArchitectureProfileRecord {
   displayName: string | null;
   avatarUrl: string | null;
   plan: DataArchitectureProfilePlan;
+  /** Product preferences stored as JSON (theme, locale, editor tips, etc.). */
+  preferences: Readonly<Record<string, unknown>>;
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -221,6 +223,7 @@ export function createDataArchitectureReferenceGraph(
       displayName: "Scriptum User",
       avatarUrl: null,
       plan: "free",
+      preferences: { theme: "system", editorTipsEnabled: true },
       onboardingCompletedAt: null,
       createdAt: now,
       updatedAt: now,
@@ -299,6 +302,14 @@ export function getDataArchitectureValidationErrors(graph: DataArchitectureGraph
 
     if (!dataArchitectureProfilePlans.includes(profile.plan)) {
       errors.push(`Unsupported profile plan "${profile.plan}".`);
+    }
+
+    if (
+      typeof profile.preferences !== "object" ||
+      profile.preferences === null ||
+      Array.isArray(profile.preferences)
+    ) {
+      errors.push(`Profile "${profile.id}" preferences must be a plain object.`);
     }
 
     if (normalizeRequiredText(profile.createdAt, "").length === 0) {

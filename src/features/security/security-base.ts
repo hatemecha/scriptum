@@ -26,7 +26,14 @@ export const securityBaseAuthConfig: SecurityBaseAuthConfig = {
 
 // ─── Route Protection ─────────────────────────────────────────────────────────
 
-export const securityBasePublicRoutes = ["/", "/login", "/register"] as const;
+export const securityBasePublicRoutes = [
+  "/",
+  "/auth/callback",
+  "/forgot-password",
+  "/login",
+  "/register",
+  "/reset-password",
+] as const;
 export type SecurityBasePublicRoute = (typeof securityBasePublicRoutes)[number];
 
 export const securityBaseProtectedRoutePrefixes = ["/projects", "/settings"] as const;
@@ -57,6 +64,24 @@ export const securityBaseRouteRules: readonly SecurityBaseRouteRule[] = [
     kind: "public",
     unauthenticatedRedirect: null,
     authenticatedRedirect: "/projects",
+  },
+  {
+    path: "/forgot-password",
+    kind: "public",
+    unauthenticatedRedirect: null,
+    authenticatedRedirect: "/projects",
+  },
+  {
+    path: "/reset-password",
+    kind: "public",
+    unauthenticatedRedirect: null,
+    authenticatedRedirect: null,
+  },
+  {
+    path: "/auth/callback",
+    kind: "public",
+    unauthenticatedRedirect: null,
+    authenticatedRedirect: null,
   },
   {
     path: "/projects",

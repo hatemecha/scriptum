@@ -5,12 +5,15 @@ export type NavigationItem = {
 };
 
 export const routes = {
+  authCallback: "/auth/callback",
+  forgotPassword: "/forgot-password",
   home: "/",
   login: "/login",
   playgroundFoundation: "/playground/foundation",
   playgroundPrototype: "/playground/prototype",
   projects: "/projects",
   register: "/register",
+  resetPassword: "/reset-password",
   settings: "/settings",
   projectEditor: (projectId: string) => `/projects/${encodeURIComponent(projectId)}`,
 } as const;

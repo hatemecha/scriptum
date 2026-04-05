@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { appEnvironment } from "@/config/env";
 import { routes } from "@/config/routes";
 import { type AuthViewState } from "@/features/product/view-states";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import styles from "./auth-screen.module.css";
 
@@ -15,6 +17,7 @@ type AuthScreenMode = "login" | "register";
 
 type AuthScreenProps = {
   mode: AuthScreenMode;
+  redirectAfterAuth?: string;
   viewState: AuthViewState;
 };
 
@@ -24,10 +27,13 @@ type AuthFieldErrors = {
   password?: string;
 };
 
-export function AuthScreen({ mode, viewState }: AuthScreenProps) {
+export function AuthScreen({
+  mode,
+  redirectAfterAuth = routes.projects,
+  viewState,
+}: AuthScreenProps) {
   const isRegister = mode === "register";
   const router = useRouter();
-  const submitTimeoutRef = useRef<number | null>(null);
   const [values, setValues] = useState({
     email: "",
     name: "",
@@ -39,15 +45,8 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
   const [formError, setFormError] = useState<string | undefined>(
     !isRegister && viewState === "error" ? "Correo o contraseña incorrectos." : undefined,
   );
+  const [formSuccess, setFormSuccess] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (submitTimeoutRef.current) {
-        window.clearTimeout(submitTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const isOffline = viewState === "offline";
   const isForcedLoading = viewState === "loading";
@@ -64,6 +63,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
       [field]: undefined,
     }));
     setFormError(undefined);
+    setFormSuccess(undefined);
   }
 
   function validateFields(): AuthFieldErrors {
@@ -81,10 +81,50 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
       nextErrors.password = "La contraseña debe tener al menos 8 caracteres.";
     }
 
+    if (isRegister && values.name.trim().length > 100) {
+      nextErrors.name = "El nombre no puede superar los 100 caracteres.";
+    }
+
     return nextErrors;
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function getVerificationRedirectUrl() {
+    const callbackUrl = new URL(routes.authCallback, appEnvironment.public.appUrl);
+    callbackUrl.searchParams.set("next", routes.projects);
+
+    return callbackUrl.toString();
+  }
+
+  function mapAuthenticationError(message: string) {
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes("invalid login credentials")) {
+      return "Correo o contraseña incorrectos.";
+    }
+
+    if (normalizedMessage.includes("email not confirmed")) {
+      return "Debes verificar tu correo antes de iniciar sesión.";
+    }
+
+    if (normalizedMessage.includes("already registered")) {
+      return "Este correo ya está registrado.";
+    }
+
+    if (normalizedMessage.includes("password should be at least")) {
+      return "La contraseña debe tener al menos 8 caracteres.";
+    }
+
+    if (
+      normalizedMessage.includes("email rate limit exceeded") ||
+      normalizedMessage.includes("over_email_send_rate_limit")
+    ) {
+      return "Superaste el límite temporal de correos. Espera unos minutos antes de intentar de nuevo.";
+    }
+
+    return "No se pudo completar la solicitud. Intenta de nuevo.";
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const validationErrors = validateFields();
@@ -97,27 +137,68 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
 
     if (isOffline) {
       setFormError("No se pudo conectar. Intenta de nuevo.");
-      return;
-    }
-
-    if (viewState === "error") {
-      if (isRegister) {
-        setFieldErrors({
-          email: "Este correo ya está registrado.",
-        });
-      } else {
-        setFormError("Correo o contraseña incorrectos.");
-      }
-
+      setFormSuccess(undefined);
       return;
     }
 
     setIsSubmitting(true);
-    submitTimeoutRef.current = window.setTimeout(() => {
-      startTransition(() => {
-        router.push(routes.projects);
-      });
-    }, 900);
+    setFormError(undefined);
+    setFormSuccess(undefined);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const email = values.email.trim();
+      const password = values.password.trim();
+
+      if (isRegister) {
+        const displayName = values.name.trim();
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          options: {
+            data: displayName.length > 0 ? { display_name: displayName } : undefined,
+            emailRedirectTo: getVerificationRedirectUrl(),
+          },
+          password,
+        });
+
+        if (error) {
+          const errorMessage = mapAuthenticationError(error.message);
+
+          if (errorMessage === "Este correo ya está registrado.") {
+            setFieldErrors((currentErrors) => ({
+              ...currentErrors,
+              email: errorMessage,
+            }));
+            return;
+          }
+
+          setFormError(errorMessage);
+          return;
+        }
+
+        if (!data.session) {
+          setFormSuccess("Te enviamos un correo para verificar tu cuenta antes de continuar.");
+          return;
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          setFormError(mapAuthenticationError(error.message));
+          return;
+        }
+      }
+
+      router.replace(redirectAfterAuth);
+      router.refresh();
+    } catch {
+      setFormError("No se pudo completar la solicitud. Revisa tu configuración de Supabase.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -167,6 +248,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
           />
 
           {formError ? <p className={styles.formError}>{formError}</p> : null}
+          {formSuccess ? <p className={styles.formSuccess}>{formSuccess}</p> : null}
 
           <div className={styles.actions}>
             <Button type="submit" fullWidth disabled={isPending}>
@@ -181,7 +263,7 @@ export function AuthScreen({ mode, viewState }: AuthScreenProps) {
 
             <div className={styles.secondaryLinks}>
               {!isRegister ? (
-                <Link href={routes.home} className={styles.supportLink}>
+                <Link href={routes.forgotPassword} className={styles.supportLink}>
                   ¿Olvidaste tu contraseña?
                 </Link>
               ) : null}
