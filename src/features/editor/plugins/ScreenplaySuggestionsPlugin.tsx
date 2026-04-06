@@ -8,7 +8,6 @@ import {
   $getSelection,
   $isRangeSelection,
   $isTextNode,
-  type LexicalNode,
   COMMAND_PRIORITY_CRITICAL,
   KEY_ARROW_DOWN_COMMAND,
   KEY_ARROW_UP_COMMAND,
@@ -19,6 +18,7 @@ import {
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 import { $isScreenplayBlockNode, type ScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
+import { getCaretOffsetInScreenplayBlock } from "@/features/editor/screenplay-caret-offset";
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import {
   type ScreenplaySuggestionOption,
@@ -27,29 +27,6 @@ import {
 } from "@/features/editor/screenplay-suggestions";
 
 import styles from "@/features/editor/components/screenplay-editor.module.css";
-
-function getCaretOffsetInBlock(
-  block: ScreenplayBlockNode,
-  anchorNode: LexicalNode,
-  anchorOffset: number,
-): number | null {
-  if ($isScreenplayBlockNode(anchorNode) && anchorNode.is(block)) {
-    return block.getTextContent().length === 0 ? 0 : null;
-  }
-
-  if ($isTextNode(anchorNode)) {
-    let offset = 0;
-    for (const child of block.getChildren()) {
-      if (!$isTextNode(child)) continue;
-      if (child.is(anchorNode)) {
-        return offset + anchorOffset;
-      }
-      offset += child.getTextContentSize();
-    }
-  }
-
-  return null;
-}
 
 function getSuggestionContext(editorState: {
   read: (fn: () => void) => void;
@@ -79,7 +56,7 @@ function getSuggestionContext(editorState: {
       return;
     }
 
-    const offset = getCaretOffsetInBlock(blockNode, anchorNode, selection.anchor.offset);
+    const offset = getCaretOffsetInScreenplayBlock(blockNode, anchorNode, selection.anchor.offset);
     if (offset === null) {
       return;
     }

@@ -14,11 +14,17 @@ import {
 } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-import { ScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
+import {
+  $createScreenplayBlockNode,
+  $isScreenplayBlockNode,
+  ScreenplayBlockNode,
+} from "@/features/editor/nodes/ScreenplayBlockNode";
 import {
   chunkStringForPaste,
   DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE,
 } from "@/features/editor/plain-text-paste-chunks";
+import { isCollapsedCaretAtEndOfScreenplayBlock } from "@/features/editor/screenplay-caret-offset";
+import { getNextBlockTypeOnEnter } from "@/features/editor/screenplay-flow";
 
 /**
  * El guión es texto plano: bloques tipados (encabezado, personaje…), sin negrita/subrayado
@@ -49,11 +55,75 @@ export function ScreenplayPlainTextGuardPlugin(): null {
         event.preventDefault();
         const text = event.clipboardData?.getData("text/plain") ?? "";
         editor.update(() => {
-          const selection = $getSelection();
-          if ($isRangeSelection(selection)) {
-            for (const chunk of chunkStringForPaste(text, DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE)) {
-              selection.insertRawText(chunk);
+          function insertPlainChunks(fragment: string): void {
+            for (const chunk of chunkStringForPaste(fragment, DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE)) {
+              const sel = $getSelection();
+              if (!$isRangeSelection(sel)) {
+                return;
+              }
+              sel.insertRawText(chunk);
             }
+          }
+
+          let selection = $getSelection();
+          if (!$isRangeSelection(selection)) {
+            return;
+          }
+
+          const normalized = text.replace(/\r\n/g, "\n");
+          const lines = normalized.split("\n");
+
+          if (lines.length <= 1) {
+            insertPlainChunks(normalized);
+            return;
+          }
+
+          if (!selection.isCollapsed()) {
+            selection.removeText();
+            const afterRemove = $getSelection();
+            if (!$isRangeSelection(afterRemove)) {
+              return;
+            }
+            selection = afterRemove;
+          }
+
+          const anchorNode = selection.anchor.getNode();
+          const blockNode = $isScreenplayBlockNode(anchorNode)
+            ? anchorNode
+            : anchorNode.getParent();
+
+          const splitIntoBlocks =
+            $isScreenplayBlockNode(blockNode) &&
+            isCollapsedCaretAtEndOfScreenplayBlock(
+              blockNode,
+              selection.anchor.getNode(),
+              selection.anchor.offset,
+            );
+
+          if (!splitIntoBlocks) {
+            insertPlainChunks(normalized);
+            return;
+          }
+
+          insertPlainChunks(lines[0] ?? "");
+
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i] ?? "";
+            const sel = $getSelection();
+            if (!$isRangeSelection(sel)) {
+              break;
+            }
+            const an = sel.anchor.getNode();
+            const bn = $isScreenplayBlockNode(an) ? an : an.getParent();
+            if (!$isScreenplayBlockNode(bn)) {
+              insertPlainChunks(`\n${lines.slice(i).join("\n")}`);
+              break;
+            }
+            const nextType = getNextBlockTypeOnEnter(bn.getBlockType());
+            const newBlock = $createScreenplayBlockNode(nextType);
+            bn.insertAfter(newBlock);
+            newBlock.selectStart();
+            insertPlainChunks(line);
           }
         });
         return true;
