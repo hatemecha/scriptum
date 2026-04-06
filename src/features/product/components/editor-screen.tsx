@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 import { $getNodeByKey, type EditorState, type LexicalEditor } from "lexical";
 
@@ -44,9 +54,12 @@ import { type EditorViewState } from "@/features/product/view-states";
 import { mapPersistErrorForDisplay } from "@/features/projects/persist-user-messages";
 import { saveProjectSnapshot, type PersistedProjectEditorData, type SerializedEditorBlock } from "@/features/projects/project-snapshots";
 import {
-  mergeUserProfilePreferences,
-  type EditorTipsDetailLevel,
-} from "@/features/user/profile";
+  flushPreferenceOverlayToServer,
+  mergeUserProfilePreferencesResilient,
+  offlinePreferenceSuccessMessage,
+  readPreferenceOverlay,
+} from "@/features/user/local-profile-preferences-overlay";
+import { type EditorTipsDetailLevel } from "@/features/user/profile";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/cn";
 
@@ -70,6 +83,7 @@ type EditorScreenProps = {
   initialData: PersistedProjectEditorData | null;
   projectId: string;
   prototypeMode: boolean;
+  userId: string;
   viewState: EditorViewState;
 };
 
@@ -77,9 +91,14 @@ type SaveTone = "danger" | "muted" | "success" | "warning";
 type PrototypeSaveState = "saving" | "synced";
 type PersistState = "error" | "local-draft" | "saved" | "saving";
 
+type SaveStatusIconKind = "saved" | "unsaved" | "saving" | "offline" | "local" | "error";
+
 type StatusPresentation = {
   label: string;
   tone: SaveTone;
+  /** Para tooltip al pasar el mouse (lectura detallada del estado). */
+  detail: string;
+  icon: SaveStatusIconKind;
 };
 
 type ScreenplayEditorSeedBlock = {
@@ -104,6 +123,86 @@ function getStatusClassName(tone: SaveTone): string {
       return styles.editorStatusWarning;
     default:
       return styles.editorStatusMuted;
+  }
+}
+
+function SaveStatusTooltipBody({ label, detail }: { label: string; detail: string }) {
+  return (
+    <>
+      <strong>{label}</strong>
+      <p>{detail}</p>
+    </>
+  );
+}
+
+function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
+  const common = {
+    className: styles.editorSaveStatusGlyph,
+    width: 18,
+    height: 18,
+    viewBox: "0 0 24 24",
+    "aria-hidden": true as const,
+  };
+
+  switch (kind) {
+    case "saved":
+      return (
+        <svg {...common}>
+          <path
+            fill="currentColor"
+            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+          />
+        </svg>
+      );
+    case "unsaved":
+      return (
+        <svg {...common}>
+          <path
+            fill="currentColor"
+            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+          />
+        </svg>
+      );
+    case "saving":
+      return (
+        <svg {...common} className={cn(styles.editorSaveStatusGlyph, styles.editorSaveStatusGlyphSpin)}>
+          <path
+            fill="currentColor"
+            d="M12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6V4zm0-2v4l2.5-2.5L12 2z"
+          />
+        </svg>
+      );
+    case "offline":
+      return (
+        <svg {...common}>
+          <path
+            fill="currentColor"
+            d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.65 1.65A5.5 5.5 0 0 1 12 6c3.04 0 5.5 2.46 5.5 5.5v.5h1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H12c-2.21 0-4-1.79-4-4 0-1.1.45-2.1 1.17-2.83L3 4.41 1.59 5.83 18.17 22.41 19.59 21l-4.1-4.1zM12 18h8.17l-8.17-8.17V18z"
+          />
+        </svg>
+      );
+    case "local":
+      return (
+        <svg {...common}>
+          <path
+            fill="currentColor"
+            d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zm0 2 2 2h8v10H4V6h6V4zm2 8v2h8v-2h-8zm0-4v2h5V8h-5z"
+          />
+        </svg>
+      );
+    case "error":
+      return (
+        <svg {...common}>
+          <path
+            fill="currentColor"
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+          />
+        </svg>
+      );
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
   }
 }
 
@@ -186,6 +285,9 @@ function getStatusPresentation({
       return {
         label: "Sin conexión",
         tone: "warning",
+        icon: "offline",
+        detail:
+          "Este modo prototipo simula estar sin red. En el editor real, los cambios quedan en el navegador hasta volver la conexión.",
       };
     }
 
@@ -193,6 +295,8 @@ function getStatusPresentation({
       return {
         label: "Error al guardar",
         tone: "danger",
+        icon: "error",
+        detail: "Algo falló al guardar en la simulación; en producción verías copia local y reintento.",
       };
     }
 
@@ -200,6 +304,8 @@ function getStatusPresentation({
       return {
         label: "Sin guardar",
         tone: "warning",
+        icon: "unsaved",
+        detail: "Hay cambios que todavía no se marcaron como guardados en este flujo de demostración.",
       };
     }
 
@@ -207,6 +313,8 @@ function getStatusPresentation({
       return {
         label: "Sincronizando...",
         tone: "muted",
+        icon: "saving",
+        detail: "Simulamos la sincronización con el servidor; el icono gira mientras dura el proceso.",
       };
     }
 
@@ -214,12 +322,18 @@ function getStatusPresentation({
       return {
         label: "Guardando...",
         tone: "muted",
+        icon: "saving",
+        detail: "Enviando el borrador al servidor o guardándolo en la simulación. No cierres la pestaña si podés evitarlo.",
       };
     }
 
     return {
       label: "Guardado",
       tone: highlightSaved ? "success" : "muted",
+      icon: "saved",
+      detail: highlightSaved
+        ? "Listo: el último guardado se confirmó hace un momento."
+        : "No hay cambios pendientes respecto al último guardado conocido.",
     };
   }
 
@@ -227,6 +341,9 @@ function getStatusPresentation({
     return {
       label: "Guardado en local",
       tone: "warning",
+      icon: "offline",
+      detail:
+        "Sin conexión: el guion sigue en este navegador. Cuando vuelva la red, podés usar «Guardar» para sincronizar con tu cuenta.",
     };
   }
 
@@ -234,6 +351,9 @@ function getStatusPresentation({
     return {
       label: "Cambios en local",
       tone: "danger",
+      icon: "error",
+      detail:
+        "No pudimos completar el último guardado en el servidor; seguís editando una copia segura en este dispositivo. Reintentá «Guardar» o revisá la conexión.",
     };
   }
 
@@ -241,6 +361,9 @@ function getStatusPresentation({
     return {
       label: "Cambios en local",
       tone: "warning",
+      icon: "local",
+      detail:
+        "Hay un borrador recuperado o pendiente solo en este navegador. Guardá en el servidor cuando puedas para unificar la versión.",
     };
   }
 
@@ -248,6 +371,8 @@ function getStatusPresentation({
     return {
       label: "Guardando...",
       tone: "muted",
+      icon: "saving",
+      detail: "Estamos enviando el guion al servidor. Si tarda, comprobá la conexión pero no hace falta perder lo ya escrito.",
     };
   }
 
@@ -255,12 +380,19 @@ function getStatusPresentation({
     return {
       label: "Sin guardar",
       tone: "warning",
+      icon: "unsaved",
+      detail:
+        "Editaste el guion o el título y todavía no coinciden con el último guardado en el servidor. Pulsá «Guardar» o activá el autoguardado en Ajustes → Editor.",
     };
   }
 
   return {
     label: "Guardado",
     tone: highlightSaved ? "success" : "muted",
+    icon: "saved",
+    detail: highlightSaved
+      ? "El borrador quedó sincronizado con el servidor hace un instante."
+      : "No hay diferencias pendientes: lo último en pantalla coincide con el guardado en tu cuenta.",
   };
 }
 
@@ -298,9 +430,53 @@ function ScenesToggleTooltipBody() {
     <>
       <strong>Lista de escenas</strong>
       <p>{scene.definition}</p>
-      <p>Mostrá u ocultá el panel para saltar entre encabezados.</p>
+      <p>El control queda a la izquierda, junto al listado de escenas (como en el playground foundation).</p>
     </>
   );
+}
+
+function EditorSceneRailToggle({
+  tipsHoverEnabled,
+  isSidebarVisible,
+  setIsSidebarVisible,
+}: {
+  tipsHoverEnabled: boolean;
+  isSidebarVisible: boolean;
+  setIsSidebarVisible: Dispatch<SetStateAction<boolean>>;
+}) {
+  const button = (
+    <button
+      type="button"
+      className={styles.editorSceneRailButton}
+      onClick={() => setIsSidebarVisible((current) => !current)}
+      aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
+      aria-pressed={isSidebarVisible}
+    >
+      <svg
+        className={styles.editorScenesIcon}
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        aria-hidden={true}
+      >
+        <path fill="currentColor" d="M4 5h16v2H4V5zm0 6h10v2H4v-2zm0 6h16v2H4v-2z" />
+      </svg>
+    </button>
+  );
+
+  if (tipsHoverEnabled) {
+    return (
+      <HoverDelayTip
+        className={styles.editorSceneRailTipWrap}
+        content={<ScenesToggleTooltipBody />}
+        delayMs={720}
+      >
+        {button}
+      </HoverDelayTip>
+    );
+  }
+
+  return button;
 }
 
 function EditorLoadingScreen({ title }: { title: string }) {
@@ -309,30 +485,34 @@ function EditorLoadingScreen({ title }: { title: string }) {
       <header className={styles.editorHeader}>
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
-            <Link href={routes.projects} className={styles.editorBack}>
-              ← Proyectos
-            </Link>
-            <div className={styles.editorTitleCluster}>
-              <Skeleton height="1.35rem" width="min(14rem, 42vw)" radius="0.5rem" />
-              <span className={cn(styles.editorStatus, styles.editorStatusMuted)}>Cargando…</span>
+            <div className={styles.editorHeaderIdentity}>
+              <Link href={routes.projects} className={styles.editorBack}>
+                ← Proyectos
+              </Link>
+              <div className={styles.editorTitleRow}>
+                <Skeleton height="1.5rem" width="min(16rem, 52vw)" radius="0.35rem" />
+                <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
+              </div>
             </div>
           </div>
 
-          <div className={styles.editorHeaderActions}>
-            <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
-            <Skeleton height="2.25rem" width="4.5rem" radius="0.65rem" />
-            <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
-            <Skeleton height="2.25rem" width="5.5rem" radius="0.75rem" />
+          <div className={styles.editorHeaderTrailing}>
+            <div className={styles.editorHeaderFormatTools}>
+              <Skeleton height="2.25rem" width="min(11rem, 38vw)" radius="0.65rem" />
+            </div>
+            <span className={styles.editorHeaderTrailingDivider} aria-hidden={true} />
+            <div className={styles.editorHeaderFileCluster}>
+              <Skeleton height="2.25rem" width="4.5rem" radius="0.65rem" />
+              <Skeleton height="2.25rem" width="5.5rem" radius="0.75rem" />
+            </div>
           </div>
         </div>
       </header>
 
-      <div
-        className={cn(
-          styles.editorWorkspace,
-          "foundation-editor-grid foundation-editor-grid--nav-first",
-        )}
-      >
+      <div className={cn(styles.editorWorkspace, styles.editorWorkspaceWithScenePanel)}>
+        <div className={styles.editorSceneRail} aria-label="Panel de escenas">
+          <Skeleton height="3rem" width="3rem" radius="1rem" />
+        </div>
         <aside className={styles.editorSidebar}>
           <div className={styles.editorSidebarHeader}>
             <p className="foundation-kicker">Escenas</p>
@@ -383,6 +563,7 @@ export function EditorScreen({
   initialData,
   projectId,
   prototypeMode,
+  userId,
   viewState,
 }: EditorScreenProps) {
   const [initialSeed] = useState(() =>
@@ -451,6 +632,48 @@ export function EditorScreen({
   );
   const tipsHoverEnabled = tipsEnabled && tipsDetailLevel === "full";
   const tipsContextStripEnabled = tipsEnabled && tipsDetailLevel === "full";
+
+  useLayoutEffect(() => {
+    if (prototypeMode) {
+      return;
+    }
+    const overlay = readPreferenceOverlay(userId);
+    if (typeof overlay.editorTipsEnabled === "boolean") {
+      setTipsEnabled(overlay.editorTipsEnabled);
+    }
+    if (overlay.editorTipsDetailLevel === "full" || overlay.editorTipsDetailLevel === "minimal") {
+      setTipsDetailLevel(overlay.editorTipsDetailLevel);
+    }
+  }, [prototypeMode, userId]);
+
+  useEffect(() => {
+    if (prototypeMode || typeof navigator === "undefined" || !navigator.onLine) {
+      return undefined;
+    }
+
+    function flushOverlay() {
+      void (async () => {
+        const supabase = createSupabaseBrowserClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || user.id !== userId) {
+          return;
+        }
+        if (Object.keys(readPreferenceOverlay(userId)).length === 0) {
+          return;
+        }
+        await flushPreferenceOverlayToServer(supabase, userId);
+      })();
+    }
+
+    flushOverlay();
+    window.addEventListener("online", flushOverlay);
+    return () => {
+      window.removeEventListener("online", flushOverlay);
+    };
+  }, [prototypeMode, userId]);
+
   const [contextHint, setContextHint] = useState<string | null>(null);
   const [formatAutoMessage, setFormatAutoMessage] = useState<string | null>(null);
   const [activeBlockType, setActiveBlockType] = useState<ScreenplayBlockType>("action");
@@ -770,7 +993,7 @@ export function EditorScreen({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!user || user.id !== userId) {
         setTipsPreferenceFeedback({
           tone: "error",
           message: "Iniciá sesión de nuevo para guardar esta preferencia.",
@@ -778,14 +1001,18 @@ export function EditorScreen({
         return;
       }
 
-      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
-        editorTipsEnabled: false,
-      });
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
+        supabase,
+        userId,
+        {
+          editorTipsEnabled: false,
+        },
+      );
 
       if (error) {
         setTipsPreferenceFeedback({
           tone: "error",
-          message: "No pudimos guardar. Revisá la conexión o probá desde Ajustes → Editor.",
+          message: "No pudimos guardar esta preferencia. Probá de nuevo en unos segundos.",
         });
         return;
       }
@@ -800,17 +1027,19 @@ export function EditorScreen({
       }
       setTipsPreferenceFeedback({
         tone: "success",
-        message: "Ayudas desactivadas. Podés volver a activarlas en Ajustes → Editor.",
+        message: appliedLocallyOnly
+          ? offlinePreferenceSuccessMessage()
+          : "Ayudas desactivadas. Podés volver a activarlas en Ajustes → Editor.",
       });
     } catch {
       setTipsPreferenceFeedback({
         tone: "error",
-        message: "No pudimos guardar. Probá desde Ajustes → Editor.",
+        message: "No pudimos guardar esta preferencia. Probá de nuevo en unos segundos.",
       });
     } finally {
       setIsTipsPreferenceSaving(false);
     }
-  }, [isTipsPreferenceSaving]);
+  }, [isTipsPreferenceSaving, userId]);
 
   const handleSceneNavigate = useCallback((sceneKey: string) => {
     const editor = lexicalEditorRef.current;
@@ -1213,43 +1442,74 @@ export function EditorScreen({
       <header className={styles.editorHeader}>
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
-            <Link
-              href={routes.projects}
-              className={styles.editorBack}
-              onClick={(event) => {
-                if (!prototypeMode && hasUnsavedChanges) {
-                  event.preventDefault();
-                  setLeaveModalError(null);
-                  setLeaveTargetHref(routes.projects);
-                }
-              }}
-            >
-              ← Proyectos
-            </Link>
-            <div className={styles.editorTitleCluster}>
-              <input
-                type="text"
-                className={styles.editorTitleInput}
-                aria-label="Título del proyecto"
-                value={projectTitle}
-                onChange={(event) => handleTitleChange(event.target.value)}
-                onBlur={handleTitleBlur}
-              />
-              <span
-                className={cn(styles.editorStatus, getStatusClassName(status.tone))}
-                role="status"
-                aria-live="polite"
+            <div className={styles.editorHeaderIdentity}>
+              <Link
+                href={routes.projects}
+                className={styles.editorBack}
+                onClick={(event) => {
+                  if (!prototypeMode && hasUnsavedChanges) {
+                    event.preventDefault();
+                    setLeaveModalError(null);
+                    setLeaveTargetHref(routes.projects);
+                  }
+                }}
               >
-                {status.label}
-              </span>
+                ← Proyectos
+              </Link>
+              <div className={styles.editorTitleRow}>
+                <input
+                  type="text"
+                  className={styles.editorTitleInput}
+                  aria-label="Título del proyecto"
+                  value={projectTitle}
+                  onChange={(event) => handleTitleChange(event.target.value)}
+                  onBlur={handleTitleBlur}
+                />
+                <span className={styles.visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
+                  {status.label}
+                </span>
+                <HoverDelayTip
+                  className={styles.editorSaveStatusTipWrap}
+                  content={<SaveStatusTooltipBody label={status.label} detail={status.detail} />}
+                  delayMs={560}
+                >
+                  <button
+                    type="button"
+                    className={cn(styles.editorSaveStatusTrigger, getStatusClassName(status.tone))}
+                    aria-label={status.label}
+                  >
+                    <SaveStatusGlyph kind={status.icon} />
+                  </button>
+                </HoverDelayTip>
+              </div>
             </div>
           </div>
 
-          <div className={styles.editorHeaderBlockWrap}>
-            <div className={styles.editorBlockTypeCluster}>
-              {tipsHoverEnabled && blockTypeGlossaryEntry ? (
-                <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
-                  <div className={styles.editorBlockTypeHoverWrap}>
+          <div className={styles.editorHeaderTrailing}>
+            <div className={styles.editorHeaderFormatTools}>
+              <div className={styles.editorBlockTypeCluster}>
+                {tipsHoverEnabled && blockTypeGlossaryEntry ? (
+                  <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
+                    <div className={styles.editorBlockTypeHoverWrap}>
+                      <label className={styles.visuallyHidden} htmlFor="editor-block-type">
+                        Tipo de bloque del guion
+                      </label>
+                      <select
+                        id="editor-block-type"
+                        className={styles.editorBlockTypeSelect}
+                        value={activeBlockType}
+                        onChange={handleBlockTypeSelect}
+                      >
+                        {screenplayBlockTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {BLOCK_TYPE_LABEL_ES[type]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </HoverDelayTip>
+                ) : (
+                  <>
                     <label className={styles.visuallyHidden} htmlFor="editor-block-type">
                       Tipo de bloque del guion
                     </label>
@@ -1265,102 +1525,41 @@ export function EditorScreen({
                         </option>
                       ))}
                     </select>
-                  </div>
-                </HoverDelayTip>
-              ) : (
-                <>
-                  <label className={styles.visuallyHidden} htmlFor="editor-block-type">
-                    Tipo de bloque del guion
-                  </label>
-                  <select
-                    id="editor-block-type"
-                    className={styles.editorBlockTypeSelect}
-                    value={activeBlockType}
-                    onChange={handleBlockTypeSelect}
-                  >
-                    {screenplayBlockTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {BLOCK_TYPE_LABEL_ES[type]}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className={styles.editorHeaderActions}>
-            {tipsHoverEnabled ? (
-              <HoverDelayTip content={<ScenesToggleTooltipBody />} delayMs={720}>
-                <button
-                  type="button"
-                  className={styles.editorIconButton}
-                  onClick={() => setIsSidebarVisible((currentValue) => !currentValue)}
-                  aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
-                  aria-pressed={isSidebarVisible}
-                >
-                  <svg
-                    className={styles.editorScenesIcon}
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    aria-hidden={true}
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M4 5h16v2H4V5zm0 6h10v2H4v-2zm0 6h16v2H4v-2z"
-                    />
-                  </svg>
-                </button>
-              </HoverDelayTip>
-            ) : (
-              <button
-                type="button"
-                className={styles.editorIconButton}
-                onClick={() => setIsSidebarVisible((currentValue) => !currentValue)}
-                aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
-                aria-pressed={isSidebarVisible}
+            <span className={styles.editorHeaderTrailingDivider} aria-hidden={true} />
+
+            <div className={styles.editorHeaderFileCluster}>
+              <Link
+                href={routes.settings}
+                className={styles.editorHeaderQuiet}
+                onClick={(event) => {
+                  if (!prototypeMode && hasUnsavedChanges) {
+                    event.preventDefault();
+                    setLeaveModalError(null);
+                    setLeaveTargetHref(routes.settings);
+                  }
+                }}
               >
-                <svg
-                  className={styles.editorScenesIcon}
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  aria-hidden={true}
+                Ajustes
+              </Link>
+              {!prototypeMode ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!hasUnsavedChanges || persistState === "saving" || !projectRecord}
+                  onClick={() => void persistLatestDraftRef.current()}
                 >
-                  <path
-                    fill="currentColor"
-                    d="M4 5h16v2H4V5zm0 6h10v2H4v-2zm0 6h16v2H4v-2z"
-                  />
-                </svg>
-              </button>
-            )}
-            <Link
-              href={routes.settings}
-              className={styles.editorHeaderQuiet}
-              onClick={(event) => {
-                if (!prototypeMode && hasUnsavedChanges) {
-                  event.preventDefault();
-                  setLeaveModalError(null);
-                  setLeaveTargetHref(routes.settings);
-                }
-              }}
-            >
-              Ajustes
-            </Link>
-            {!prototypeMode ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={!hasUnsavedChanges || persistState === "saving" || !projectRecord}
-                onClick={() => void persistLatestDraftRef.current()}
-              >
-                {persistState === "saving" ? "Guardando…" : "Guardar"}
+                  {persistState === "saving" ? "Guardando…" : "Guardar"}
+                </Button>
+              ) : null}
+              <Button variant="secondary" size="sm" onClick={handleOpenExportModal}>
+                Exportar
               </Button>
-            ) : null}
-            <Button variant="secondary" size="sm" onClick={handleOpenExportModal}>
-              Exportar
-            </Button>
+            </div>
           </div>
         </div>
 
@@ -1434,10 +1633,16 @@ export function EditorScreen({
       <div
         className={cn(
           styles.editorWorkspace,
-          !isSidebarVisible && styles.editorWorkspaceSolo,
-          isSidebarVisible && "foundation-editor-grid foundation-editor-grid--nav-first",
+          isSidebarVisible ? styles.editorWorkspaceWithScenePanel : styles.editorWorkspaceSceneCollapsed,
         )}
       >
+        <div className={styles.editorSceneRail} aria-label="Panel de escenas">
+          <EditorSceneRailToggle
+            tipsHoverEnabled={tipsHoverEnabled}
+            isSidebarVisible={isSidebarVisible}
+            setIsSidebarVisible={setIsSidebarVisible}
+          />
+        </div>
         <aside
           className={cn(styles.editorSidebar, !isSidebarVisible && styles.editorSidebarHidden)}
           aria-label="Sidebar de escenas"

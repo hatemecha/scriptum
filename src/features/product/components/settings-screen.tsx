@@ -12,8 +12,13 @@ import { useToast } from "@/components/ui/toast";
 import { routes } from "@/config/routes";
 import { type SettingsViewState } from "@/features/product/view-states";
 import {
+  flushPreferenceOverlayToServer,
+  mergeUserProfilePreferencesResilient,
+  offlinePreferenceSuccessMessage,
+  readPreferenceOverlay,
+} from "@/features/user/local-profile-preferences-overlay";
+import {
   formatProfilePlanLabel,
-  mergeUserProfilePreferences,
   resolveEditorAutosaveEnabled,
   resolveEditorTipsDetailLevel,
   resolveEditorTipsEnabled,
@@ -99,10 +104,65 @@ export function SettingsScreen({
   const { showToast } = useToast();
 
   useEffect(() => {
-    setEditorTipsEnabled(resolveEditorTipsEnabled(initialProfile?.preferences));
-    setEditorTipsDetailLevel(resolveEditorTipsDetailLevel(initialProfile?.preferences));
-    setEditorAutosaveEnabled(resolveEditorAutosaveEnabled(initialProfile?.preferences));
+    const uid = initialProfile?.id;
+    const baseTips = resolveEditorTipsEnabled(initialProfile?.preferences);
+    const baseDetail = resolveEditorTipsDetailLevel(initialProfile?.preferences);
+    const baseAutosave = resolveEditorAutosaveEnabled(initialProfile?.preferences);
+
+    if (!uid) {
+      setEditorTipsEnabled(baseTips);
+      setEditorTipsDetailLevel(baseDetail);
+      setEditorAutosaveEnabled(baseAutosave);
+      return;
+    }
+
+    const overlay = readPreferenceOverlay(uid);
+    setEditorTipsEnabled(
+      typeof overlay.editorTipsEnabled === "boolean" ? overlay.editorTipsEnabled : baseTips,
+    );
+    setEditorTipsDetailLevel(
+      overlay.editorTipsDetailLevel === "full" || overlay.editorTipsDetailLevel === "minimal"
+        ? overlay.editorTipsDetailLevel
+        : baseDetail,
+    );
+    setEditorAutosaveEnabled(
+      typeof overlay.editorAutosaveEnabled === "boolean"
+        ? overlay.editorAutosaveEnabled
+        : baseAutosave,
+    );
   }, [initialProfile]);
+
+  useEffect(() => {
+    const uid = initialProfile?.id;
+    if (!uid || typeof navigator === "undefined" || !navigator.onLine) {
+      return undefined;
+    }
+
+    function flushOverlay() {
+      void (async () => {
+        const supabase = createSupabaseBrowserClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || user.id !== uid) {
+          return;
+        }
+        if (Object.keys(readPreferenceOverlay(uid)).length === 0) {
+          return;
+        }
+        const { ok } = await flushPreferenceOverlayToServer(supabase, uid);
+        if (ok) {
+          router.refresh();
+        }
+      })();
+    }
+
+    flushOverlay();
+    window.addEventListener("online", flushOverlay);
+    return () => {
+      window.removeEventListener("online", flushOverlay);
+    };
+  }, [initialProfile?.id, router]);
 
   const isOffline = viewState === "offline";
   const showProfileError = profileLoadFailed && !isOffline;
@@ -192,7 +252,17 @@ export function SettingsScreen({
   }
 
   async function handleEditorTipsChange(nextEnabled: boolean) {
-    if (isOffline || isEditorTipsSaving) {
+    if (isEditorTipsSaving) {
+      return;
+    }
+
+    const uid = initialProfile?.id;
+    if (!uid) {
+      showToast({
+        description: "No hay perfil cargado.",
+        title: "Error",
+        tone: "error",
+      });
       return;
     }
 
@@ -204,7 +274,7 @@ export function SettingsScreen({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!user || user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -213,9 +283,13 @@ export function SettingsScreen({
         return;
       }
 
-      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
-        editorTipsEnabled: nextEnabled,
-      });
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
+        supabase,
+        uid,
+        {
+          editorTipsEnabled: nextEnabled,
+        },
+      );
 
       if (error) {
         showToast({
@@ -228,16 +302,20 @@ export function SettingsScreen({
 
       setEditorTipsEnabled(nextEnabled);
       showToast({
-        description: nextEnabled
-          ? "Verás de nuevo el glosario y las pistas según tu nivel de ayuda."
-          : "El editor queda sin ayudas visibles; podés reactivarlas en Ajustes → Editor.",
-        title: "Preferencia guardada",
+        description: appliedLocallyOnly
+          ? offlinePreferenceSuccessMessage()
+          : nextEnabled
+            ? "Verás de nuevo el glosario y las pistas según tu nivel de ayuda."
+            : "El editor queda sin ayudas visibles; podés reactivarlas en Ajustes → Editor.",
+        title: appliedLocallyOnly ? "Guardado en el dispositivo" : "Preferencia guardada",
         tone: "success",
       });
-      router.refresh();
+      if (!appliedLocallyOnly) {
+        router.refresh();
+      }
     } catch {
       showToast({
-        description: "Revisa tu conexión e inténtalo de nuevo.",
+        description: "Algo salió mal. Intenta de nuevo.",
         title: "Error",
         tone: "error",
       });
@@ -247,7 +325,17 @@ export function SettingsScreen({
   }
 
   async function handleEditorTipsDetailLevelChange(nextLevel: EditorTipsDetailLevel) {
-    if (isOffline || isEditorTipsSaving || editorTipsDetailLevel === nextLevel) {
+    if (isEditorTipsSaving || editorTipsDetailLevel === nextLevel) {
+      return;
+    }
+
+    const uid = initialProfile?.id;
+    if (!uid) {
+      showToast({
+        description: "No hay perfil cargado.",
+        title: "Error",
+        tone: "error",
+      });
       return;
     }
 
@@ -259,7 +347,7 @@ export function SettingsScreen({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!user || user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -268,9 +356,13 @@ export function SettingsScreen({
         return;
       }
 
-      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
-        editorTipsDetailLevel: nextLevel,
-      });
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
+        supabase,
+        uid,
+        {
+          editorTipsDetailLevel: nextLevel,
+        },
+      );
 
       if (error) {
         showToast({
@@ -283,17 +375,20 @@ export function SettingsScreen({
 
       setEditorTipsDetailLevel(nextLevel);
       showToast({
-        description:
-          nextLevel === "full"
+        description: appliedLocallyOnly
+          ? offlinePreferenceSuccessMessage()
+          : nextLevel === "full"
             ? "Verás pistas al escribir y tooltips con definiciones."
             : "Quedan el glosario manual y el lienzo más limpio, sin franja de pistas.",
-        title: "Preferencia guardada",
+        title: appliedLocallyOnly ? "Guardado en el dispositivo" : "Preferencia guardada",
         tone: "success",
       });
-      router.refresh();
+      if (!appliedLocallyOnly) {
+        router.refresh();
+      }
     } catch {
       showToast({
-        description: "Revisa tu conexión e inténtalo de nuevo.",
+        description: "Algo salió mal. Intenta de nuevo.",
         title: "Error",
         tone: "error",
       });
@@ -303,7 +398,17 @@ export function SettingsScreen({
   }
 
   async function handleEditorAutosaveChange(nextEnabled: boolean) {
-    if (isOffline || isEditorTipsSaving || editorAutosaveEnabled === nextEnabled) {
+    if (isEditorTipsSaving || editorAutosaveEnabled === nextEnabled) {
+      return;
+    }
+
+    const uid = initialProfile?.id;
+    if (!uid) {
+      showToast({
+        description: "No hay perfil cargado.",
+        title: "Error",
+        tone: "error",
+      });
       return;
     }
 
@@ -315,7 +420,7 @@ export function SettingsScreen({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!user || user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -324,9 +429,13 @@ export function SettingsScreen({
         return;
       }
 
-      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
-        editorAutosaveEnabled: nextEnabled,
-      });
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
+        supabase,
+        uid,
+        {
+          editorAutosaveEnabled: nextEnabled,
+        },
+      );
 
       if (error) {
         showToast({
@@ -339,16 +448,20 @@ export function SettingsScreen({
 
       setEditorAutosaveEnabled(nextEnabled);
       showToast({
-        description: nextEnabled
-          ? "El guión puede sincronizarse al pulsar Intro y al editar el título."
-          : "Usá «Guardar» en el editor o confirmá al ir a Proyectos o Ajustes.",
-        title: "Preferencia guardada",
+        description: appliedLocallyOnly
+          ? offlinePreferenceSuccessMessage()
+          : nextEnabled
+            ? "El guión puede sincronizarse al pulsar Intro y al editar el título."
+            : "Usá «Guardar» en el editor o confirmá al ir a Proyectos o Ajustes.",
+        title: appliedLocallyOnly ? "Guardado en el dispositivo" : "Preferencia guardada",
         tone: "success",
       });
-      router.refresh();
+      if (!appliedLocallyOnly) {
+        router.refresh();
+      }
     } catch {
       showToast({
-        description: "Revisa tu conexión e inténtalo de nuevo.",
+        description: "Algo salió mal. Intenta de nuevo.",
         title: "Error",
         tone: "error",
       });

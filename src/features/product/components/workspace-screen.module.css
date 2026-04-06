@@ -392,12 +392,13 @@
 }
 
 .editorHeaderTop {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1.25rem;
-  min-height: 3.5rem;
-  padding: 0.65rem clamp(1rem, 3vw, 2rem);
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  min-height: 3.35rem;
+  padding: 0.55rem clamp(1rem, 3vw, 2rem);
 }
 
 .editorBlockTypeCluster {
@@ -687,9 +688,25 @@
 
 .editorHeaderLeading {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem 1.1rem;
+  flex: 2 1 18rem;
+  min-width: 0;
+}
+
+.editorHeaderIdentity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem 1.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.editorTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 1rem;
   min-width: 0;
 }
 
@@ -705,33 +722,48 @@
   border: 0;
 }
 
-.editorHeaderBlockWrap {
+.editorHeaderTrailing {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
+  gap: 0.65rem 0.85rem;
+  flex: 1 1 16rem;
   min-width: 0;
 }
 
-.editorTitleCluster {
+.editorHeaderFormatTools {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 0.85rem;
+  align-items: center;
   min-width: 0;
-  flex: 1 1 14rem;
+}
+
+.editorHeaderTrailingDivider {
+  width: 1px;
+  height: 1.35rem;
+  flex-shrink: 0;
+  align-self: center;
+  background: color-mix(in srgb, var(--color-editor-chrome-border) 78%, transparent);
+  border-radius: 1px;
 }
 
 .editorBack {
   flex-shrink: 0;
+  margin: 0;
+  padding: 0.28rem 0;
   color: var(--color-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   line-height: 1.2;
+  text-decoration: none;
   transition: color var(--transition-base);
 }
 
 .editorBack:hover {
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
 .editorBlockTypeSelect {
@@ -762,7 +794,7 @@
   box-shadow: 0 0 0 3px var(--color-focus-shadow);
 }
 
-.editorHeaderActions {
+.editorHeaderFileCluster {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -832,15 +864,18 @@
 }
 
 .editorTitleInput {
-  flex: 1 1 10rem;
+  flex: 1 1 11rem;
   min-width: 0;
-  max-width: 22rem;
-  padding: 0.4rem 0.55rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  max-width: min(24rem, 100%);
+  margin: 0;
+  padding: 0.3rem 0 0.44rem;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 85%, transparent);
   background: transparent;
   color: var(--color-foreground);
-  font-size: 1rem;
+  font-family: var(--font-ui);
+  font-size: clamp(0.98rem, 2.2vw, 1.1rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.25;
@@ -849,23 +884,82 @@
   appearance: none;
   transition:
     border-color var(--transition-base),
-    background var(--transition-base),
-    box-shadow var(--transition-base);
+    border-width var(--transition-base),
+    padding-bottom var(--transition-base);
 }
 
-.editorTitleInput:hover,
+.editorTitleInput::placeholder {
+  color: var(--color-placeholder);
+}
+
+.editorTitleInput:hover {
+  border-bottom-color: color-mix(in srgb, var(--color-muted) 50%, var(--color-editor-chrome-border) 50%);
+}
+
 .editorTitleInput:focus {
-  border-color: var(--color-overlay-border);
-  background: var(--color-input-background);
-  box-shadow: 0 0 0 3px var(--color-focus-shadow);
   outline: none;
+  border-bottom-width: 2px;
+  border-bottom-color: var(--color-accent);
+  padding-bottom: calc(0.44rem - 1px);
+  box-shadow: none;
+}
+
+.editorTitleInput:focus-visible {
+  box-shadow: none;
+}
+
+.editorSaveStatusTipWrap {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.editorSaveStatusTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 72%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-foreground) 2.8%, transparent);
+  cursor: help;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
+}
+
+.editorSaveStatusTrigger:hover {
+  border-color: var(--color-accent-soft-strong);
+  background: var(--color-editor-scene-hover);
+}
+
+.editorSaveStatusTrigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.editorSaveStatusGlyph {
+  display: block;
+  flex-shrink: 0;
+}
+
+@keyframes editor-save-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.editorSaveStatusGlyphSpin {
+  animation: editor-save-status-spin 0.85s linear infinite;
 }
 
 .editorStatus {
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.2;
-  white-space: nowrap;
   letter-spacing: 0.02em;
 }
 
@@ -885,17 +979,74 @@
   color: var(--color-danger);
 }
 
-/* Grid: clases globales foundation-editor-grid + foundation-editor-grid--nav-first (ver /playground/foundation). */
+/* Misma lectura que foundation-editor-grid: carril + escenas 20rem + lienzo (playground/foundation). */
 .editorWorkspace {
   min-height: 0;
   padding: 1.5rem clamp(1.25rem, 2.5vw, 2.6rem) 2.5rem;
   background: var(--color-background);
+  display: grid;
+  align-items: start;
+  grid-template-columns: 3.35rem minmax(0, 1fr);
+  column-gap: clamp(1.15rem, 2.2vw, 2.35rem);
 }
 
-/* Sidebar oculto: una sola columna para el lienzo. */
-.editorWorkspaceSolo {
-  display: grid;
-  grid-template-columns: 1fr;
+.editorWorkspaceWithScenePanel {
+  grid-template-columns: 3.35rem 20rem minmax(0, 1fr);
+}
+
+.editorWorkspaceSceneCollapsed {
+  grid-template-columns: 3.35rem minmax(0, 1fr);
+}
+
+.editorSceneRail {
+  position: sticky;
+  top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0.15rem;
+  align-self: start;
+  z-index: 1;
+}
+
+.editorSceneRailTipWrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.editorSceneRailButton {
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    box-shadow var(--transition-base),
+    color var(--transition-base);
+}
+
+.editorSceneRailButton:hover {
+  background: var(--color-editor-scene-hover);
+  color: var(--color-accent);
+}
+
+.editorSceneRailButton[aria-pressed="true"] {
+  background: var(--color-editor-scene-active-bg);
+  box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
+  color: var(--color-accent-strong);
+}
+
+.editorSceneRailButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
 }
 
 .editorSidebar {
@@ -1225,7 +1376,6 @@
 @media (max-width: 960px) {
   .pageHeader,
   .fieldInline,
-  .editorWorkspace,
   .editorFooter {
     grid-template-columns: 1fr;
     flex-direction: column;
@@ -1237,13 +1387,22 @@
   }
 
   .editorHeaderTop {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     align-items: stretch;
   }
 
-  .editorHeaderBlockWrap {
+  .editorHeaderTrailing {
+    flex: none;
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .editorHeaderTrailingDivider {
+    display: none;
+  }
+
+  .editorHeaderFormatTools {
+    width: 100%;
   }
 
   .editorBlockTypeSelect {
@@ -1251,13 +1410,17 @@
     max-width: none;
   }
 
-  .editorHeaderActions {
+  .editorHeaderFileCluster {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .editorWorkspace {
-    display: grid;
+  .editorWorkspaceWithScenePanel {
+    grid-template-columns: 3.15rem minmax(0, 42vw) minmax(0, 1fr);
+  }
+
+  .editorWorkspaceSceneCollapsed {
+    grid-template-columns: 3.15rem minmax(0, 1fr);
   }
 
   .editorCanvas {
@@ -1295,6 +1458,21 @@
   .editorHelpDismissBar,
   .editorFooter {
     padding-inline: 1rem;
+  }
+
+  .editorHeaderIdentity {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .editorTitleRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .editorTitleInput {
+    max-width: none;
   }
 
   .editorSidebar {

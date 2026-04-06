@@ -68,6 +68,7 @@ export default async function ProjectEditorPage({ params, searchParams }: Projec
       initialData={initialData}
       projectId={projectId}
       prototypeMode={isPrototypeProject}
+      userId={user.id}
       viewState={viewState}
     />
   );

@@ -17,14 +17,26 @@ const STUDIOBINDER_URL =
   "https://www.studiobinder.com/blog/screenplay-example-download/";
 const NOFILMSCHOOL_URL = "https://nofilmschool.com/topics/screenwriting";
 
-const GLOSSARY_EXAMPLE_ROW_CLASS: Record<GlossaryExampleRole, string> = {
-  "scene-heading": styles.scriptLineSceneHeading,
-  action: styles.scriptLineAction,
-  character: styles.scriptLineCharacter,
-  dialogue: styles.scriptLineDialogue,
-  parenthetical: styles.scriptLineParenthetical,
-  transition: styles.scriptLineTransition,
-};
+function glossaryExampleRowClassName(role: GlossaryExampleRole): string {
+  switch (role) {
+    case "scene-heading":
+      return styles.scriptLineSceneHeading;
+    case "action":
+      return styles.scriptLineAction;
+    case "character":
+      return styles.scriptLineCharacter;
+    case "dialogue":
+      return styles.scriptLineDialogue;
+    case "parenthetical":
+      return styles.scriptLineParenthetical;
+    case "transition":
+      return styles.scriptLineTransition;
+    default: {
+      const _exhaustive: never = role;
+      return _exhaustive;
+    }
+  }
+}
 
 type EditorGlossaryModalProps = {
   onOpenChange: (open: boolean) => void;
@@ -87,10 +99,7 @@ export function EditorGlossaryModal({ onOpenChange, open }: EditorGlossaryModalP
                         {entry.example.rows.map((row, index) => (
                           <p
                             key={`${entry.id}-ex-${index}`}
-                            className={cn(
-                              styles.scriptLine,
-                              GLOSSARY_EXAMPLE_ROW_CLASS[row.role],
-                            )}
+                            className={cn(styles.scriptLine, glossaryExampleRowClassName(row.role))}
                           >
                             {row.text}
                           </p>
