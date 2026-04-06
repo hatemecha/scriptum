@@ -431,30 +431,30 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 24 — Sidebar de escenas
 
-- [ ] Detectar escenas automáticamente
-- [ ] Mostrar lista de escenas
-- [ ] Permitir navegación por clic
-- [ ] Sincronizar con posición del documento
-- [ ] Resaltar escena actual
-- [ ] Probar con documentos largos
+- [x] Detectar escenas automáticamente
+- [x] Mostrar lista de escenas
+- [x] Permitir navegación por clic
+- [x] Sincronizar con posición del documento
+- [x] Resaltar escena actual
+- [x] Probar con documentos largos
 
 ### Validación
 
-- [ ] La navegación ayuda y no molesta
+- [x] La navegación ayuda y no molesta
 
 ---
 
 ## Día 25 — Ayudas opcionales
 
-- [ ] Implementar glosario básico
-- [ ] Implementar ayudas contextuales mínimas
-- [ ] Implementar opción para ocultarlas
-- [ ] Verificar que no interrumpan a usuarios expertos
+- [x] Implementar glosario básico
+- [x] Implementar ayudas contextuales mínimas
+- [x] Implementar opción para ocultarlas
+- [x] Verificar que no interrumpan a usuarios expertos
 
 ### Validación
 
-- [ ] Las ayudas son opcionales
-- [ ] No rompen el flujo principal
+- [x] Las ayudas son opcionales
+- [x] No rompen el flujo principal
 
 ---
 
@@ -846,6 +846,8 @@ _(ninguno registrado hasta la fecha)_
 - [x] Día 16: middleware alineado con `securityBaseProtectedRoutePrefixes`, bloqueo de `/projects` y `/settings` sin sesión (también si falta config pública de Supabase), `next` sanitizado (`getSafeRedirectPath`), comprobación de propiedad en `projects/[projectId]` con tabla `public.projects` + RLS (`canAccessProjectEditor`), demos de editor acotadas por `authenticatedEditorPrototypeProjectIds`
 - [x] Pre-Día 17: migración `document_snapshots` agregada con RLS (`SELECT/INSERT` owner-only), inmutabilidad por diseño (sin `UPDATE/DELETE` grants), unicidad por `(project_id, revision)` y FK diferida `projects(id,current_snapshot_id) -> document_snapshots(project_id,id)` para asegurar que el snapshot activo pertenezca al mismo proyecto
 - [x] Día 17–19: módulo `src/features/projects/projects.ts` con CRUD completo contra `public.projects` (create, list, get, rename, updateMetadata, archive/unarchive, delete soft), `projects-screen.tsx` reescrito de datos preview a datos reales vía Supabase, acciones inline (menú ⋯ con renombrar, detalles, archivar, eliminar), modales de rename/delete/metadata, filtro Todos/Activos/Archivados, `DashboardLayout` usa perfil real del usuario en lugar de `previewUser`, page server-side fetcha proyectos y determina viewState, build y lint pasan sin errores
+- [x] Día 24: sidebar de escenas operativo en `editor-screen.tsx` + `editor-derived-state.ts` (escenas desde bloques `scene-heading`, lista, clic con foco y `scrollIntoView` en el lienzo, escena activa desde el cursor, resaltado y pie de página); completado con panel lateral con scroll interno, `scrollIntoView` de la fila activa en la lista (`nearest` + `auto`) y ellipsis en títulos largos según Day 11
+- [x] Día 25: preferencia `editorTipsEnabled` en `profiles.preferences` con `resolveEditorTipsEnabled` (por defecto ayudas visibles); definiciones en tooltips tras ~0,7s de hover (`HoverDelayTip`) sobre selector de bloque, pie, título Escenas e icono de lista; glosario completo vía botón «?» en el editor y «Ver glosario completo» en Ajustes → Editor (`editor-help/glossary.ts`, enlaces en modal); «Ocultar ayudas» discreto bajo el header
 
 ## Cosas que NO entrarían en V1
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,17 @@ import { routes } from "@/config/routes";
 import { type SettingsViewState } from "@/features/product/view-states";
 import {
   formatProfilePlanLabel,
+  mergeUserProfilePreferences,
+  resolveEditorAutosaveEnabled,
+  resolveEditorTipsDetailLevel,
+  resolveEditorTipsEnabled,
+  type EditorTipsDetailLevel,
   type UserAppProfile,
   updateUserProfileDisplayName,
 } from "@/features/user/profile";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+import { EditorGlossaryModal } from "./editor-glossary-modal";
 import { StatePanel } from "./state-panel";
 import styles from "./workspace-screen.module.css";
 
@@ -79,7 +85,24 @@ export function SettingsScreen({
   const [isSaving, setIsSaving] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string>();
+  const [editorTipsEnabled, setEditorTipsEnabled] = useState(() =>
+    resolveEditorTipsEnabled(initialProfile?.preferences),
+  );
+  const [editorTipsDetailLevel, setEditorTipsDetailLevel] = useState<EditorTipsDetailLevel>(() =>
+    resolveEditorTipsDetailLevel(initialProfile?.preferences),
+  );
+  const [editorAutosaveEnabled, setEditorAutosaveEnabled] = useState(() =>
+    resolveEditorAutosaveEnabled(initialProfile?.preferences),
+  );
+  const [isEditorTipsSaving, setIsEditorTipsSaving] = useState(false);
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    setEditorTipsEnabled(resolveEditorTipsEnabled(initialProfile?.preferences));
+    setEditorTipsDetailLevel(resolveEditorTipsDetailLevel(initialProfile?.preferences));
+    setEditorAutosaveEnabled(resolveEditorAutosaveEnabled(initialProfile?.preferences));
+  }, [initialProfile]);
 
   const isOffline = viewState === "offline";
   const showProfileError = profileLoadFailed && !isOffline;
@@ -168,6 +191,172 @@ export function SettingsScreen({
     }
   }
 
+  async function handleEditorTipsChange(nextEnabled: boolean) {
+    if (isOffline || isEditorTipsSaving) {
+      return;
+    }
+
+    setIsEditorTipsSaving(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        showToast({
+          description: "No hay sesión activa.",
+          title: "Error",
+          tone: "error",
+        });
+        return;
+      }
+
+      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
+        editorTipsEnabled: nextEnabled,
+      });
+
+      if (error) {
+        showToast({
+          description: "No se pudo guardar. Intenta de nuevo.",
+          title: "Preferencia no guardada",
+          tone: "error",
+        });
+        return;
+      }
+
+      setEditorTipsEnabled(nextEnabled);
+      showToast({
+        description: nextEnabled
+          ? "Verás de nuevo el glosario y las pistas según tu nivel de ayuda."
+          : "El editor queda sin ayudas visibles; podés reactivarlas en Ajustes → Editor.",
+        title: "Preferencia guardada",
+        tone: "success",
+      });
+      router.refresh();
+    } catch {
+      showToast({
+        description: "Revisa tu conexión e inténtalo de nuevo.",
+        title: "Error",
+        tone: "error",
+      });
+    } finally {
+      setIsEditorTipsSaving(false);
+    }
+  }
+
+  async function handleEditorTipsDetailLevelChange(nextLevel: EditorTipsDetailLevel) {
+    if (isOffline || isEditorTipsSaving || editorTipsDetailLevel === nextLevel) {
+      return;
+    }
+
+    setIsEditorTipsSaving(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        showToast({
+          description: "No hay sesión activa.",
+          title: "Error",
+          tone: "error",
+        });
+        return;
+      }
+
+      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
+        editorTipsDetailLevel: nextLevel,
+      });
+
+      if (error) {
+        showToast({
+          description: "No se pudo guardar. Intenta de nuevo.",
+          title: "Preferencia no guardada",
+          tone: "error",
+        });
+        return;
+      }
+
+      setEditorTipsDetailLevel(nextLevel);
+      showToast({
+        description:
+          nextLevel === "full"
+            ? "Verás pistas al escribir y tooltips con definiciones."
+            : "Quedan el glosario manual y el lienzo más limpio, sin franja de pistas.",
+        title: "Preferencia guardada",
+        tone: "success",
+      });
+      router.refresh();
+    } catch {
+      showToast({
+        description: "Revisa tu conexión e inténtalo de nuevo.",
+        title: "Error",
+        tone: "error",
+      });
+    } finally {
+      setIsEditorTipsSaving(false);
+    }
+  }
+
+  async function handleEditorAutosaveChange(nextEnabled: boolean) {
+    if (isOffline || isEditorTipsSaving || editorAutosaveEnabled === nextEnabled) {
+      return;
+    }
+
+    setIsEditorTipsSaving(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        showToast({
+          description: "No hay sesión activa.",
+          title: "Error",
+          tone: "error",
+        });
+        return;
+      }
+
+      const { error } = await mergeUserProfilePreferences(supabase, user.id, {
+        editorAutosaveEnabled: nextEnabled,
+      });
+
+      if (error) {
+        showToast({
+          description: "No se pudo guardar. Intenta de nuevo.",
+          title: "Preferencia no guardada",
+          tone: "error",
+        });
+        return;
+      }
+
+      setEditorAutosaveEnabled(nextEnabled);
+      showToast({
+        description: nextEnabled
+          ? "El guión puede sincronizarse al pulsar Intro y al editar el título."
+          : "Usá «Guardar» en el editor o confirmá al ir a Proyectos o Ajustes.",
+        title: "Preferencia guardada",
+        tone: "success",
+      });
+      router.refresh();
+    } catch {
+      showToast({
+        description: "Revisa tu conexión e inténtalo de nuevo.",
+        title: "Error",
+        tone: "error",
+      });
+    } finally {
+      setIsEditorTipsSaving(false);
+    }
+  }
+
   async function handleSignOut() {
     setSignOutError(undefined);
     setIsSigningOut(true);
@@ -197,6 +386,7 @@ export function SettingsScreen({
     : "Pendiente";
 
   return (
+    <>
     <section className={styles.pageSection}>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeaderCopy}>
@@ -265,6 +455,94 @@ export function SettingsScreen({
 
           <section className={styles.sectionCard}>
             <header className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Editor</h2>
+              <p className={styles.sectionDescription}>
+                Por defecto el guión no se sube solo: usá «Guardar» en la barra del editor o activá el
+                autoguardado abajo. Podés apagar las ayudas o dejarlas en modo mínimo (glosario manual).
+              </p>
+            </header>
+            <div className={styles.settingsToggleRow}>
+              <label className={styles.settingsToggleLabel} htmlFor="settings-editor-autosave">
+                <input
+                  id="settings-editor-autosave"
+                  type="checkbox"
+                  checked={editorAutosaveEnabled}
+                  disabled={isOffline || isEditorTipsSaving}
+                  onChange={(event) => void handleEditorAutosaveChange(event.target.checked)}
+                />
+                <span className={styles.settingsToggleCopy}>
+                  <span className={styles.settingsToggleTitle}>Autoguardado al escribir</span>
+                  <span className={styles.settingsToggleDescription}>
+                    Sincroniza al pulsar Intro en una línea y tras retocar el título (con un breve
+                    retraso). Si está desactivado, guardá con el botón del editor o al salir te
+                    preguntamos.
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div className={styles.settingsToggleRow}>
+              <label className={styles.settingsToggleLabel} htmlFor="settings-editor-tips">
+                <input
+                  id="settings-editor-tips"
+                  type="checkbox"
+                  checked={editorTipsEnabled}
+                  disabled={isOffline || isEditorTipsSaving}
+                  onChange={(event) => void handleEditorTipsChange(event.target.checked)}
+                />
+                <span className={styles.settingsToggleCopy}>
+                  <span className={styles.settingsToggleTitle}>Mostrar ayudas en el editor</span>
+                  <span className={styles.settingsToggleDescription}>
+                    Incluye la barra de ayudas con glosario en el editor. Desactivalo para un lienzo sin ayudas.
+                  </span>
+                </span>
+              </label>
+            </div>
+            {editorTipsEnabled ? (
+              <div className={styles.settingsRadioGroup} role="group" aria-label="Nivel de ayuda">
+                <span className={styles.settingsRadioGroupLabel}>Nivel</span>
+                <label className={styles.settingsRadioRow} htmlFor="settings-editor-tips-full">
+                  <input
+                    id="settings-editor-tips-full"
+                    type="radio"
+                    name="editor-tips-detail"
+                    checked={editorTipsDetailLevel === "full"}
+                    disabled={isOffline || isEditorTipsSaving}
+                    onChange={() => void handleEditorTipsDetailLevelChange("full")}
+                  />
+                  <span className={styles.settingsRadioCopy}>
+                    <span className={styles.settingsRadioTitle}>Completo</span>
+                    <span className={styles.settingsRadioDescription}>
+                      Pistas al escribir, mensajes breves de formato y tooltips con definiciones.
+                    </span>
+                  </span>
+                </label>
+                <label className={styles.settingsRadioRow} htmlFor="settings-editor-tips-minimal">
+                  <input
+                    id="settings-editor-tips-minimal"
+                    type="radio"
+                    name="editor-tips-detail"
+                    checked={editorTipsDetailLevel === "minimal"}
+                    disabled={isOffline || isEditorTipsSaving}
+                    onChange={() => void handleEditorTipsDetailLevelChange("minimal")}
+                  />
+                  <span className={styles.settingsRadioCopy}>
+                    <span className={styles.settingsRadioTitle}>Mínimo</span>
+                    <span className={styles.settingsRadioDescription}>
+                      Sin franja de pistas ni tooltips; seguís pudiendo abrir el glosario a mano.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            ) : null}
+            <div className={styles.settingsGlossaryAction}>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setIsGlossaryOpen(true)}>
+                Ver glosario completo
+              </Button>
+            </div>
+          </section>
+
+          <section className={styles.sectionCard}>
+            <header className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Cuenta</h2>
               <p className={styles.sectionDescription}>
                 Plan, alta de cuenta y acceso.
@@ -310,5 +588,7 @@ export function SettingsScreen({
         </div>
       )}
     </section>
+    <EditorGlossaryModal open={isGlossaryOpen} onOpenChange={setIsGlossaryOpen} />
+    </>
   );
 }

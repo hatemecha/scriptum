@@ -6,13 +6,23 @@ import { type Database, type Json } from "@/lib/supabase/types";
 export const userProfilePlans = ["free", "premium"] as const;
 export type UserProfilePlan = (typeof userProfilePlans)[number];
 
+export const editorTipsDetailLevels = ["full", "minimal"] as const;
+export type EditorTipsDetailLevel = (typeof editorTipsDetailLevels)[number];
+
 export type UserProfilePreferences = {
   /** UI theme preference for dashboard and chrome */
   theme?: "light" | "dark" | "system";
   /** BCP 47 or short code, e.g. es */
   locale?: string;
-  /** Editor tips / contextual help (future Day 36) */
+  /** Editor glossary + contextual strip (Day 25); false = chrome limpio para usuarios expertos */
   editorTipsEnabled?: boolean;
+  /** Con ayudas activas: completo (pistas al escribir) o mínimo (glosario manual, sin franja contextual). */
+  editorTipsDetailLevel?: EditorTipsDetailLevel;
+  /**
+   * Sincronizar al servidor al pulsar Intro en una línea y al retocar el título (debounce).
+   * Por defecto desactivado: el usuario guarda con el botón explícito en el editor.
+   */
+  editorAutosaveEnabled?: boolean;
 };
 
 export type UserAppProfile = {
@@ -44,12 +54,40 @@ export function parseUserProfilePreferences(value: Json): UserProfilePreferences
   const theme = value.theme;
   const locale = value.locale;
   const editorTipsEnabled = value.editorTipsEnabled;
+  const editorTipsDetailLevel = value.editorTipsDetailLevel;
+  const editorAutosaveEnabled = value.editorAutosaveEnabled;
 
   return {
     ...(theme === "light" || theme === "dark" || theme === "system" ? { theme } : {}),
     ...(typeof locale === "string" && locale.trim().length > 0 ? { locale: locale.trim() } : {}),
     ...(typeof editorTipsEnabled === "boolean" ? { editorTipsEnabled } : {}),
+    ...(editorTipsDetailLevel === "full" || editorTipsDetailLevel === "minimal"
+      ? { editorTipsDetailLevel }
+      : {}),
+    ...(typeof editorAutosaveEnabled === "boolean" ? { editorAutosaveEnabled } : {}),
   };
+}
+
+/** Ayudas del editor activas salvo que el usuario las haya desactivado explícitamente. */
+export function resolveEditorTipsEnabled(preferences: UserProfilePreferences | undefined): boolean {
+  if (!preferences) {
+    return true;
+  }
+  return preferences.editorTipsEnabled !== false;
+}
+
+export function resolveEditorTipsDetailLevel(
+  preferences: UserProfilePreferences | undefined,
+): EditorTipsDetailLevel {
+  if (preferences?.editorTipsDetailLevel === "minimal") {
+    return "minimal";
+  }
+  return "full";
+}
+
+/** Autoguardado al escribir desactivado salvo que el usuario lo active en Ajustes. */
+export function resolveEditorAutosaveEnabled(preferences: UserProfilePreferences | undefined): boolean {
+  return preferences?.editorAutosaveEnabled === true;
 }
 
 function rowToAppProfile(row: Database["public"]["Tables"]["profiles"]["Row"]): UserAppProfile {

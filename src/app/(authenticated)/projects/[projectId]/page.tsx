@@ -9,6 +9,12 @@ import {
 import { isAuthenticatedEditorPrototypeProjectId } from "@/features/product/preview-data";
 import { canAccessProjectEditor } from "@/features/projects/project-access";
 import { getProjectEditorData } from "@/features/projects/project-snapshots";
+import {
+  ensureUserProfile,
+  resolveEditorAutosaveEnabled,
+  resolveEditorTipsDetailLevel,
+  resolveEditorTipsEnabled,
+} from "@/features/user/profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type ProjectEditorPageProps = {
@@ -49,8 +55,16 @@ export default async function ProjectEditorPage({ params, searchParams }: Projec
     }
   }
 
+  const profile = await ensureUserProfile(supabase, user);
+  const editorTipsEnabled = resolveEditorTipsEnabled(profile?.preferences);
+  const editorTipsDetailLevel = resolveEditorTipsDetailLevel(profile?.preferences);
+  const editorAutosaveEnabled = resolveEditorAutosaveEnabled(profile?.preferences);
+
   return (
     <EditorScreen
+      editorAutosaveEnabled={editorAutosaveEnabled}
+      editorTipsDetailLevel={editorTipsDetailLevel}
+      editorTipsEnabled={editorTipsEnabled}
       initialData={initialData}
       projectId={projectId}
       prototypeMode={isPrototypeProject}

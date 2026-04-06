@@ -46,6 +46,14 @@
   margin-top: 0.35em;
 }
 
+/*
+ * Hueco ~2 líneas antes de slugline (guion cinematográfico). Solo tipografía; sin bloques vacíos en persistencia.
+ * Incluye cuando el bloque anterior es diálogo o paréntesis (misma clase base .screenplay-block).
+ */
+.screenplay-block + .screenplay-block--scene-heading {
+  margin-top: calc(var(--scriptum-page-line-height, 12pt) * 2 + 0.25em);
+}
+
 /* Scene Heading */
 .screenplay-block--scene-heading {
   text-transform: uppercase;

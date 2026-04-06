@@ -47,6 +47,23 @@ export type SaveProjectSnapshotInput = {
   title?: string;
 };
 
+/**
+ * Elimina bloques sin texto antes de persistir (p. ej. párrafos vacíos que deja Lexical).
+ * Si no queda ninguno, mantiene el único caso permitido: una acción vacía.
+ */
+export function normalizeSerializedBlocksForPersist(
+  blocks: readonly SerializedEditorBlock[],
+): SerializedEditorBlock[] {
+  const nonEmpty = blocks.filter((b) => b.text.replace(/\s+/g, " ").trim().length > 0);
+  if (nonEmpty.length === 0) {
+    return [{ type: "action", text: "" }];
+  }
+  return nonEmpty.map((b) => ({
+    type: b.type,
+    text: b.text.replace(/\s+/g, " ").trim(),
+  }));
+}
+
 function isRecord(value: Json | unknown): value is Record<string, Json> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -214,6 +231,8 @@ export async function saveProjectSnapshot(
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const now = new Date().toISOString();
 
+      const blocksForPersist = normalizeSerializedBlocksForPersist(input.blocks);
+
       const document = createScreenplayDocument({
         id: documentId,
         revision,
@@ -228,7 +247,7 @@ export async function saveProjectSnapshot(
           createdAt: input.project.createdAt,
           updatedAt: now,
         },
-        blocks: input.blocks.map((block) => ({
+        blocks: blocksForPersist.map((block) => ({
           text: block.text,
           type: block.type,
         })),

@@ -8,7 +8,8 @@ const ENTER_NEXT_BLOCK: Record<ScreenplayBlockType, ScreenplayBlockType> = {
   "scene-heading": "action",
   action: "action",
   character: "dialogue",
-  dialogue: "action",
+  /** Más parlamento del mismo personaje o línea tras un paréntesis; doble Enter vacío pasa a acción. */
+  dialogue: "dialogue",
   parenthetical: "dialogue",
   transition: "scene-heading",
 };

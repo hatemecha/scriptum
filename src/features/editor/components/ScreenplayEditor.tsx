@@ -28,6 +28,7 @@ import { EditorReadyPlugin } from "@/features/editor/plugins/EditorReadyPlugin";
 import { PlaceholderPlugin } from "@/features/editor/plugins/PlaceholderPlugin";
 import { ScreenplayPlugin } from "@/features/editor/plugins/ScreenplayPlugin";
 import { PersistOnEnterPlugin } from "@/features/editor/plugins/PersistOnEnterPlugin";
+import { ScreenplayPlainTextGuardPlugin } from "@/features/editor/plugins/ScreenplayPlainTextGuardPlugin";
 import { ScreenplaySuggestionsPlugin } from "@/features/editor/plugins/ScreenplaySuggestionsPlugin";
 
 import styles from "./screenplay-editor.module.css";
@@ -123,6 +124,7 @@ export function ScreenplayEditor({
         />
         <PlaceholderPlugin text={placeholder} />
         <HistoryPlugin />
+        <ScreenplayPlainTextGuardPlugin />
         <ScreenplayPlugin />
         <AutoDetectBlockTypePlugin />
         {onEnterPersist ? (

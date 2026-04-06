@@ -75,7 +75,15 @@ if (!fs.existsSync(nextBin)) {
   process.exit(1);
 }
 
-const child = spawn(process.execPath, [nextBin, "dev"], {
+/**
+ * Default to webpack: Turbopack dev can throw "No link element found for chunk …css" on HMR
+ * when CSS modules are split across chunks (Next 16.x). Use `npm run dev:turbo` to opt in.
+ */
+const argv = process.argv.slice(2);
+const useTurbo = argv.includes("--turbo") || argv.includes("--turbopack");
+const bundlerFlag = useTurbo ? "--turbo" : "--webpack";
+
+const child = spawn(process.execPath, [nextBin, "dev", bundlerFlag], {
   cwd: root,
   stdio: "inherit",
   env: process.env,

@@ -97,6 +97,32 @@ export function deriveActiveSceneKey(editorState: EditorState): string | null {
   });
 }
 
+/** Bloque donde está el cursor (tipo + texto) para ayudas contextuales. */
+export function deriveActiveBlockContext(
+  editorState: EditorState,
+): { blockType: ScreenplayBlockType; text: string } | null {
+  return editorState.read(() => {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) {
+      return null;
+    }
+
+    const anchorNode = selection.anchor.getNode();
+    const blockNode = $isScreenplayBlockNode(anchorNode)
+      ? anchorNode
+      : anchorNode.getParent();
+
+    if (!blockNode || !$isScreenplayBlockNode(blockNode)) {
+      return null;
+    }
+
+    return {
+      blockType: blockNode.getBlockType(),
+      text: blockNode.getTextContent(),
+    };
+  });
+}
+
 export function estimatePagesFromEditorState(editorState: EditorState): number {
   return editorState.read(() => {
     const root = $getRoot();

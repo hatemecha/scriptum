@@ -8,25 +8,16 @@ import {
   $isScreenplayBlockNode,
   ScreenplayBlockNode,
 } from "@/features/editor/nodes/ScreenplayBlockNode";
-
-// INT./EXT. + location (+ optional time) in common screenplay forms.
-const SCENE_HEADING_RE =
-  /^(?:INT|EXT|INT\.?\/EXT|EXT\.?\/INT|INT\/EXT|EXT\/INT|I\/E)\.?\s+.+$/i;
-
-// Basic transition cues; uppercase style keeps false positives low.
-const TRANSITION_RE =
-  /^(?:CUT TO:|SMASH CUT TO:|MATCH CUT TO:|DISSOLVE TO:|FADE IN:|FADE OUT\.|WIPE TO:|INTERCUT:|BACK TO:|CONTINUED:)/;
+import { looksLikeParentheticalLine } from "@/features/screenplay/editor-help/parenthetical-detect";
+import { looksLikeSceneHeading } from "@/features/screenplay/editor-help/scene-heading-detect";
+import { looksLikeTransitionLine } from "@/features/screenplay/editor-help/transition-detect";
 
 function shouldBecomeSceneHeading(text: string): boolean {
-  const value = text.trim();
-  if (value.length < 5) return false;
-  return SCENE_HEADING_RE.test(value);
+  return looksLikeSceneHeading(text);
 }
 
 function shouldBecomeTransition(text: string): boolean {
-  const value = text.trim();
-  if (value.length < 4) return false;
-  return TRANSITION_RE.test(value.toUpperCase());
+  return looksLikeTransitionLine(text);
 }
 
 export function AutoDetectBlockTypePlugin(): null {
@@ -42,6 +33,20 @@ export function AutoDetectBlockTypePlugin(): null {
 
       const type = node.getBlockType();
       const text = node.getTextContent();
+
+      if (
+        (type === "dialogue" || type === "action") &&
+        text.trim().length > 0 &&
+        looksLikeParentheticalLine(text)
+      ) {
+        node.setBlockType("parenthetical");
+        return;
+      }
+
+      if (type === "parenthetical" && text.trim().length > 0 && !looksLikeParentheticalLine(text)) {
+        node.setBlockType("dialogue");
+        return;
+      }
 
       if (type === "action" && shouldBecomeSceneHeading(text)) {
         node.setBlockType("scene-heading");

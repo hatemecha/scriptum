@@ -129,8 +129,13 @@ export function ScreenplaySuggestionsPlugin(): ReactElement | null {
   const menuRef = useRef<HTMLDivElement>(null);
   const selectedIndexRef = useRef(0);
   const positionRafRef = useRef<number | null>(null);
+  const openDebounceRef = useRef<number | null>(null);
 
   const closeMenu = useCallback(() => {
+    if (openDebounceRef.current != null) {
+      window.clearTimeout(openDebounceRef.current);
+      openDebounceRef.current = null;
+    }
     setMenu(null);
   }, []);
 
@@ -141,23 +146,46 @@ export function ScreenplaySuggestionsPlugin(): ReactElement | null {
     }
     positionRafRef.current = window.requestAnimationFrame(() => {
       positionRafRef.current = null;
-      const sel = window.getSelection();
-      let top = 0;
-      let left = 0;
-      if (sel && sel.rangeCount > 0) {
-        const rect = sel.getRangeAt(0).getBoundingClientRect();
-        top = rect.bottom + 6;
-        left = rect.left;
-        if (rect.width === 0 && rect.height === 0) {
-          const root = editor.getRootElement();
-          if (root) {
-            const r = root.getBoundingClientRect();
-            top = r.top + 48;
-            left = r.left + 24;
+      setMenu((prev) => {
+        if (!prev) {
+          return null;
+        }
+        const sel = window.getSelection();
+        const margin = 10;
+        const estRow = 42;
+        const estMenuH = Math.min(
+          220,
+          Math.max(52, prev.result.options.length * estRow + 20),
+        );
+        let top = margin;
+        let left = margin;
+        const menuW = 288;
+
+        if (sel && sel.rangeCount > 0) {
+          const rect = sel.getRangeAt(0).getBoundingClientRect();
+          left = rect.left;
+          const roomBelow = window.innerHeight - rect.bottom - margin;
+          const roomAbove = rect.top - margin;
+          if (rect.width > 0 || rect.height > 0) {
+            if (roomBelow >= estMenuH || roomBelow >= roomAbove) {
+              top = rect.bottom + margin;
+            } else {
+              top = Math.max(margin, rect.top - estMenuH - margin);
+            }
+          } else {
+            const root = editor.getRootElement();
+            if (root) {
+              const r = root.getBoundingClientRect();
+              top = Math.min(r.bottom + margin, window.innerHeight - estMenuH - margin);
+              left = r.left + 20;
+            }
           }
         }
-      }
-      setMenu((prev) => (prev ? { ...prev, position: { top, left } } : null));
+
+        left = Math.max(margin, Math.min(left, window.innerWidth - menuW - margin));
+        top = Math.max(margin, Math.min(top, window.innerHeight - estMenuH - margin));
+        return { ...prev, position: { top, left } };
+      });
     });
   }, [editor]);
 
@@ -177,46 +205,69 @@ export function ScreenplaySuggestionsPlugin(): ReactElement | null {
   }, [menu, schedulePositionUpdate]);
 
   useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
+    return () => {
+      if (openDebounceRef.current != null) {
+        window.clearTimeout(openDebounceRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return editor.registerUpdateListener(() => {
+      const editorState = editor.getEditorState();
       const data = getSuggestionContext(editorState);
       if (!data) {
-        setMenu(null);
-        return;
-      }
-
-      const resolved = resolveScreenplaySuggestions(
-        data.blockType,
-        data.before,
-        data.offset,
-      );
-
-      if (!resolved || resolved.options.length === 0) {
-        setMenu(null);
-        return;
-      }
-
-      setMenu((prev) => {
-        const same =
-          prev &&
-          prev.result.replaceFrom === resolved.replaceFrom &&
-          prev.result.replaceTo === resolved.replaceTo &&
-          prev.result.finalizeBlockType === resolved.finalizeBlockType &&
-          prev.result.options.length === resolved.options.length &&
-          prev.result.options.every(
-            (o, i) =>
-              o.label === resolved.options[i]?.label && o.value === resolved.options[i]?.value,
-          );
-        if (same) {
-          return prev;
+        if (openDebounceRef.current != null) {
+          window.clearTimeout(openDebounceRef.current);
+          openDebounceRef.current = null;
         }
-        selectedIndexRef.current = 0;
-        return {
-          result: resolved,
-          selectedIndex: 0,
-          position: prev?.position ?? { top: 0, left: 0 },
-        };
-      });
-      schedulePositionUpdate();
+        setMenu(null);
+        return;
+      }
+
+      if (openDebounceRef.current != null) {
+        window.clearTimeout(openDebounceRef.current);
+      }
+
+      openDebounceRef.current = window.setTimeout(() => {
+        openDebounceRef.current = null;
+        const fresh = editor.getEditorState();
+        const ctx = getSuggestionContext(fresh);
+        if (!ctx) {
+          setMenu(null);
+          return;
+        }
+
+        const resolved = resolveScreenplaySuggestions(ctx.blockType, ctx.before, ctx.offset);
+
+        if (!resolved || resolved.options.length === 0) {
+          setMenu(null);
+          return;
+        }
+
+        setMenu((prev) => {
+          const same =
+            prev &&
+            prev.result.replaceFrom === resolved.replaceFrom &&
+            prev.result.replaceTo === resolved.replaceTo &&
+            prev.result.finalizeBlockType === resolved.finalizeBlockType &&
+            prev.result.options.length === resolved.options.length &&
+            prev.result.options.every(
+              (o, i) =>
+                o.label === resolved.options[i]?.label && o.value === resolved.options[i]?.value,
+            );
+          if (same) {
+            return prev;
+          }
+          selectedIndexRef.current = 0;
+          return {
+            result: resolved,
+            selectedIndex: 0,
+            position: prev?.position ?? { top: 0, left: 0 },
+          };
+        });
+        queueMicrotask(() => schedulePositionUpdate());
+      }, 200);
     });
   }, [editor, schedulePositionUpdate]);
 

@@ -101,7 +101,16 @@
   --scriptum-page-body-size: 12pt;
   --scriptum-page-line-height: 12pt;
   --scriptum-page-break-line: color-mix(in srgb, var(--color-foreground) 9%, transparent);
-  --color-editor-canvas-desk: #c8c1b6;
+  /*
+   * Editor de producto: mismo criterio que foundation-editor-grid + DESIGN §11 (paper-first, luminoso).
+   * Escritorio claro tipo lienzo de app de guion; panel de escenas elevado; barra tipo hoja/superficie.
+   */
+  --color-editor-canvas-desk: color-mix(in srgb, var(--color-surface) 52%, var(--color-background) 48%);
+  --color-editor-chrome-surface: var(--color-paper);
+  --color-editor-chrome-border: color-mix(in srgb, var(--color-border-subtle) 55%, transparent);
+  --color-editor-scene-panel: var(--color-surface-overlay-strong);
+  --color-editor-scene-hover: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  --color-editor-scene-active-bg: color-mix(in srgb, var(--color-foreground) 6%, transparent);
 
   /* Radio */
   --radius-lg: 1.5rem;
@@ -174,7 +183,12 @@ html[data-theme="dark"] {
   --shadow-soft: 0 28px 70px rgba(0, 0, 0, 0.34);
   --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.24);
   --scriptum-page-break-line: color-mix(in srgb, var(--color-foreground) 14%, transparent);
-  --color-editor-canvas-desk: #0b0b0c;
+  --color-editor-canvas-desk: color-mix(in srgb, var(--color-background) 88%, #000 12%);
+  --color-editor-chrome-surface: var(--color-surface-strong);
+  --color-editor-chrome-border: rgba(255, 255, 255, 0.06);
+  --color-editor-scene-panel: var(--color-surface-overlay-strong);
+  --color-editor-scene-hover: rgba(255, 255, 255, 0.03);
+  --color-editor-scene-active-bg: rgba(255, 255, 255, 0.03);
 }
 
 *,
@@ -1128,6 +1142,11 @@ button:disabled {
   align-items: start;
 }
 
+/* Producto: panel de escenas a la izquierda (DESIGN §9); mismas medidas que foundation-editor-grid. */
+.foundation-editor-grid--nav-first {
+  grid-template-columns: 20rem minmax(0, 1fr);
+}
+
 .foundation-script-stage__label {
   margin: 0 0 1.5rem;
   color: var(--color-muted);
@@ -1202,12 +1221,12 @@ button:disabled {
 }
 
 .foundation-scene-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
   color: var(--color-accent);
 }
 
 .foundation-scene-item[data-active="true"] {
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
   box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
 }
 
@@ -1224,8 +1243,20 @@ button:disabled {
 
 .foundation-scene-item__title {
   font-size: 0.9rem;
+  font-weight: 600;
   line-height: 1.45;
   text-transform: uppercase;
+}
+
+.foundation-scene-item__snippet {
+  margin: 0.05rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .foundation-lines {
@@ -1727,6 +1758,11 @@ button:disabled {
     gap: 2rem;
   }
 
+  .foundation-editor-grid--nav-first {
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: 2rem;
+  }
+
   .foundation-script-sheet {
     padding-inline: 3rem;
   }
@@ -1768,6 +1804,7 @@ button:disabled {
   }
 
   .foundation-editor-grid,
+  .foundation-editor-grid--nav-first,
   .foundation-summary,
   .foundation-line {
     grid-template-columns: 1fr;

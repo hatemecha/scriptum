@@ -91,6 +91,10 @@ function isIntExtToken(token: string): boolean {
     u === "INT/E" ||
     u === "INT/EX" ||
     u === "E" ||
+    u === "ES" ||
+    u === "EST" ||
+    u === "EST." ||
+    u.startsWith("EST") ||
     u === "EX" ||
     u === "EXT" ||
     u === "EXT."
@@ -125,6 +129,7 @@ function intExtSluglineCompletion(
     options.push({ label: "INT./EXT.", value: "INT./EXT." });
   }
   if (u.startsWith("E") && !u.startsWith("I")) {
+    options.push({ label: "EST.", value: "EST." });
     options.push({ label: "EXT.", value: "EXT." });
     options.push({ label: "INT./EXT.", value: "INT./EXT." });
   }

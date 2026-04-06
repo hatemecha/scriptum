@@ -1,0 +1,195 @@
+/* Glossary modal only: keeps a dedicated CSS chunk (fewer Turbopack HMR edge cases vs. the large workspace sheet). */
+
+.modalSurface {
+  width: min(100%, 44rem);
+}
+
+.searchField {
+  margin: 0 0 0.85rem;
+}
+
+.searchField :global(.ui-field__label-row) {
+  margin-bottom: 0.35rem;
+}
+
+.searchField :global(.ui-field__label) {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.searchField :global(.ui-input) {
+  border-radius: var(--radius-md);
+  border-color: var(--color-overlay-border);
+  background: var(--color-input-background);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
+.scroll {
+  max-height: min(48vh, 24rem);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  margin-right: -0.15rem;
+  scrollbar-gutter: stable;
+}
+
+.emptyState {
+  margin: 0.5rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-overlay-border);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.meta {
+  margin: 0.65rem 0 0;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.list {
+  margin: 0;
+}
+
+.term {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+}
+
+.definition {
+  margin: 0 0 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+.definitionText {
+  margin: 0;
+}
+
+.definition:last-of-type {
+  margin-bottom: 0;
+}
+
+.scriptSample {
+  margin: 0.65rem 0 0;
+  padding: 0;
+}
+
+.scriptSampleCaption {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.scriptSamplePaper {
+  margin: 0;
+  padding: 0.65rem 0.75rem 0.7rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-paper-border);
+  background: var(--color-paper);
+  box-shadow: var(--shadow-subtle);
+}
+
+.scriptLine {
+  margin: 0.32rem 0 0;
+  font-family: var(--font-script);
+  font-size: 0.78rem;
+  line-height: 1.48;
+  color: var(--color-foreground);
+  white-space: pre-wrap;
+}
+
+.scriptSamplePaper .scriptLine:first-child {
+  margin-top: 0;
+}
+
+.scriptLineSceneHeading {
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.scriptLineAction {
+  font-weight: 500;
+}
+
+.scriptLineCharacter {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scriptSamplePaper .scriptLineCharacter:first-child {
+  margin-top: 0;
+}
+
+.scriptLineDialogue {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 19em;
+  text-align: center;
+  font-weight: 500;
+}
+
+.scriptLineParenthetical {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 16em;
+  text-align: center;
+  font-style: italic;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-foreground) 88%, var(--color-muted) 12%);
+  font-size: 0.74rem;
+}
+
+.scriptLineTransition {
+  margin-top: 0.4rem;
+  text-align: right;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--color-accent-strong);
+}
+
+.footer {
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-overlay-border);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+.footer a {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.footer a:hover {
+  color: var(--color-accent);
+}
