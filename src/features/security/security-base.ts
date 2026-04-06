@@ -1,3 +1,5 @@
+import { projectLanguageValues, projectStatusValues } from "@/features/projects/project-contract";
+
 // ─── Auth Model ───────────────────────────────────────────────────────────────
 
 export const securityBaseAuthProviders = ["email_password"] as const;
@@ -341,7 +343,7 @@ export const securityBaseInputRules: readonly SecurityBaseInputRule[] = [
     entity: "project",
     field: "language",
     kind: "enum",
-    constraint: ["en", "es", "fr", "de", "pt", "it", "other"],
+    constraint: projectLanguageValues,
     errorMessage: "Select a valid language.",
   },
 
@@ -358,7 +360,7 @@ export const securityBaseInputRules: readonly SecurityBaseInputRule[] = [
     entity: "project",
     field: "status",
     kind: "enum",
-    constraint: ["draft", "in-progress", "finished", "optioned", "produced"],
+    constraint: projectStatusValues,
     errorMessage: "Select a valid status.",
   },
 ];

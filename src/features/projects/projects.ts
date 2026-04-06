@@ -1,7 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  normalizeProjectAuthor,
+  normalizeProjectDescription,
+  normalizeProjectLanguage,
+  normalizeProjectStatus,
+  normalizeProjectTitle,
+  type ProjectLanguage,
+  type ProjectStatus,
+} from "@/features/projects/project-contract";
 import { createScreenplayEntityId } from "@/features/screenplay/document-model";
 import { type Database } from "@/lib/supabase/types";
+
+export { formatProjectStatusLabel } from "@/features/projects/project-contract";
 
 export type UserProject = {
   id: string;
@@ -9,8 +20,8 @@ export type UserProject = {
   title: string;
   author: string | null;
   description: string | null;
-  language: string;
-  status: string;
+  language: ProjectLanguage;
+  status: ProjectStatus;
   currentSnapshotId: string | null;
   latestRevision: number;
   lastEditedAt: string;
@@ -24,17 +35,34 @@ export type CreateProjectInput = {
   title?: string;
   author?: string | null;
   description?: string | null;
-  language?: string;
+  language?: ProjectLanguage;
 };
 
 export type UpdateProjectMetadataInput = {
   title?: string;
   author?: string | null;
   description?: string | null;
-  status?: string;
+  language?: ProjectLanguage;
+  status?: ProjectStatus;
 };
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
+
+function safeRowLanguage(value: ProjectRow["language"]): ProjectLanguage {
+  try {
+    return normalizeProjectLanguage(value);
+  } catch {
+    return "es";
+  }
+}
+
+function safeRowStatus(value: ProjectRow["status"]): ProjectStatus {
+  try {
+    return normalizeProjectStatus(value);
+  } catch {
+    return "draft";
+  }
+}
 
 function rowToProject(row: ProjectRow): UserProject {
   return {
@@ -43,8 +71,8 @@ function rowToProject(row: ProjectRow): UserProject {
     title: row.title,
     author: row.author,
     description: row.description,
-    language: row.language,
-    status: row.status,
+    language: safeRowLanguage(row.language),
+    status: safeRowStatus(row.status),
     currentSnapshotId: row.current_snapshot_id,
     latestRevision: row.latest_revision,
     lastEditedAt: row.last_edited_at,
@@ -61,32 +89,35 @@ export async function createProject(
   input: CreateProjectInput = {},
 ): Promise<{ project: UserProject | null; error: Error | null }> {
   const projectId = createScreenplayEntityId("project");
-  const title = input.title?.trim() || "Sin título";
   const now = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from("projects")
-    .insert({
-      id: projectId,
-      owner_profile_id: userId,
-      title,
-      author: input.author?.trim() || null,
-      description: input.description?.trim() || null,
-      language: input.language?.trim() || "es",
-      status: "draft",
-      latest_revision: 0,
-      last_edited_at: now,
-      created_at: now,
-      updated_at: now,
-    })
-    .select("*")
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({
+        id: projectId,
+        owner_profile_id: userId,
+        title: normalizeProjectTitle(input.title),
+        author: normalizeProjectAuthor(input.author),
+        description: normalizeProjectDescription(input.description),
+        language: normalizeProjectLanguage(input.language),
+        status: "draft",
+        latest_revision: 0,
+        last_edited_at: now,
+        created_at: now,
+        updated_at: now,
+      })
+      .select("*")
+      .single();
 
-  if (error || !data) {
-    return { project: null, error: error ?? new Error("Failed to create project.") };
+    if (error || !data) {
+      return { project: null, error: error ?? new Error("Failed to create project.") };
+    }
+
+    return { project: rowToProject(data), error: null };
+  } catch (error) {
+    return { project: null, error: error instanceof Error ? error : new Error("Failed to create project.") };
   }
-
-  return { project: rowToProject(data), error: null };
 }
 
 export async function listUserProjects(
@@ -132,27 +163,25 @@ export async function renameProject(
   projectId: string,
   title: string,
 ): Promise<{ project: UserProject | null; error: Error | null }> {
-  const trimmed = title.trim();
-
-  if (trimmed.length === 0) {
-    return { project: null, error: new Error("El título no puede estar vacío.") };
-  }
-
   const now = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from("projects")
-    .update({ title: trimmed, updated_at: now })
-    .eq("id", projectId)
-    .is("deleted_at", null)
-    .select("*")
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("projects")
+      .update({ title: normalizeProjectTitle(title, ""), updated_at: now })
+      .eq("id", projectId)
+      .is("deleted_at", null)
+      .select("*")
+      .single();
 
-  if (error || !data) {
-    return { project: null, error: error ?? new Error("Failed to rename project.") };
+    if (error || !data) {
+      return { project: null, error: error ?? new Error("Failed to rename project.") };
+    }
+
+    return { project: rowToProject(data), error: null };
+  } catch (error) {
+    return { project: null, error: error instanceof Error ? error : new Error("Failed to rename project.") };
   }
-
-  return { project: rowToProject(data), error: null };
 }
 
 export async function updateProjectMetadata(
@@ -162,39 +191,46 @@ export async function updateProjectMetadata(
 ): Promise<{ project: UserProject | null; error: Error | null }> {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-  if (input.title !== undefined) {
-    const trimmed = input.title.trim();
-    if (trimmed.length === 0) {
-      return { project: null, error: new Error("El título no puede estar vacío.") };
+  try {
+    if (input.title !== undefined) {
+      patch.title = normalizeProjectTitle(input.title, "");
     }
-    patch.title = trimmed;
+
+    if (input.author !== undefined) {
+      patch.author = normalizeProjectAuthor(input.author);
+    }
+
+    if (input.description !== undefined) {
+      patch.description = normalizeProjectDescription(input.description);
+    }
+
+    if (input.language !== undefined) {
+      patch.language = normalizeProjectLanguage(input.language);
+    }
+
+    if (input.status !== undefined) {
+      patch.status = normalizeProjectStatus(input.status);
+    }
+
+    const { data, error } = await supabase
+      .from("projects")
+      .update(patch)
+      .eq("id", projectId)
+      .is("deleted_at", null)
+      .select("*")
+      .single();
+
+    if (error || !data) {
+      return { project: null, error: error ?? new Error("Failed to update project metadata.") };
+    }
+
+    return { project: rowToProject(data), error: null };
+  } catch (error) {
+    return {
+      project: null,
+      error: error instanceof Error ? error : new Error("Failed to update project metadata."),
+    };
   }
-
-  if (input.author !== undefined) {
-    patch.author = input.author?.trim() || null;
-  }
-
-  if (input.description !== undefined) {
-    patch.description = input.description?.trim() || null;
-  }
-
-  if (input.status !== undefined) {
-    patch.status = input.status;
-  }
-
-  const { data, error } = await supabase
-    .from("projects")
-    .update(patch)
-    .eq("id", projectId)
-    .is("deleted_at", null)
-    .select("*")
-    .single();
-
-  if (error || !data) {
-    return { project: null, error: error ?? new Error("Failed to update project metadata.") };
-  }
-
-  return { project: rowToProject(data), error: null };
 }
 
 export async function archiveProject(
@@ -252,23 +288,6 @@ export async function deleteProject(
   }
 
   return { error: null };
-}
-
-export function formatProjectStatusLabel(status: string): string {
-  switch (status) {
-    case "draft":
-      return "Borrador";
-    case "in-progress":
-      return "En progreso";
-    case "finished":
-      return "Terminado";
-    case "optioned":
-      return "Opcionado";
-    case "produced":
-      return "Producido";
-    default:
-      return status;
-  }
 }
 
 const SECOND = 1000;

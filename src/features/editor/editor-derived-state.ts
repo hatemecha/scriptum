@@ -7,6 +7,7 @@ import {
 } from "lexical";
 
 import { $isScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
+import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 
 export type DerivedSceneNav = {
@@ -99,19 +100,15 @@ export function deriveActiveSceneKey(editorState: EditorState): string | null {
 export function estimatePagesFromEditorState(editorState: EditorState): number {
   return editorState.read(() => {
     const root = $getRoot();
-    let lines = 0;
+    const blocks = root
+      .getChildren()
+      .filter($isScreenplayBlockNode)
+      .map((node) => ({
+        text: node.getTextContent(),
+        type: node.getBlockType(),
+      }));
 
-    for (const node of root.getChildren()) {
-      if (!$isScreenplayBlockNode(node)) continue;
-      const text = node.getTextContent();
-      const baseLines = Math.max(1, Math.ceil(text.length / 42));
-      const t = node.getBlockType();
-      const weighted =
-        t === "dialogue" || t === "parenthetical" ? baseLines + 1 : baseLines;
-      lines += weighted;
-    }
-
-    return Math.max(1, Math.ceil(lines / 55));
+    return estimateScreenplayPageCount(blocks);
   });
 }
 

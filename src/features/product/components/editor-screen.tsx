@@ -16,16 +16,21 @@ import {
   deriveActiveSceneKey,
   deriveSceneNavigators,
   estimatePagesFromEditorState,
+  serializeScreenplayBlocks,
   type DerivedSceneNav,
 } from "@/features/editor/editor-derived-state";
 import { $isScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
 import { isScreenplayBlockType, screenplayBlockTypes, type ScreenplayBlockType } from "@/features/screenplay/blocks";
+import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
+import { clearStoredEditorDraft, readStoredEditorDraft, writeStoredEditorDraft } from "@/features/product/editor-draft";
 import {
   getPreviewLines,
   getPreviewProject,
   previewUser,
 } from "@/features/product/preview-data";
-import { type EditorViewState, type ExportViewState } from "@/features/product/view-states";
+import { type EditorViewState } from "@/features/product/view-states";
+import { saveProjectSnapshot, type PersistedProjectEditorData, type SerializedEditorBlock } from "@/features/projects/project-snapshots";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/cn";
 
 import { StatePanel } from "./state-panel";
@@ -39,18 +44,33 @@ const BLOCK_TYPE_LABEL_ES: Record<ScreenplayBlockType, string> = {
   parenthetical: "Paréntesis",
   transition: "Transición",
 };
+
 type EditorScreenProps = {
-  initialExportState: ExportViewState;
+  initialData: PersistedProjectEditorData | null;
   projectId: string;
+  prototypeMode: boolean;
   viewState: EditorViewState;
 };
 
-type LocalExportState = Exclude<ExportViewState, "closed">;
 type SaveTone = "danger" | "muted" | "success" | "warning";
+type PrototypeSaveState = "saving" | "synced";
+type PersistState = "error" | "local-draft" | "saved" | "saving";
 
 type StatusPresentation = {
   label: string;
   tone: SaveTone;
+};
+
+type ScreenplayEditorSeedBlock = {
+  id: string;
+  text: string;
+  type: ScreenplayBlockType;
+};
+
+type EditorSeed = {
+  author: string | null;
+  blocks: readonly SerializedEditorBlock[];
+  title: string;
 };
 
 function getStatusClassName(tone: SaveTone): string {
@@ -66,54 +86,154 @@ function getStatusClassName(tone: SaveTone): string {
   }
 }
 
+function normalizeEditableProjectTitle(value: string): string {
+  const normalizedValue = value.replace(/\s+/g, " ").trim();
+  return normalizedValue.length > 0 ? normalizedValue : "Sin título";
+}
+
+function createPersistSignature(title: string, blocks: readonly SerializedEditorBlock[]): string {
+  return JSON.stringify({ blocks, title });
+}
+
+function toScreenplayEditorSeedBlocks(
+  blocks: readonly SerializedEditorBlock[],
+): ScreenplayEditorSeedBlock[] {
+  return blocks.map((block, index) => ({
+    id: `seed-${index}`,
+    text: block.text,
+    type: block.type,
+  }));
+}
+
+function buildEditorSeed(
+  projectId: string,
+  prototypeMode: boolean,
+  viewState: EditorViewState,
+  initialData: PersistedProjectEditorData | null,
+): EditorSeed {
+  if (prototypeMode) {
+    const previewProject = getPreviewProject(projectId);
+    const previewBlocks =
+      viewState === "empty"
+        ? []
+        : getPreviewLines(previewProject.blocks).map(({ text, type }) => ({
+            text,
+            type,
+          }));
+
+    return {
+      author: previewProject.author ?? previewUser.name,
+      blocks: previewBlocks,
+      title: previewProject.title,
+    };
+  }
+
+  if (initialData) {
+    return {
+      author: initialData.project.author,
+      blocks: initialData.blocks,
+      title: initialData.project.title,
+    };
+  }
+
+  return {
+    author: null,
+    blocks: [],
+    title: "Sin título",
+  };
+}
+
 function getStatusPresentation({
+  hasUnsavedChanges,
   highlightSaved,
-  saveState,
+  isOffline,
+  persistState,
+  prototypeMode,
+  prototypeSaveState,
   viewState,
 }: {
+  hasUnsavedChanges: boolean;
   highlightSaved: boolean;
-  saveState: "saving" | "synced";
+  isOffline: boolean;
+  persistState: PersistState;
+  prototypeMode: boolean;
+  prototypeSaveState: PrototypeSaveState;
   viewState: EditorViewState;
 }): StatusPresentation {
-  if (viewState === "offline") {
+  if (prototypeMode) {
+    if (viewState === "offline") {
+      return {
+        label: "Sin conexión",
+        tone: "warning",
+      };
+    }
+
+    if (viewState === "save-error") {
+      return {
+        label: "Error al guardar",
+        tone: "danger",
+      };
+    }
+
+    if (viewState === "unsaved") {
+      return {
+        label: "Sin guardar",
+        tone: "warning",
+      };
+    }
+
+    if (viewState === "syncing") {
+      return {
+        label: "Sincronizando...",
+        tone: "muted",
+      };
+    }
+
+    if (viewState === "saving" || prototypeSaveState === "saving") {
+      return {
+        label: "Guardando...",
+        tone: "muted",
+      };
+    }
+
     return {
-      label: "Sin conexión",
+      label: "Guardado",
+      tone: highlightSaved ? "success" : "muted",
+    };
+  }
+
+  if (isOffline) {
+    return {
+      label: "Guardado en local",
       tone: "warning",
     };
   }
 
-  if (viewState === "save-error") {
+  if (persistState === "error") {
     return {
-      label: "Error al guardar",
+      label: "Cambios en local",
       tone: "danger",
     };
   }
 
-  if (viewState === "unsaved") {
+  if (persistState === "local-draft") {
     return {
-      label: "Sin guardar",
+      label: "Cambios en local",
       tone: "warning",
     };
   }
 
-  if (viewState === "syncing") {
-    return {
-      label: "Sincronizando...",
-      tone: "muted",
-    };
-  }
-
-  if (viewState === "saving") {
+  if (persistState === "saving") {
     return {
       label: "Guardando...",
       tone: "muted",
     };
   }
 
-  if (saveState === "saving") {
+  if (hasUnsavedChanges) {
     return {
-      label: "Guardando...",
-      tone: "muted",
+      label: "Sin guardar",
+      tone: "warning",
     };
   }
 
@@ -189,40 +309,222 @@ function EditorLoadingScreen({ title }: { title: string }) {
   );
 }
 
-export function EditorScreen({ initialExportState, projectId, viewState }: EditorScreenProps) {
-  const project = getPreviewProject(projectId);
-  const previewLines = viewState === "empty" ? [] : getPreviewLines(project.blocks);
+export function EditorScreen({
+  initialData,
+  projectId,
+  prototypeMode,
+  viewState,
+}: EditorScreenProps) {
+  const [initialSeed] = useState(() =>
+    buildEditorSeed(projectId, prototypeMode, viewState, initialData),
+  );
+  const initialProjectRecord = initialData?.project ?? null;
+  const initialTitle = initialSeed.title;
+  const initialSignature = createPersistSignature(
+    normalizeEditableProjectTitle(initialTitle),
+    initialSeed.blocks,
+  );
   const { showToast } = useToast();
-  const saveTimeoutRef = useRef<number | null>(null);
-  const saveFadeTimeoutRef = useRef<number | null>(null);
-  const exportTimeoutRef = useRef<number | null>(null);
+
+  const autosaveTimeoutRef = useRef<number | null>(null);
+  const highlightFadeTimeoutRef = useRef<number | null>(null);
   const lexicalEditorRef = useRef<LexicalEditor | null>(null);
-  const [projectTitle, setProjectTitle] = useState(project.title);
-  const [saveState, setSaveState] = useState<"saving" | "synced">(
+  const persistLatestDraftRef = useRef<() => Promise<void>>(async () => undefined);
+  const projectRecordRef = useRef(initialProjectRecord);
+  const documentIdRef = useRef(initialData?.documentId ?? null);
+  const editorBlocksRef = useRef<readonly SerializedEditorBlock[]>(initialSeed.blocks);
+  const projectTitleRef = useRef(initialTitle);
+  const isOfflineRef = useRef(false);
+  const isSavingRef = useRef(false);
+  const queuedPersistRef = useRef(false);
+  const lastPersistedSignatureRef = useRef(initialSignature);
+  const restoredLocalDraftRef = useRef(false);
+  const pendingSyncFailureToastShownRef = useRef(false);
+  const savingIndicatorDelayRef = useRef<number | null>(null);
+  const titlePersistTimeoutRef = useRef<number | null>(null);
+
+  const [prototypeSaveState, setPrototypeSaveState] = useState<PrototypeSaveState>(
     viewState === "saving" ? "saving" : "synced",
   );
+  const [persistState, setPersistState] = useState<PersistState>(prototypeMode ? "saved" : "saved");
+  const [persistErrorMessage, setPersistErrorMessage] = useState<string | null>(null);
+  const [isBrowserOffline, setIsBrowserOffline] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [highlightSaved, setHighlightSaved] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [editorScenes, setEditorScenes] = useState<DerivedSceneNav[]>([]);
   const [activeSceneKey, setActiveSceneKey] = useState<string | null>(null);
-  const [estimatedPages, setEstimatedPages] = useState(project.estimatedPages);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(initialExportState !== "closed");
-  const [exportState, setExportState] = useState<LocalExportState>(
-    initialExportState === "closed" ? "ready" : initialExportState,
+  const [estimatedPages, setEstimatedPages] = useState(
+    estimateScreenplayPageCount(initialSeed.blocks),
   );
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [activeBlockType, setActiveBlockType] = useState<ScreenplayBlockType>("action");
-
-  const handleBlockTypeChange = useCallback(
-    (blockType: ScreenplayBlockType) => {
-      setActiveBlockType(blockType);
-    },
-    [],
+  const [projectTitle, setProjectTitle] = useState(initialTitle);
+  const [editorBlocks, setEditorBlocks] = useState<readonly SerializedEditorBlock[]>(initialSeed.blocks);
+  const [editorSeedBlocks, setEditorSeedBlocks] = useState<readonly SerializedEditorBlock[]>(
+    initialSeed.blocks,
   );
+  const [editorInstanceKey, setEditorInstanceKey] = useState(0);
+  const [projectRecord, setProjectRecord] = useState(initialProjectRecord);
+  const [documentId, setDocumentId] = useState(initialData?.documentId ?? null);
+  const [editorRevision, setEditorRevision] = useState(initialData?.revision ?? 0);
+
+  const handleBlockTypeChange = useCallback((blockType: ScreenplayBlockType) => {
+    setActiveBlockType(blockType);
+  }, []);
 
   const syncFromEditorState = useCallback((editorState: EditorState) => {
     setEditorScenes(deriveSceneNavigators(editorState));
     setActiveSceneKey(deriveActiveSceneKey(editorState));
     setEstimatedPages(estimatePagesFromEditorState(editorState));
+  }, []);
+
+  const queuePrototypeSaveConfirmation = useCallback(() => {
+    if (!prototypeMode) {
+      return;
+    }
+
+    if (autosaveTimeoutRef.current) {
+      window.clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    if (highlightFadeTimeoutRef.current) {
+      window.clearTimeout(highlightFadeTimeoutRef.current);
+    }
+
+    setPrototypeSaveState("saving");
+    setHighlightSaved(false);
+
+    autosaveTimeoutRef.current = window.setTimeout(() => {
+      setPrototypeSaveState("synced");
+      setHighlightSaved(true);
+
+      highlightFadeTimeoutRef.current = window.setTimeout(() => {
+        setHighlightSaved(false);
+      }, 2000);
+    }, 900);
+  }, [prototypeMode]);
+
+  const persistLatestDraft = useCallback(async () => {
+    if (prototypeMode) {
+      return;
+    }
+
+    const currentProject = projectRecordRef.current;
+
+    if (!currentProject) {
+      return;
+    }
+
+    const normalizedTitle = normalizeEditableProjectTitle(projectTitleRef.current);
+    const nextSignature = createPersistSignature(normalizedTitle, editorBlocksRef.current);
+    const requestedTitle = normalizedTitle;
+
+    if (nextSignature === lastPersistedSignatureRef.current) {
+      setHasUnsavedChanges(false);
+      setPersistState("saved");
+      setPersistErrorMessage(null);
+      pendingSyncFailureToastShownRef.current = false;
+      return;
+    }
+
+    if (isOfflineRef.current) {
+      setPersistState("local-draft");
+      return;
+    }
+
+    if (isSavingRef.current) {
+      queuedPersistRef.current = true;
+      return;
+    }
+
+    if (savingIndicatorDelayRef.current !== null) {
+      window.clearTimeout(savingIndicatorDelayRef.current);
+      savingIndicatorDelayRef.current = null;
+    }
+
+    isSavingRef.current = true;
+    setPersistErrorMessage(null);
+    savingIndicatorDelayRef.current = window.setTimeout(() => {
+      if (isSavingRef.current) {
+        setPersistState("saving");
+      }
+    }, 450);
+
+    const result = await saveProjectSnapshot(createSupabaseBrowserClient(), {
+      blocks: editorBlocksRef.current,
+      documentId: documentIdRef.current,
+      project: currentProject,
+      title: normalizedTitle,
+    });
+
+    if (savingIndicatorDelayRef.current !== null) {
+      window.clearTimeout(savingIndicatorDelayRef.current);
+      savingIndicatorDelayRef.current = null;
+    }
+
+    isSavingRef.current = false;
+
+    if (result.error || !result.data) {
+      setPersistState("error");
+      setPersistErrorMessage(result.error?.message ?? "No se pudo sincronizar el documento.");
+      if (!pendingSyncFailureToastShownRef.current) {
+        pendingSyncFailureToastShownRef.current = true;
+        showToast({
+          description: "No pudimos sincronizar. Conservamos una copia local en este navegador.",
+          title: "Guardado pendiente",
+          tone: "error",
+        });
+      }
+      queuedPersistRef.current = false;
+      return;
+    }
+
+    lastPersistedSignatureRef.current = createPersistSignature(
+      normalizeEditableProjectTitle(result.data.project.title),
+      result.data.blocks,
+    );
+    clearStoredEditorDraft(projectId);
+    projectRecordRef.current = result.data.project;
+    documentIdRef.current = result.data.documentId;
+    setProjectRecord(result.data.project);
+    setDocumentId(result.data.documentId);
+    setEditorRevision(result.data.revision);
+
+    if (normalizeEditableProjectTitle(projectTitleRef.current) === requestedTitle) {
+      setProjectTitle(result.data.project.title);
+    }
+    setPersistState("saved");
+    setPersistErrorMessage(null);
+    pendingSyncFailureToastShownRef.current = false;
+    setHasUnsavedChanges(false);
+    setHighlightSaved(true);
+
+    if (highlightFadeTimeoutRef.current) {
+      window.clearTimeout(highlightFadeTimeoutRef.current);
+    }
+
+    highlightFadeTimeoutRef.current = window.setTimeout(() => {
+      setHighlightSaved(false);
+    }, 2000);
+
+    if (queuedPersistRef.current) {
+      queuedPersistRef.current = false;
+      const latestSignature = createPersistSignature(
+        normalizeEditableProjectTitle(projectTitleRef.current),
+        editorBlocksRef.current,
+      );
+
+      if (latestSignature !== lastPersistedSignatureRef.current) {
+        window.setTimeout(() => {
+          void persistLatestDraftRef.current();
+        }, 0);
+      }
+    }
+  }, [projectId, prototypeMode, showToast]);
+
+  const schedulePersistOnEnter = useCallback(() => {
+    void persistLatestDraftRef.current();
   }, []);
 
   const handleEditorReady = useCallback(
@@ -237,15 +539,30 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     (editorState: EditorState, editor: LexicalEditor) => {
       lexicalEditorRef.current = editor;
       syncFromEditorState(editorState);
+      const nextBlocks = serializeScreenplayBlocks(editorState);
+      editorBlocksRef.current = nextBlocks;
+      setEditorBlocks(nextBlocks);
+
+      if (prototypeMode) {
+        queuePrototypeSaveConfirmation();
+      }
     },
-    [syncFromEditorState],
+    [prototypeMode, queuePrototypeSaveConfirmation, syncFromEditorState],
   );
 
   const handleBlockTypeSelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
-    if (!isScreenplayBlockType(value)) return;
+
+    if (!isScreenplayBlockType(value)) {
+      return;
+    }
+
     const editor = lexicalEditorRef.current;
-    if (!editor) return;
+
+    if (!editor) {
+      return;
+    }
+
     editor.dispatchCommand(SET_BLOCK_TYPE_COMMAND, { blockType: value });
     setActiveBlockType(value);
   }, []);
@@ -253,44 +570,170 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
   const handleSceneNavigate = useCallback((sceneKey: string) => {
     setActiveSceneKey(sceneKey);
     const editor = lexicalEditorRef.current;
-    if (!editor) return;
+
+    if (!editor) {
+      return;
+    }
+
     editor.update(() => {
       const node = $getNodeByKey(sceneKey);
+
       if (node && $isScreenplayBlockNode(node)) {
         node.selectEnd();
       }
     });
+
     queueMicrotask(() => {
-      const el = editor.getElementByKey(sceneKey);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const element = editor.getElementByKey(sceneKey);
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   }, []);
 
   useEffect(() => {
+    persistLatestDraftRef.current = persistLatestDraft;
+  }, [persistLatestDraft]);
+
+  useEffect(() => {
+    projectRecordRef.current = projectRecord;
+  }, [projectRecord]);
+
+  useEffect(() => {
+    documentIdRef.current = documentId;
+  }, [documentId]);
+
+  useEffect(() => {
+    editorBlocksRef.current = editorBlocks;
+  }, [editorBlocks]);
+
+  useEffect(() => {
+    projectTitleRef.current = projectTitle;
+  }, [projectTitle]);
+
+  useEffect(() => {
+    if (prototypeMode) {
+      return undefined;
+    }
+
+    function syncConnectivityState() {
+      const nextOfflineState = !window.navigator.onLine;
+      isOfflineRef.current = nextOfflineState;
+      setIsBrowserOffline(nextOfflineState);
+    }
+
+    syncConnectivityState();
+    window.addEventListener("online", syncConnectivityState);
+    window.addEventListener("offline", syncConnectivityState);
+
     return () => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
+      window.removeEventListener("online", syncConnectivityState);
+      window.removeEventListener("offline", syncConnectivityState);
+    };
+  }, [prototypeMode]);
+
+  useEffect(() => {
+    if (prototypeMode || !projectRecord || restoredLocalDraftRef.current) {
+      return;
+    }
+
+    restoredLocalDraftRef.current = true;
+    const storedDraft = readStoredEditorDraft(projectRecord.id);
+
+    if (!storedDraft) {
+      return;
+    }
+
+    const canRestoreDraft =
+      storedDraft.baseRevision === editorRevision && storedDraft.documentId === documentId;
+
+    if (!canRestoreDraft) {
+      clearStoredEditorDraft(projectRecord.id);
+      return;
+    }
+
+    const restoreAnimationFrame = window.requestAnimationFrame(() => {
+      setProjectTitle(storedDraft.title);
+      setEditorBlocks(storedDraft.blocks);
+      setEditorSeedBlocks(storedDraft.blocks);
+      setEstimatedPages(estimateScreenplayPageCount(storedDraft.blocks));
+      setHasUnsavedChanges(true);
+      setPersistState("local-draft");
+      setEditorInstanceKey((currentValue) => currentValue + 1);
+      showToast({
+        description: "Restauramos los cambios pendientes guardados en este navegador.",
+        title: "Borrador local recuperado",
+        tone: "success",
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(restoreAnimationFrame);
+    };
+  }, [documentId, editorRevision, projectRecord, prototypeMode, showToast]);
+
+  useEffect(() => {
+    if (prototypeMode || !projectRecord) {
+      return;
+    }
+
+    const normalizedTitle = normalizeEditableProjectTitle(projectTitle);
+    const nextSignature = createPersistSignature(normalizedTitle, editorBlocks);
+    const isDirty = nextSignature !== lastPersistedSignatureRef.current;
+
+    setHasUnsavedChanges(isDirty);
+
+    if (!isDirty) {
+      clearStoredEditorDraft(projectRecord.id);
+
+      if (!isSavingRef.current) {
+        setPersistState("saved");
       }
 
-      if (saveFadeTimeoutRef.current) {
-        window.clearTimeout(saveFadeTimeoutRef.current);
+      return;
+    }
+
+    writeStoredEditorDraft(projectRecord.id, {
+      baseRevision: editorRevision,
+      blocks: editorBlocks,
+      documentId,
+      title: normalizedTitle,
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (isBrowserOffline || viewState === "offline") {
+      setPersistState("local-draft");
+    }
+  }, [
+    // Include `persistLatestDraft` so dev Fast Refresh never shrinks this array vs a prior version.
+    documentId,
+    editorBlocks,
+    editorRevision,
+    isBrowserOffline,
+    persistLatestDraft,
+    projectRecord,
+    projectTitle,
+    prototypeMode,
+    viewState,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        window.clearTimeout(autosaveTimeoutRef.current);
       }
 
-      if (exportTimeoutRef.current) {
-        window.clearTimeout(exportTimeoutRef.current);
+      if (highlightFadeTimeoutRef.current) {
+        window.clearTimeout(highlightFadeTimeoutRef.current);
+      }
+
+      if (savingIndicatorDelayRef.current !== null) {
+        window.clearTimeout(savingIndicatorDelayRef.current);
+      }
+
+      if (titlePersistTimeoutRef.current !== null) {
+        window.clearTimeout(titlePersistTimeoutRef.current);
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (viewState === "syncing") {
-      showToast({
-        description: "Sincronizando cambios pendientes.",
-        title: "Conexión restaurada",
-        tone: "success",
-      });
-    }
-  }, [viewState, showToast]);
 
   if (viewState === "error") {
     return (
@@ -324,106 +767,70 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
   }
 
   if (viewState === "loading") {
-    return <EditorLoadingScreen title={project.title} />;
+    return <EditorLoadingScreen title={initialTitle} />;
   }
 
   const status = getStatusPresentation({
+    hasUnsavedChanges,
     highlightSaved,
-    saveState,
+    isOffline: prototypeMode ? viewState === "offline" : isBrowserOffline || viewState === "offline",
+    persistState,
+    prototypeMode,
+    prototypeSaveState,
     viewState,
   });
-  const isOffline = viewState === "offline";
+  const isOffline = prototypeMode ? viewState === "offline" : isBrowserOffline || viewState === "offline";
   const activeEditorScene =
     editorScenes.find((scene) => scene.id === activeSceneKey) ?? null;
-
-  function queueSaveConfirmation() {
-    if (saveTimeoutRef.current) {
-      window.clearTimeout(saveTimeoutRef.current);
-    }
-
-    if (saveFadeTimeoutRef.current) {
-      window.clearTimeout(saveFadeTimeoutRef.current);
-    }
-
-    setSaveState("saving");
-    setHighlightSaved(false);
-
-    saveTimeoutRef.current = window.setTimeout(() => {
-      setSaveState("synced");
-      setHighlightSaved(true);
-
-      saveFadeTimeoutRef.current = window.setTimeout(() => {
-        setHighlightSaved(false);
-      }, 2000);
-    }, 900);
-  }
+  const exportAuthor = projectRecord?.author ?? initialSeed.author ?? previewUser.name;
 
   function handleTitleChange(nextTitle: string) {
     setProjectTitle(nextTitle);
 
-    if (viewState !== "default" && viewState !== "synced") {
+    if (prototypeMode) {
+      queuePrototypeSaveConfirmation();
       return;
     }
 
-    queueSaveConfirmation();
+    if (titlePersistTimeoutRef.current !== null) {
+      window.clearTimeout(titlePersistTimeoutRef.current);
+    }
+
+    titlePersistTimeoutRef.current = window.setTimeout(() => {
+      titlePersistTimeoutRef.current = null;
+      void persistLatestDraftRef.current();
+    }, 3200);
+  }
+
+  function handleTitleBlur() {
+    if (prototypeMode) {
+      return;
+    }
+
+    if (titlePersistTimeoutRef.current !== null) {
+      window.clearTimeout(titlePersistTimeoutRef.current);
+      titlePersistTimeoutRef.current = null;
+    }
+
+    void persistLatestDraftRef.current();
   }
 
   function handleOpenExportModal() {
-    if (isOffline) {
-      return;
-    }
-
     setIsExportModalOpen(true);
-    setExportState("ready");
-  }
-
-  function handleCancelExport() {
-    if (exportState === "exporting") {
-      if (exportTimeoutRef.current) {
-        window.clearTimeout(exportTimeoutRef.current);
-      }
-
-      setExportState("ready");
-      return;
-    }
-
-    setIsExportModalOpen(false);
-  }
-
-  function handleExport() {
-    if (isOffline) {
-      return;
-    }
-
-    setExportState("exporting");
-    exportTimeoutRef.current = window.setTimeout(() => {
-      setExportState("success");
-      showToast({
-        description: "La descarga queda lista desde el modal de exportación.",
-        title: "PDF listo",
-        tone: "success",
-      });
-    }, 1200);
-  }
-
-  function handleRetryExport() {
-    setExportState("ready");
-  }
-
-  function handleDownloadExport() {
-    showToast({
-      description: "El PDF queda listo para guardarse localmente.",
-      title: "Descarga iniciada",
-      tone: "success",
-    });
-    setIsExportModalOpen(false);
   }
 
   return (
     <div className={styles.editorShell}>
       {isOffline ? (
         <div className={styles.inlineNotice}>
-          Sin conexión. Cambios en local; la sincronización espera red.
+          Sin conexión. Los cambios quedan guardados en este navegador hasta recuperar la red.
+        </div>
+      ) : persistErrorMessage ? (
+        <div className={styles.inlineNotice}>
+          <span>
+            Guardado pendiente. Conservamos una copia local mientras se resuelve la sincronización.
+          </span>
+          <span className={styles.inlineNoticeDetail}>{persistErrorMessage}</span>
         </div>
       ) : null}
 
@@ -439,6 +846,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
               aria-label="Título del proyecto"
               value={projectTitle}
               onChange={(event) => handleTitleChange(event.target.value)}
+              onBlur={handleTitleBlur}
             />
             <span
               className={cn(styles.editorStatus, getStatusClassName(status.tone))}
@@ -472,7 +880,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <button
             type="button"
             className={styles.editorIconButton}
-            onClick={() => setIsSidebarVisible((current) => !current)}
+            onClick={() => setIsSidebarVisible((currentValue) => !currentValue)}
             aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
             aria-pressed={isSidebarVisible}
           >
@@ -492,12 +900,7 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <Link href={routes.settings} className={styles.editorHeaderQuiet}>
             Ajustes
           </Link>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleOpenExportModal}
-            disabled={isOffline}
-          >
+          <Button variant="secondary" size="sm" onClick={handleOpenExportModal}>
             Exportar
           </Button>
         </div>
@@ -562,18 +965,13 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <div className={styles.editorCanvasStage}>
             <article className={styles.editorPaper}>
               <ScreenplayEditor
-                initialBlocks={
-                  viewState === "empty"
-                    ? []
-                    : previewLines.map((line) => ({
-                        id: line.id,
-                        text: line.text,
-                        type: line.type,
-                      }))
-                }
+                key={`screenplay-editor-${editorInstanceKey}`}
+                initialBlocks={toScreenplayEditorSeedBlocks(editorSeedBlocks)}
                 onEditorReady={handleEditorReady}
                 onChange={handleEditorChange}
                 onBlockTypeChange={handleBlockTypeChange}
+                onEnterPersist={prototypeMode ? undefined : schedulePersistOnEnter}
+                persistOnEnterEnabled={!prototypeMode}
                 placeholder="Empieza a escribir tu guión..."
               />
             </article>
@@ -598,73 +996,37 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
         title="Exportar guion"
         closeLabel="Cerrar modal"
         footer={
-          exportState === "success" ? (
-            <>
-              <Button variant="ghost" onClick={() => setIsExportModalOpen(false)}>
-                Cerrar
-              </Button>
-              <Button variant="success" onClick={handleDownloadExport}>
-                Descargar PDF
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" onClick={handleCancelExport}>
-                Cancelar
-              </Button>
-              {exportState === "error" ? (
-                <Button onClick={handleRetryExport}>Reintentar</Button>
-              ) : (
-                <Button
-                  onClick={handleExport}
-                  disabled={isOffline || exportState === "exporting"}
-                  variant="primary"
-                >
-                  {exportState === "exporting" ? "Exportando..." : "Exportar PDF"}
-                </Button>
-              )}
-            </>
-          )
+          <Button variant="ghost" onClick={() => setIsExportModalOpen(false)}>
+            Cerrar
+          </Button>
         }
       >
         <div className={styles.modalSection}>
-          {exportState === "success" ? (
-            <>
-              <p className={cn(styles.modalMessage, styles.modalMessageSuccess)}>
-                Tu PDF está listo.
-              </p>
-              <p className={styles.modalHint}>
-                Si la descarga no se inició sola, usa el botón para bajarla.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className={styles.modalSummary}>
-                <div className={styles.modalSummaryRow}>
-                  <span>Título</span>
-                  <strong>{projectTitle.trim() || "Sin título"}</strong>
-                </div>
-                <div className={styles.modalSummaryRow}>
-                  <span>Autor</span>
-                  <strong>{project.author ?? previewUser.name ?? "Sin definir"}</strong>
-                </div>
-                <div className={styles.modalSummaryRow}>
-                  <span>Escenas</span>
-                  <strong>{editorScenes.length}</strong>
-                </div>
-                <div className={styles.modalSummaryRow}>
-                  <span>Páginas</span>
-                  <strong>~{estimatedPages}</strong>
-                </div>
-              </div>
+          <div className={styles.modalSummary}>
+            <div className={styles.modalSummaryRow}>
+              <span>Título</span>
+              <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Autor</span>
+              <strong>{exportAuthor ?? "Sin definir"}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Escenas</span>
+              <strong>{editorScenes.length}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Páginas</span>
+              <strong>~{estimatedPages}</strong>
+            </div>
+          </div>
 
-              {exportState === "error" ? (
-                <p className={cn(styles.modalMessage, styles.modalMessageError)}>
-                  No se pudo generar el PDF. Intenta de nuevo.
-                </p>
-              ) : null}
-            </>
-          )}
+          <p className={styles.modalMessage}>
+            La exportación PDF todavía no está conectada al documento persistido.
+          </p>
+          <p className={styles.modalHint}>
+            Dejé el resumen listo para cuando implementemos Fase 9 sobre el snapshot activo.
+          </p>
         </div>
       </Modal>
     </div>

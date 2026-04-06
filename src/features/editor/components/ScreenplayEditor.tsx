@@ -27,6 +27,7 @@ import { BlockTypeIndicatorPlugin } from "@/features/editor/plugins/BlockTypeInd
 import { EditorReadyPlugin } from "@/features/editor/plugins/EditorReadyPlugin";
 import { PlaceholderPlugin } from "@/features/editor/plugins/PlaceholderPlugin";
 import { ScreenplayPlugin } from "@/features/editor/plugins/ScreenplayPlugin";
+import { PersistOnEnterPlugin } from "@/features/editor/plugins/PersistOnEnterPlugin";
 import { ScreenplaySuggestionsPlugin } from "@/features/editor/plugins/ScreenplaySuggestionsPlugin";
 
 import styles from "./screenplay-editor.module.css";
@@ -42,6 +43,8 @@ type ScreenplayEditorProps = {
   onChange?: (editorState: EditorState, editor: LexicalEditor) => void;
   onEditorReady?: (editor: LexicalEditor) => void;
   onBlockTypeChange?: (blockType: ScreenplayBlockType) => void;
+  onEnterPersist?: () => void;
+  persistOnEnterEnabled?: boolean;
   placeholder?: string;
 };
 
@@ -76,6 +79,8 @@ export function ScreenplayEditor({
   onChange,
   onEditorReady,
   onBlockTypeChange,
+  onEnterPersist,
+  persistOnEnterEnabled = false,
   placeholder = "Start writing your screenplay...",
 }: ScreenplayEditorProps) {
   const editorStateInit = useMemo(
@@ -120,6 +125,9 @@ export function ScreenplayEditor({
         <HistoryPlugin />
         <ScreenplayPlugin />
         <AutoDetectBlockTypePlugin />
+        {onEnterPersist ? (
+          <PersistOnEnterPlugin enabled={persistOnEnterEnabled} onEnterCommit={onEnterPersist} />
+        ) : null}
         <ScreenplaySuggestionsPlugin />
         <AutoFocusPlugin />
         <BlockTypeIndicatorPlugin onBlockTypeChange={onBlockTypeChange} />

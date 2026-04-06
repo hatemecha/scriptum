@@ -40,6 +40,9 @@
 }
 
 .inlineNotice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   padding: 0.85rem 1rem;
   border-left: 4px solid var(--color-warning);
   border-radius: 0.9rem;
@@ -47,6 +50,12 @@
   color: var(--color-foreground);
   font-size: 0.95rem;
   line-height: 1.6;
+}
+
+.inlineNoticeDetail {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  word-break: break-word;
 }
 
 .filterBar {

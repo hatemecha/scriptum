@@ -1,3 +1,4 @@
+import { type ProjectStatus, projectStatusValues } from "@/features/projects/project-contract";
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 
 export const screenplayDocumentKind = "scriptum/screenplay-document";
@@ -7,7 +8,7 @@ export const screenplayBlockSchemaVersion = 1;
 export const screenplaySceneIndexVersion = 1;
 export const screenplaySyncSchemaVersion = 1;
 
-export const screenplayProjectStatuses = ["draft", "archived"] as const;
+export const screenplayProjectStatuses = projectStatusValues;
 export const screenplayDocumentSyncStatuses = [
   "local-only",
   "pending-sync",
@@ -15,7 +16,7 @@ export const screenplayDocumentSyncStatuses = [
   "conflict",
 ] as const;
 
-export type ScreenplayProjectStatus = (typeof screenplayProjectStatuses)[number];
+export type ScreenplayProjectStatus = ProjectStatus;
 export type ScreenplayDocumentSyncStatus = (typeof screenplayDocumentSyncStatuses)[number];
 export type ScreenplayDocumentValidationMode = "editor" | "persisted";
 

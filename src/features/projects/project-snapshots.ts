@@ -1,0 +1,338 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import {
+  getOrderedScreenplayBlocks,
+  createScreenplayDocument,
+  type ScreenplayDocument,
+} from "@/features/screenplay/document-model";
+import { hasIdPrefix } from "@/features/screenplay/document-core";
+import { getScreenplayDocumentValidationErrors } from "@/features/screenplay/document-validation";
+import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
+import { type Json, type Database } from "@/lib/supabase/types";
+
+import {
+  normalizeProjectAuthor,
+  normalizeProjectDescription,
+  normalizeProjectLanguage,
+  normalizeProjectStatus,
+  normalizeProjectTitle,
+  type ProjectLanguage,
+  type ProjectStatus,
+} from "./project-contract";
+import { getProject, type UserProject } from "./projects";
+
+type SnapshotRow = Database["public"]["Tables"]["document_snapshots"]["Row"];
+
+export type SerializedEditorBlock = {
+  text: string;
+  type: ScreenplayBlockType;
+};
+
+export type PersistedProjectEditorData = {
+  blocks: readonly SerializedEditorBlock[];
+  documentId: string | null;
+  project: UserProject;
+  revision: number;
+  snapshotId: string | null;
+};
+
+export type SaveProjectSnapshotInput = {
+  blocks: readonly SerializedEditorBlock[];
+  description?: string | null;
+  documentId: string | null;
+  language?: ProjectLanguage;
+  project: UserProject;
+  snapshotKind?: "autosave" | "manual-save";
+  status?: ProjectStatus;
+  title?: string;
+};
+
+function isRecord(value: Json | unknown): value is Record<string, Json> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function createSnapshotId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return `snapshot_${globalThis.crypto.randomUUID().replace(/-/g, "")}`;
+  }
+
+  return `snapshot_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function parsePersistedScreenplayDocument(value: Json): ScreenplayDocument | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  if (
+    !isRecord(value.schema) ||
+    !isRecord(value.document) ||
+    !isRecord(value.project) ||
+    !isRecord(value.content) ||
+    !isRecord(value.indexes) ||
+    !isRecord(value.sync)
+  ) {
+    return null;
+  }
+
+  const document = value as unknown as ScreenplayDocument;
+  const validationErrors = getScreenplayDocumentValidationErrors(document, { mode: "persisted" });
+
+  return validationErrors.length === 0 ? document : null;
+}
+
+function rowToEditorData(project: UserProject, snapshot: SnapshotRow | null): PersistedProjectEditorData {
+  if (!snapshot) {
+    return {
+      blocks: [],
+      documentId: null,
+      project,
+      revision: 0,
+      snapshotId: null,
+    };
+  }
+
+  const document = parsePersistedScreenplayDocument(snapshot.document_data);
+
+  if (!document) {
+    throw new Error("Active document snapshot is invalid.");
+  }
+
+  return {
+    blocks: getOrderedScreenplayBlocks(document).map((block) => ({
+      text: block.text,
+      type: block.type,
+    })),
+    documentId: document.document.id,
+    project: {
+      ...project,
+      author: document.project.author,
+      description: document.project.description,
+      language: normalizeProjectLanguage(document.project.language),
+      status: normalizeProjectStatus(document.project.status),
+      title: document.project.title,
+    },
+    revision: document.document.revision,
+    snapshotId: snapshot.id,
+  };
+}
+
+export async function getProjectEditorData(
+  supabase: SupabaseClient<Database>,
+  projectId: string,
+): Promise<{ data: PersistedProjectEditorData | null; error: Error | null }> {
+  const { project, error: projectError } = await getProject(supabase, projectId);
+
+  if (projectError || !project) {
+    return { data: null, error: projectError };
+  }
+
+  if (!project.currentSnapshotId) {
+    return { data: rowToEditorData(project, null), error: null };
+  }
+
+  const { data: snapshot, error } = await supabase
+    .from("document_snapshots")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("id", project.currentSnapshotId)
+    .maybeSingle();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  try {
+    return { data: rowToEditorData(project, snapshot), error: null };
+  } catch (snapshotError) {
+    return {
+      data: null,
+      error:
+        snapshotError instanceof Error
+          ? snapshotError
+          : new Error("Active document snapshot is invalid."),
+    };
+  }
+}
+
+function isSnapshotRevisionConflictError(error: unknown): boolean {
+  if (error == null || typeof error !== "object") {
+    return false;
+  }
+
+  const record = error as { code?: string; message?: string };
+  if (record.code === "23505") {
+    return true;
+  }
+
+  const message = (record.message ?? "").toLowerCase();
+
+  return (
+    message.includes("revision") &&
+    (message.includes("unique") || message.includes("duplicate") || message.includes("document_snapshots"))
+  );
+}
+
+async function fetchMaxSnapshotRevision(
+  supabase: SupabaseClient<Database>,
+  projectId: string,
+): Promise<number | null> {
+  const { data, error } = await supabase
+    .from("document_snapshots")
+    .select("revision")
+    .eq("project_id", projectId)
+    .order("revision", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || data == null) {
+    return null;
+  }
+
+  return data.revision;
+}
+
+export async function saveProjectSnapshot(
+  supabase: SupabaseClient<Database>,
+  input: SaveProjectSnapshotInput,
+): Promise<{
+  data: PersistedProjectEditorData | null;
+  error: Error | null;
+}> {
+  try {
+    const title = normalizeProjectTitle(input.title ?? input.project.title, "");
+    const author = normalizeProjectAuthor(input.project.author);
+    const description = normalizeProjectDescription(input.description ?? input.project.description);
+    const language = normalizeProjectLanguage(input.language ?? input.project.language);
+    const status = normalizeProjectStatus(input.status ?? input.project.status);
+    const documentId =
+      input.documentId && hasIdPrefix(input.documentId, "doc") ? input.documentId : undefined;
+
+    const maxAttempts = 5;
+    let revision = input.project.latestRevision + 1;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const now = new Date().toISOString();
+
+      const document = createScreenplayDocument({
+        id: documentId,
+        revision,
+        updatedAt: now,
+        project: {
+          id: input.project.id as `project_${string}`,
+          title,
+          author,
+          description,
+          language,
+          status,
+          createdAt: input.project.createdAt,
+          updatedAt: now,
+        },
+        blocks: input.blocks.map((block) => ({
+          text: block.text,
+          type: block.type,
+        })),
+        sync: {
+          baseRevision: revision,
+          lastSyncedAt: now,
+          lastSyncedRevision: revision,
+          status: "synced",
+        },
+      });
+
+      const validationErrors = getScreenplayDocumentValidationErrors(document, { mode: "persisted" });
+
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors[0]);
+      }
+
+      const snapshotId = createSnapshotId();
+      const { error: insertError } = await supabase.from("document_snapshots").insert({
+        id: snapshotId,
+        project_id: input.project.id,
+        owner_profile_id: input.project.ownerProfileId,
+        document_id: document.document.id,
+        revision: document.document.revision,
+        snapshot_kind: input.snapshotKind ?? "autosave",
+        document_schema_version: document.schema.version,
+        document_data: document as unknown as Json,
+        created_at: now,
+      });
+
+      if (insertError) {
+        if (isSnapshotRevisionConflictError(insertError) && attempt < maxAttempts - 1) {
+          const maxRev = await fetchMaxSnapshotRevision(supabase, input.project.id);
+          if (maxRev != null) {
+            revision = Math.max(input.project.latestRevision, maxRev) + 1;
+          } else {
+            revision += 1;
+          }
+          continue;
+        }
+
+        return { data: null, error: insertError };
+      }
+
+      const { data: updatedProjectRow, error: updateError } = await supabase
+        .from("projects")
+        .update({
+          author,
+          current_snapshot_id: snapshotId,
+          description,
+          language,
+          last_edited_at: now,
+          latest_revision: document.document.revision,
+          status,
+          title,
+          updated_at: now,
+        })
+        .eq("id", input.project.id)
+        .is("deleted_at", null)
+        .select("*")
+        .single();
+
+      if (updateError) {
+        return { data: null, error: updateError };
+      }
+
+      return {
+        data: rowToEditorData(
+          {
+            ...input.project,
+            author,
+            currentSnapshotId: updatedProjectRow.current_snapshot_id,
+            description,
+            language: normalizeProjectLanguage(updatedProjectRow.language),
+            lastEditedAt: updatedProjectRow.last_edited_at,
+            latestRevision: updatedProjectRow.latest_revision,
+            status,
+            title,
+            updatedAt: updatedProjectRow.updated_at,
+          },
+          {
+            created_at: now,
+            document_data: document as unknown as Json,
+            document_id: document.document.id,
+            document_schema_version: document.schema.version,
+            id: snapshotId,
+            owner_profile_id: input.project.ownerProfileId,
+            project_id: input.project.id,
+            revision: document.document.revision,
+            snapshot_kind: input.snapshotKind ?? "autosave",
+          },
+        ),
+        error: null,
+      };
+    }
+
+    return {
+      data: null,
+      error: new Error("Could not allocate a new document revision after repeated conflicts."),
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error("Failed to save project snapshot."),
+    };
+  }
+}

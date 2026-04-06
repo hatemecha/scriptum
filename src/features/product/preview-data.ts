@@ -1,5 +1,6 @@
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import { formatScreenplayBlockText } from "@/features/screenplay/format-rules";
+import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
 
 export type PreviewBlock = {
   id: string;
@@ -47,15 +48,7 @@ function createInitials(name: string): string {
 }
 
 function createPageEstimate(blocks: readonly PreviewBlock[]): number {
-  const lines = blocks.reduce((totalLines, block) => {
-    const baseLines = Math.max(1, Math.ceil(block.text.length / 42));
-    const weightedLines =
-      block.type === "dialogue" || block.type === "parenthetical" ? baseLines + 1 : baseLines;
-
-    return totalLines + weightedLines;
-  }, 0);
-
-  return Math.max(1, Math.ceil(lines / 14));
+  return estimateScreenplayPageCount(blocks);
 }
 
 function createProjectTitleFromId(projectId: string): string {
