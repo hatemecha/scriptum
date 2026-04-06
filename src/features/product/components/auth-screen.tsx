@@ -121,6 +121,13 @@ export function AuthScreen({
       return "Superaste el límite temporal de correos. Espera unos minutos antes de intentar de nuevo.";
     }
 
+    if (
+      (normalizedMessage.includes("email address") && normalizedMessage.includes("invalid")) ||
+      normalizedMessage.includes("unable to validate email address")
+    ) {
+      return "Ese correo no es aceptado para registrarse (los dominios de prueba como example.com suelen rechazarse). Usá un correo real.";
+    }
+
     return "No se pudo completar la solicitud. Intenta de nuevo.";
   }
 

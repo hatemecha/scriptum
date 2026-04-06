@@ -15,6 +15,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   let initialProfile: UserAppProfile | null = null;
   let profileLoadFailed = false;
 
+  let passwordAuthAvailable = false;
+
   try {
     const supabase = await createSupabaseServerClient();
     const {
@@ -23,6 +25,9 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
     if (user) {
       accountEmail = user.email ?? null;
+      passwordAuthAvailable = (user.identities ?? []).some(
+        (identity) => identity.provider === "email",
+      );
       const profile = await ensureUserProfile(supabase, user);
       if (profile) {
         initialProfile = profile;
@@ -39,6 +44,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       viewState={viewState}
       accountEmail={accountEmail}
       initialProfile={initialProfile}
+      passwordAuthAvailable={passwordAuthAvailable}
       profileLoadFailed={profileLoadFailed}
     />
   );

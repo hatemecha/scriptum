@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
@@ -24,19 +25,30 @@ function createInitials(name: string): string {
     .join("");
 }
 
-export function DashboardLayout({ children, userEmail, userName }: DashboardLayoutProps) {
-  const pathname = usePathname();
+function DashboardOfflineBanner() {
   const searchParams = useSearchParams();
   const isOffline = searchParams.get("state") === "offline";
+
+  if (!isOffline) {
+    return null;
+  }
+
+  return (
+    <div className={styles.connectionBanner} role="status">
+      Sin conexión. Tus cambios se guardan en local.
+    </div>
+  );
+}
+
+export function DashboardLayout({ children, userEmail, userName }: DashboardLayoutProps) {
+  const pathname = usePathname();
   const initials = createInitials(userName) || "U";
 
   return (
     <div className={styles.dashboardShell}>
-      {isOffline ? (
-        <div className={styles.connectionBanner} role="status">
-          Sin conexión. Tus cambios se guardan en local.
-        </div>
-      ) : null}
+      <Suspense fallback={null}>
+        <DashboardOfflineBanner />
+      </Suspense>
 
       <header className={styles.dashboardHeader}>
         <div className={styles.brandBlock}>

@@ -44,6 +44,8 @@ import {
 import { getSceneHeadingAutoDetectReason } from "@/features/screenplay/editor-help/scene-heading-detect";
 import { getTransitionAutoDetectReason } from "@/features/screenplay/editor-help/transition-detect";
 import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
+import { buildScreenplayPdfFromBlocks } from "@/features/screenplay/screenplay-pdf";
+import { layoutScreenplayForExport } from "@/features/screenplay/screenplay-layout";
 import { clearStoredEditorDraft, readStoredEditorDraft, writeStoredEditorDraft } from "@/features/product/editor-draft";
 import {
   getPreviewLines,
@@ -88,6 +90,14 @@ type EditorScreenProps = {
 };
 
 type SaveTone = "danger" | "muted" | "success" | "warning";
+
+type ExportModalPhase = "error" | "exporting" | "ready" | "success";
+
+function sanitizeExportFileName(raw: string): string {
+  const trimmed = raw.trim().toLowerCase().replace(/\s+/g, "-");
+  const safe = trimmed.replace(/[^a-z0-9._-]+/g, "").replace(/^-+|-+$/g, "");
+  return safe.length > 0 ? safe.slice(0, 88) : "guion";
+}
 type PrototypeSaveState = "saving" | "synced";
 type PersistState = "error" | "local-draft" | "saved" | "saving";
 
@@ -213,6 +223,22 @@ function normalizeEditableProjectTitle(value: string): string {
 
 function createPersistSignature(title: string, blocks: readonly SerializedEditorBlock[]): string {
   return JSON.stringify({ blocks, title });
+}
+
+function isLikelyTransientPersistError(error: Error | null | undefined): boolean {
+  if (!error) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return (
+    error.name === "TypeError" ||
+    message.includes("network") ||
+    message.includes("fetch") ||
+    message.includes("failed to fetch") ||
+    message.includes("load failed") ||
+    message.includes("timeout") ||
+    message.includes("econnreset")
+  );
 }
 
 function toScreenplayEditorSeedBlocks(
@@ -357,7 +383,7 @@ function getStatusPresentation({
     };
   }
 
-  if (persistState === "local-draft") {
+  if (persistState === "local-draft" && !hasUnsavedChanges) {
     return {
       label: "Cambios en local",
       tone: "warning",
@@ -597,6 +623,8 @@ export function EditorScreen({
   const restoredLocalDraftRef = useRef(false);
   const savingIndicatorDelayRef = useRef<number | null>(null);
   const titlePersistTimeoutRef = useRef<number | null>(null);
+  const editorAutosaveEnabledRef = useRef(initialEditorAutosaveEnabled);
+  const onlineReconnectPersistTimeoutRef = useRef<number | null>(null);
 
   const [prototypeSaveState, setPrototypeSaveState] = useState<PrototypeSaveState>(
     viewState === "saving" ? "saving" : "synced",
@@ -615,7 +643,14 @@ export function EditorScreen({
     estimateScreenplayPageCount(initialSeed.blocks),
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportPhase, setExportPhase] = useState<ExportModalPhase>("ready");
+  const [exportLayoutPages, setExportLayoutPages] = useState(estimatedPages);
+  const exportDownloadUrlRef = useRef<string | null>(null);
   const [editorAutosaveEnabled] = useState(initialEditorAutosaveEnabled);
+
+  useEffect(() => {
+    editorAutosaveEnabledRef.current = editorAutosaveEnabled;
+  }, [editorAutosaveEnabled]);
   const [leaveTargetHref, setLeaveTargetHref] = useState<string | null>(null);
   const [leaveModalError, setLeaveModalError] = useState<string | null>(null);
   const [isLeaveSaving, setIsLeaveSaving] = useState(false);
@@ -682,6 +717,19 @@ export function EditorScreen({
   const [editorSeedBlocks, setEditorSeedBlocks] = useState<readonly SerializedEditorBlock[]>(
     initialSeed.blocks,
   );
+
+  useEffect(() => {
+    if (!isExportModalOpen) {
+      return;
+    }
+    const editor = lexicalEditorRef.current;
+    if (!editor) {
+      setExportLayoutPages(estimatedPages);
+      return;
+    }
+    const blocks = serializeScreenplayBlocks(editor.getEditorState());
+    setExportLayoutPages(Math.max(1, layoutScreenplayForExport(blocks).length));
+  }, [editorBlocks, estimatedPages, isExportModalOpen]);
   const [editorInstanceKey, setEditorInstanceKey] = useState(0);
   const [projectRecord, setProjectRecord] = useState(initialProjectRecord);
   const [documentId, setDocumentId] = useState(initialData?.documentId ?? null);
@@ -780,12 +828,48 @@ export function EditorScreen({
       }
     }, 450);
 
-    const result = await saveProjectSnapshot(createSupabaseBrowserClient(), {
-      blocks: editorBlocksRef.current,
-      documentId: documentIdRef.current,
-      project: currentProject,
-      title: normalizedTitle,
-    });
+    const persistRetryDelaysMs = [700, 1900] as const;
+    let snapshotResult: Awaited<ReturnType<typeof saveProjectSnapshot>> | null = null;
+
+    attemptLoop: for (let attempt = 0; attempt < 1 + persistRetryDelaysMs.length; attempt++) {
+      if (attempt > 0) {
+        const waitMs = persistRetryDelaysMs[attempt - 1]!;
+        await new Promise((resolve) => {
+          window.setTimeout(resolve, waitMs);
+        });
+        if (isOfflineRef.current) {
+          setPersistState("local-draft");
+          setPersistErrorMessage(null);
+          if (savingIndicatorDelayRef.current !== null) {
+            window.clearTimeout(savingIndicatorDelayRef.current);
+            savingIndicatorDelayRef.current = null;
+          }
+          isSavingRef.current = false;
+          queuedPersistRef.current = false;
+          return false;
+        }
+      }
+
+      snapshotResult = await saveProjectSnapshot(createSupabaseBrowserClient(), {
+        blocks: editorBlocksRef.current,
+        documentId: documentIdRef.current,
+        project: projectRecordRef.current ?? currentProject,
+        title: normalizeEditableProjectTitle(projectTitleRef.current),
+      });
+
+      if (!snapshotResult.error && snapshotResult.data) {
+        break attemptLoop;
+      }
+
+      const canRetry =
+        attempt < persistRetryDelaysMs.length &&
+        isLikelyTransientPersistError(snapshotResult.error) &&
+        !isOfflineRef.current;
+
+      if (!canRetry) {
+        break attemptLoop;
+      }
+    }
 
     if (savingIndicatorDelayRef.current !== null) {
       window.clearTimeout(savingIndicatorDelayRef.current);
@@ -793,6 +877,8 @@ export function EditorScreen({
     }
 
     isSavingRef.current = false;
+
+    const result = snapshotResult!;
 
     if (result.error || !result.data) {
       setPersistState("error");
@@ -1153,6 +1239,46 @@ export function EditorScreen({
   }, [prototypeMode]);
 
   useEffect(() => {
+    if (prototypeMode) {
+      return undefined;
+    }
+
+    function scheduleReconnectPersist(): void {
+      if (onlineReconnectPersistTimeoutRef.current !== null) {
+        window.clearTimeout(onlineReconnectPersistTimeoutRef.current);
+      }
+      onlineReconnectPersistTimeoutRef.current = window.setTimeout(() => {
+        onlineReconnectPersistTimeoutRef.current = null;
+        if (!editorAutosaveEnabledRef.current || !projectRecordRef.current) {
+          return;
+        }
+        if (!navigator.onLine) {
+          return;
+        }
+        const normalizedTitle = normalizeEditableProjectTitle(projectTitleRef.current);
+        const nextSignature = createPersistSignature(normalizedTitle, editorBlocksRef.current);
+        if (nextSignature === lastPersistedSignatureRef.current) {
+          return;
+        }
+        void persistLatestDraftRef.current();
+      }, 520);
+    }
+
+    function onBrowserOnline(): void {
+      scheduleReconnectPersist();
+    }
+
+    window.addEventListener("online", onBrowserOnline);
+    return () => {
+      window.removeEventListener("online", onBrowserOnline);
+      if (onlineReconnectPersistTimeoutRef.current !== null) {
+        window.clearTimeout(onlineReconnectPersistTimeoutRef.current);
+        onlineReconnectPersistTimeoutRef.current = null;
+      }
+    };
+  }, [prototypeMode]);
+
+  useEffect(() => {
     if (prototypeMode || !projectRecord || restoredLocalDraftRef.current) {
       return;
     }
@@ -1258,6 +1384,8 @@ export function EditorScreen({
 
     if (isBrowserOffline || viewState === "offline") {
       setPersistState("local-draft");
+    } else {
+      setPersistState((previous) => (previous === "local-draft" ? "saved" : previous));
     }
   }, [
     // Include `persistLatestDraft` so dev Fast Refresh never shrinks this array vs a prior version.
@@ -1289,8 +1417,67 @@ export function EditorScreen({
       if (titlePersistTimeoutRef.current !== null) {
         window.clearTimeout(titlePersistTimeoutRef.current);
       }
+
+      if (onlineReconnectPersistTimeoutRef.current !== null) {
+        window.clearTimeout(onlineReconnectPersistTimeoutRef.current);
+      }
     };
   }, []);
+
+  const handleExportPdf = useCallback(async () => {
+    const editor = lexicalEditorRef.current;
+    if (!editor) {
+      setExportPhase("error");
+      return;
+    }
+
+    setExportPhase("exporting");
+
+    try {
+      const blocks = serializeScreenplayBlocks(editor.getEditorState());
+      const bytes = await buildScreenplayPdfFromBlocks(blocks);
+      const copy = new Uint8Array(bytes.byteLength);
+      copy.set(bytes);
+      const blob = new Blob([copy], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      if (exportDownloadUrlRef.current) {
+        URL.revokeObjectURL(exportDownloadUrlRef.current);
+      }
+      exportDownloadUrlRef.current = url;
+      setExportPhase("success");
+
+      const fileStem = sanitizeExportFileName(normalizeEditableProjectTitle(projectTitleRef.current));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${fileStem}.pdf`;
+      anchor.rel = "noopener";
+      anchor.click();
+    } catch {
+      setExportPhase("error");
+    }
+  }, []);
+
+  const handleExportDownloadAgain = useCallback(() => {
+    const url = exportDownloadUrlRef.current;
+    if (!url) {
+      return;
+    }
+    const fileStem = sanitizeExportFileName(normalizeEditableProjectTitle(projectTitleRef.current));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${fileStem}.pdf`;
+    anchor.rel = "noopener";
+    anchor.click();
+  }, []);
+
+  function handleOpenExportModal() {
+    if (exportDownloadUrlRef.current) {
+      URL.revokeObjectURL(exportDownloadUrlRef.current);
+      exportDownloadUrlRef.current = null;
+    }
+    setExportPhase("ready");
+    setIsExportModalOpen(true);
+  }
 
   if (viewState === "error") {
     return (
@@ -1413,10 +1600,6 @@ export function EditorScreen({
     if (href) {
       router.push(href);
     }
-  }
-
-  function handleOpenExportModal() {
-    setIsExportModalOpen(true);
   }
 
   return (
@@ -1788,41 +1971,81 @@ export function EditorScreen({
 
       <Modal
         open={isExportModalOpen}
-        onOpenChange={setIsExportModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (exportDownloadUrlRef.current) {
+              URL.revokeObjectURL(exportDownloadUrlRef.current);
+              exportDownloadUrlRef.current = null;
+            }
+            setExportPhase("ready");
+          }
+          setIsExportModalOpen(open);
+        }}
         title="Exportar guion"
         closeLabel="Cerrar modal"
         footer={
-          <Button variant="ghost" onClick={() => setIsExportModalOpen(false)}>
-            Cerrar
-          </Button>
+          exportPhase === "success" ? (
+            <>
+              <Button variant="ghost" onClick={() => setIsExportModalOpen(false)}>
+                Cerrar
+              </Button>
+              <Button variant="primary" onClick={handleExportDownloadAgain}>
+                Descargar PDF
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={() => setIsExportModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                variant="primary"
+                disabled={exportPhase === "exporting"}
+                onClick={() => void handleExportPdf()}
+              >
+                {exportPhase === "error" ? "Reintentar" : exportPhase === "exporting" ? "Exportando…" : "Exportar PDF"}
+              </Button>
+            </>
+          )
         }
       >
         <div className={styles.modalSection}>
-          <div className={styles.modalSummary}>
-            <div className={styles.modalSummaryRow}>
-              <span>Título</span>
-              <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
-            </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Autor</span>
-              <strong>{exportAuthor ?? "Sin definir"}</strong>
-            </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Escenas</span>
-              <strong>{editorScenes.length}</strong>
-            </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Páginas</span>
-              <strong>~{estimatedPages}</strong>
-            </div>
-          </div>
+          {exportPhase === "success" ? (
+            <p className={cn(styles.modalMessage, styles.modalMessageSuccess)}>
+              PDF listo. Si la descarga no empezó automáticamente, usá «Descargar PDF».
+            </p>
+          ) : exportPhase === "error" ? (
+            <p className={cn(styles.modalMessage, styles.modalMessageError)} role="alert">
+              No se pudo generar el PDF. Intentá de nuevo.
+            </p>
+          ) : null}
 
-          <p className={styles.modalMessage}>
-            La exportación PDF todavía no está conectada al documento persistido.
-          </p>
-          <p className={styles.modalHint}>
-            Dejé el resumen listo para cuando implementemos Fase 9 sobre el snapshot activo.
-          </p>
+          {exportPhase !== "success" ? (
+            <div className={styles.modalSummary}>
+              <div className={styles.modalSummaryRow}>
+                <span>Título</span>
+                <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
+              </div>
+              <div className={styles.modalSummaryRow}>
+                <span>Autor</span>
+                <strong>{exportAuthor ?? "Sin definir"}</strong>
+              </div>
+              <div className={styles.modalSummaryRow}>
+                <span>Escenas</span>
+                <strong>{editorScenes.length}</strong>
+              </div>
+              <div className={styles.modalSummaryRow}>
+                <span>Páginas (layout)</span>
+                <strong>{exportLayoutPages}</strong>
+              </div>
+            </div>
+          ) : null}
+
+          {exportPhase === "ready" ? (
+            <p className={styles.modalHint}>
+              Se exporta el texto tal como está en el editor (misma rejilla A4 que el PDF).
+            </p>
+          ) : null}
         </div>
       </Modal>
     </div>

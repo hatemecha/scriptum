@@ -69,11 +69,12 @@
   /* full-width, preserve case — no extra rules needed */
 }
 
-/* Character */
+/* Character — fracciones de la rejilla = `screenplayBlockFormatRules` / PDF */
 .screenplay-block--character {
   text-transform: uppercase;
   margin-top: 2.25em;
-  margin-left: 41%;
+  margin-left: calc(100% * 22 / var(--scriptum-screenplay-body-cols, 59));
+  max-width: calc(100% * 37 / var(--scriptum-screenplay-body-cols, 59));
 }
 
 .screenplay-block--character:first-child {
@@ -86,15 +87,15 @@
 
 /* Dialogue */
 .screenplay-block--dialogue {
-  max-width: 30ch;
-  margin-left: 30%;
+  max-width: calc(100% * 35 / var(--scriptum-screenplay-body-cols, 59));
+  margin-left: calc(100% * 10 / var(--scriptum-screenplay-body-cols, 59));
   margin-top: 0;
 }
 
 /* Parenthetical */
 .screenplay-block--parenthetical {
-  max-width: 20ch;
-  margin-left: 34%;
+  max-width: calc(100% * 25 / var(--scriptum-screenplay-body-cols, 59));
+  margin-left: calc(100% * 15 / var(--scriptum-screenplay-body-cols, 59));
   margin-top: 0;
 }
 
@@ -164,32 +165,4 @@
   text-decoration: underline;
 }
 
-/* Responsive overrides */
-@media (max-width: 960px) {
-  .screenplay-block--character {
-    margin-left: 28%;
-  }
-
-  .screenplay-block--dialogue {
-    margin-left: 16%;
-  }
-
-  .screenplay-block--parenthetical {
-    margin-left: 21%;
-  }
-}
-
-@media (max-width: 640px) {
-  .screenplay-block--character {
-    margin-left: 24%;
-  }
-
-  .screenplay-block--dialogue {
-    max-width: 28ch;
-    margin-left: 13%;
-  }
-
-  .screenplay-block--parenthetical {
-    margin-left: 17%;
-  }
-}
+/* Misma rejilla en todos los viewports para coincidir con el PDF (desplazamiento horizontal en el lienzo). */

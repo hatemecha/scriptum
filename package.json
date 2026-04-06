@@ -15,7 +15,9 @@
     "validate:data-architecture": "tsx scripts/validate-data-architecture.ts",
     "validate:security-base": "tsx scripts/validate-security-base.ts",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@lexical/clipboard": "^0.42.0",
@@ -27,6 +29,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "lexical": "^0.42.0",
     "next": "16.2.2",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -37,8 +40,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "^20.8.9",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.2"
   }
 }

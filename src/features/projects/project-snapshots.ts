@@ -172,7 +172,7 @@ export async function getProjectEditorData(
   }
 }
 
-function isSnapshotRevisionConflictError(error: unknown): boolean {
+export function isSnapshotRevisionConflictError(error: unknown): boolean {
   if (error == null || typeof error !== "object") {
     return false;
   }

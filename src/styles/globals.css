@@ -98,6 +98,11 @@
   --scriptum-page-margin-bottom: 25mm;
   --scriptum-page-margin-binding: 38mm;
   --scriptum-page-margin-outer: 22mm;
+  /*
+   * Rejilla de cuerpo (60 cpi): columnas = round(bodyWidthIn" × 10); debe coincidir con
+   * `bodyWidthCharacters` en `src/features/screenplay/format-rules.ts` (59 con márgenes actuales).
+   */
+  --scriptum-screenplay-body-cols: 59;
   --scriptum-page-body-size: 12pt;
   --scriptum-page-line-height: 12pt;
   --scriptum-page-break-line: color-mix(in srgb, var(--color-foreground) 9%, transparent);

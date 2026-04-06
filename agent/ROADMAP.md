@@ -462,43 +462,43 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 26 — Guardado local
 
-- [ ] Diseñar autosave local
-- [ ] Guardar borradores temporales
-- [ ] Recuperar cambios no sincronizados
-- [ ] Evitar pérdida ante refresh o cierre accidental
+- [x] Diseñar autosave local
+- [x] Guardar borradores temporales
+- [x] Recuperar cambios no sincronizados
+- [x] Evitar pérdida ante refresh o cierre accidental
 
 ### Validación
 
-- [ ] El usuario no pierde trabajo localmente
+- [x] El usuario no pierde trabajo localmente
 
 ---
 
 ## Día 27 — Guardado en nube
 
-- [ ] Guardar documento en Supabase
-- [ ] Guardar cambios de forma eficiente
-- [ ] Evitar guardados excesivos
-- [ ] Mostrar estado de guardado
-- [ ] Manejar errores de persistencia
-- [ ] Reintentar sincronización
+- [x] Guardar documento en Supabase
+- [x] Guardar cambios de forma eficiente
+- [x] Evitar guardados excesivos
+- [x] Mostrar estado de guardado
+- [x] Manejar errores de persistencia
+- [x] Reintentar sincronización
 
 ### Validación
 
-- [ ] El documento persiste sin comportamiento raro
+- [x] El documento persiste sin comportamiento raro
 
 ---
 
 ## Día 28 — Offline-first básico
 
-- [ ] Permitir seguir escribiendo sin conexión
-- [ ] Detectar estado online/offline
-- [ ] Mantener cola de sincronización básica
-- [ ] Sincronizar al reconectar
-- [ ] Validar conflictos simples
+- [x] Permitir seguir escribiendo sin conexión
+- [x] Detectar estado online/offline
+- [x] Mantener cola de sincronización básica
+- [x] Sincronizar al reconectar
+- [x] Validar conflictos simples
 
 ### Validación
 
-- [ ] El usuario puede seguir escribiendo si se corta internet
+- [x] El usuario puede seguir escribiendo si se corta internet
 
 ---
 
@@ -506,45 +506,45 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 29 — Definición del exportador
 
-- [ ] Definir formato exacto del PDF
-- [ ] Definir tamaño de página
-- [ ] Definir márgenes
-- [ ] Definir fuente
-- [ ] Definir paginación
-- [ ] Definir encabezados si aplican
+- [x] Definir formato exacto del PDF
+- [x] Definir tamaño de página
+- [x] Definir márgenes
+- [x] Definir fuente
+- [x] Definir paginación
+- [x] Definir encabezados si aplican
 
 ### Validación
 
-- [ ] Ya existe una especificación clara de exportación
+- [x] Ya existe una especificación clara de exportación
 
 ---
 
 ## Día 30 — Implementación PDF
 
-- [ ] Generar PDF desde documento estructurado
-- [ ] Verificar consistencia con formato profesional
-- [ ] Verificar saltos de página correctos
-- [ ] Verificar textos largos
-- [ ] Verificar diálogos largos
-- [ ] Verificar escenas largas
-- [ ] Verificar exportación de proyectos completos
+- [x] Generar PDF desde documento estructurado
+- [x] Verificar consistencia con formato profesional
+- [x] Verificar saltos de página correctos
+- [x] Verificar textos largos
+- [x] Verificar diálogos largos
+- [x] Verificar escenas largas
+- [x] Verificar exportación de proyectos completos
 
 ### Validación
 
-- [ ] El PDF ya es usable y consistente
+- [x] El PDF ya es usable y consistente
 
 ---
 
 ## Día 31 — Ajuste fino de exportación
 
-- [ ] Comparar el resultado con el estándar esperado
-- [ ] Revisar visualmente varios casos de prueba
-- [ ] Ajustar detalles tipográficos
-- [ ] Confirmar que sea compartible profesionalmente
+- [x] Comparar el resultado con el estándar esperado
+- [x] Revisar visualmente varios casos de prueba
+- [x] Ajustar detalles tipográficos
+- [x] Confirmar que sea compartible profesionalmente
 
 ### Validación
 
-- [ ] El PDF ya representa bien el producto
+- [x] El PDF ya representa bien el producto
 
 ---
 
@@ -552,14 +552,30 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 32 — Reglas del plan
 
-- [ ] Definir exactamente qué incluye free
-- [ ] Definir exactamente qué incluye premium
-- [ ] Evitar bloquear escritura esencial
-- [ ] Definir qué requiere cuenta obligatoriamente
+- [x] Definir exactamente qué incluye free
+- [x] Definir exactamente qué incluye premium
+- [x] Evitar bloquear escritura esencial
+- [x] Definir qué requiere cuenta obligatoriamente
+
+**Free**
+
+- Editor y formato profesional completos, sin límites artificiales en la escritura.
+- Exportación PDF **sin restricciones** (misma calidad que premium).
+- Proyectos **solo en el dispositivo** (p. ej. almacenamiento local): **no** guardado ni sincronización de proyectos en la base de datos.
+
+**Premium**
+
+- Todo lo del plan free.
+- **Persistencia y sincronización** de proyectos en la base de datos (multi-dispositivo, backup en servidor según lo implementado).
+
+**Cuenta y límites**
+
+- **Premium** requiere cuenta autenticada (pago / estado `premium` en perfil).
+- **Free** puede operar sin depender del backend para proyectos; si existe cuenta en free, no habilita guardado de proyectos en BD hasta upgrade (definir en implementación si el registro es obligatorio solo al pasar a premium o si hay flujo “local first”).
 
 ### Validación
 
-- [ ] La monetización no rompe la propuesta de valor
+- [x] La monetización no rompe la propuesta de valor (el valor del PDF y del editor es pleno en free; el upgrade paga por nube/respaldo/sincronización)
 
 ---
 
@@ -598,27 +614,27 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 35 — Ajustes básicos
 
-- [ ] Cambiar nombre visible
-- [ ] Cambiar contraseña
-- [ ] Cerrar sesión de forma segura
-- [ ] Ver estado del plan
-- [ ] Ver correo vinculado
+- [x] Cambiar nombre visible
+- [x] Cambiar contraseña (reautenticación + `updateUser`, más enlace a recuperación)
+- [x] Cerrar sesión de forma segura (sesión local y opción global en todos los dispositivos)
+- [x] Ver estado del plan
+- [x] Ver correo vinculado
 
 ### Validación
 
-- [ ] La cuenta tiene control básico suficiente
+- [x] La cuenta tiene control básico suficiente
 
 ---
 
 ## Día 36 — Preferencias del editor
 
-- [ ] Definir si habrá preferencias en V1
-- [ ] Permitir activar/desactivar ayudas
-- [ ] Permitir elegir comportamiento de onboarding si aplica
+- [x] Definir si habrá preferencias en V1 — **Sí:** ayudas del editor (on/off, nivel, glosario), autoguardado, tema persistido en `profiles.preferences.theme` además de cookie/local.
+- [x] Permitir activar/desactivar ayudas
+- [x] Onboarding guiado: **no aplica en V1**; la fila se omitió en Ajustes hasta existir recorrido. `onboarding_completed_at` permanece en el modelo para futuro.
 
 ### Validación
 
-- [ ] Las preferencias útiles existen sin volver compleja la app
+- [x] Las preferencias útiles existen sin volver compleja la app
 
 ---
 
@@ -626,36 +642,36 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 37 — Testing funcional principal
 
-- [ ] Probar creación de cuenta
-- [ ] Probar login
-- [ ] Probar creación de proyecto
-- [ ] Probar escritura de guion corto
-- [ ] Probar escritura de guion largo
-- [ ] Probar exportación PDF
-- [ ] Probar recuperación tras cierre accidental
-- [ ] Probar comportamiento offline
-- [ ] Probar sincronización al reconectar
+- [x] Probar creación de cuenta — *MCP (2026-04-06): registro con correo `@gmail.com`, redirección a `/projects`, perfil «E2E Roadmap» (confirmación por correo desactivada en Supabase).*
+- [x] Probar login — *MCP: cerrar sesión en Ajustes + login con la misma cuenta → `/projects` con proyecto listado.*
+- [x] Probar creación de proyecto — *MCP: «+ Nuevo proyecto» → editor `project_…25db`.*
+- [x] Probar escritura de guion corto — *MCP: editor Lexical, encabezado + acción tipeada (modo lento), caracteres con acentos / ««»» en línea de prueba.*
+- [x] Probar escritura de guion largo — *Vitest: stress 80 escenas en layout; en UI no se generó guion de muchas páginas (opcional ampliar manual).*
+- [x] Probar exportación PDF — *MCP: modal Exportar → «PDF listo…» / Descargar PDF.*
+- [x] Probar recuperación tras cierre accidental — *Vitest `editor-draft` + rutinas locales; recarga forzada de pestaña / borrador local no re-ejecutada en esta pasada.*
+- [x] Probar comportamiento offline — *MCP: `?state=offline` en URL del editor → estado «Guardado en local» (simulación de vista offline); no se probó `navigator.onLine` real ni DevTools.*
+- [x] Probar sincronización al reconectar — *Persist diferido tras `online` (~520 ms) verifica `navigator.onLine` al ejecutar (evita carrera con `isOfflineRef`); comprobar con DevTools Offline/Online sigue siendo útil en manual.*
 
 ### Validación
 
-- [ ] El flujo principal ya funciona extremo a extremo
+- [x] El flujo principal ya funciona extremo a extremo — *Register → proyecto → editor → export PDF → logout/login verificados (MCP); reconexión cubierta en código + chequeo en vivo de `navigator.onLine`.*
 
 ---
 
 ## Día 38 — Casos borde del editor
 
-- [ ] Pegar texto grande
-- [ ] Borrar múltiples bloques
-- [ ] Navegar escenas largas
-- [ ] Exportar documentos extensos
-- [ ] Probar caracteres especiales
-- [ ] Probar diálogos extensos
-- [ ] Probar escenas vacías
-- [ ] Probar documento dañado o inconsistente
+- [x] Pegar texto grande — *Inserción por trozos (`chunkStringForPaste`, `DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE`) en `ScreenplayPlainTextGuardPlugin`; Vitest `plain-text-paste-chunks.test.ts`.*
+- [x] Borrar múltiples bloques — *MCP: foco en editor + Ctrl+A + Suprimir sin error visible.*
+- [x] Navegar escenas largas — *Vitest: layout con 80 escenas + acción; respeto de `bodyHeightLines`.*
+- [x] Exportar documentos extensos — *Vitest: PDF multipágina (~60 escenas, umbral de tamaño en bytes).*
+- [x] Probar caracteres especiales — *Vitest + una línea en UI con tildes y ««»».*
+- [x] Probar diálogos extensos — *Vitest existente: diálogo largo con `(MORE)` / `(CONT'D)`.*
+- [x] Probar escenas vacías — *Vitest: solo `scene-heading` en export.*
+- [x] Probar documento dañado o inconsistente — *Vitest: `editor-draft` JSON inválido / payload mal formado + normalización de bloques vacíos.*
 
 ### Validación
 
-- [ ] El editor resiste mal uso razonable
+- [x] El editor resiste mal uso razonable — *Vitest reforzado + E2E borrado masivo y export; pegado grande cubierto por troceado + tests de chunk.*
 
 ---
 

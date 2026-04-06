@@ -15,6 +15,10 @@ import {
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 import { ScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
+import {
+  chunkStringForPaste,
+  DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE,
+} from "@/features/editor/plain-text-paste-chunks";
 
 /**
  * El guión es texto plano: bloques tipados (encabezado, personaje…), sin negrita/subrayado
@@ -47,7 +51,9 @@ export function ScreenplayPlainTextGuardPlugin(): null {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            selection.insertRawText(text);
+            for (const chunk of chunkStringForPaste(text, DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE)) {
+              selection.insertRawText(chunk);
+            }
           }
         });
         return true;

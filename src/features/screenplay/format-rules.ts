@@ -59,21 +59,42 @@ export interface ScreenplayFormatReferenceSample {
   expectedDisplayText: string;
 }
 
+/** Millimetres → inches; must stay aligned with `--scriptum-page-*` in `src/styles/globals.css`. */
+const MM_TO_IN = 1 / 25.4;
+
+/** A4 body column count and line budget match editor + PDF (Courier 12/12, 10cpi × 6lpi grid). */
+const PAGE_W_IN = 210 * MM_TO_IN;
+const PAGE_H_IN = 297 * MM_TO_IN;
+const MARGIN_TOP_IN = 25 * MM_TO_IN;
+const MARGIN_BOTTOM_IN = 25 * MM_TO_IN;
+const MARGIN_BINDING_IN = 38 * MM_TO_IN;
+const MARGIN_OUTER_IN = 22 * MM_TO_IN;
+
+const BODY_W_IN = PAGE_W_IN - MARGIN_BINDING_IN - MARGIN_OUTER_IN;
+const BODY_H_IN = PAGE_H_IN - MARGIN_TOP_IN - MARGIN_BOTTOM_IN;
+
+/** Full-width blocks use the physical body width; character lane is narrowed by one column so 22+width ≤ cols. */
+const BODY_WIDTH_COLUMNS = Math.round(BODY_W_IN * screenplayCharactersPerInch);
+const BODY_HEIGHT_LINES = Math.round(BODY_H_IN * screenplayLinesPerInch);
+
 export const screenplayPageFormat = {
-  pageWidthInches: 8.5,
-  pageHeightInches: 11,
-  topMarginInches: 1,
-  bottomMarginInches: 1,
-  leftMarginInches: 1.5,
-  rightMarginInches: 1,
-  bodyWidthInches: 6,
-  bodyHeightInches: 9,
-  bodyWidthCharacters: 60,
-  bodyHeightLines: 54,
+  pageWidthInches: PAGE_W_IN,
+  pageHeightInches: PAGE_H_IN,
+  topMarginInches: MARGIN_TOP_IN,
+  bottomMarginInches: MARGIN_BOTTOM_IN,
+  leftMarginInches: MARGIN_BINDING_IN,
+  rightMarginInches: MARGIN_OUTER_IN,
+  bodyWidthInches: BODY_W_IN,
+  bodyHeightInches: BODY_H_IN,
+  bodyWidthCharacters: BODY_WIDTH_COLUMNS,
+  bodyHeightLines: BODY_HEIGHT_LINES,
   printedPageNumbersStartAt: 2,
   printsPageNumberOnFirstPage: false,
   printedPageNumberPattern: "number-with-trailing-period",
 } as const satisfies ScreenplayPageFormat;
+
+const BODY_LEFT = MARGIN_BINDING_IN;
+const FULL_WIDTH = BODY_W_IN;
 
 export const screenplayBlockFormatRules = {
   "scene-heading": {
@@ -81,10 +102,10 @@ export const screenplayBlockFormatRules = {
     label: "Scene Heading",
     textTransform: "uppercase",
     alignment: "left",
-    absoluteLeftInches: 1.5,
-    widthInches: 6,
+    absoluteLeftInches: BODY_LEFT,
+    widthInches: FULL_WIDTH,
     leftColumns: 0,
-    widthColumns: 60,
+    widthColumns: BODY_WIDTH_COLUMNS,
     spaceBeforeLines: 1,
     pageBreakPolicy: "keep-with-next-render-unit",
     insertsAutomaticContinuationMarker: false,
@@ -98,10 +119,10 @@ export const screenplayBlockFormatRules = {
     label: "Action",
     textTransform: "preserve",
     alignment: "left",
-    absoluteLeftInches: 1.5,
-    widthInches: 6,
+    absoluteLeftInches: BODY_LEFT,
+    widthInches: FULL_WIDTH,
     leftColumns: 0,
-    widthColumns: 60,
+    widthColumns: BODY_WIDTH_COLUMNS,
     spaceBeforeLines: 1,
     pageBreakPolicy: "split-by-rendered-line",
     insertsAutomaticContinuationMarker: false,
@@ -115,10 +136,10 @@ export const screenplayBlockFormatRules = {
     label: "Character",
     textTransform: "uppercase",
     alignment: "left",
-    absoluteLeftInches: 3.7,
-    widthInches: 3.8,
+    absoluteLeftInches: BODY_LEFT + 22 / screenplayCharactersPerInch,
+    widthInches: 37 / screenplayCharactersPerInch,
     leftColumns: 22,
-    widthColumns: 38,
+    widthColumns: 37,
     spaceBeforeLines: 1,
     pageBreakPolicy: "keep-with-character-dialogue-unit",
     insertsAutomaticContinuationMarker: true,
@@ -132,8 +153,8 @@ export const screenplayBlockFormatRules = {
     label: "Dialogue",
     textTransform: "preserve",
     alignment: "left",
-    absoluteLeftInches: 2.5,
-    widthInches: 3.5,
+    absoluteLeftInches: BODY_LEFT + 10 / screenplayCharactersPerInch,
+    widthInches: 35 / screenplayCharactersPerInch,
     leftColumns: 10,
     widthColumns: 35,
     spaceBeforeLines: 0,
@@ -149,8 +170,8 @@ export const screenplayBlockFormatRules = {
     label: "Parenthetical",
     textTransform: "parenthetical",
     alignment: "left",
-    absoluteLeftInches: 3,
-    widthInches: 2.5,
+    absoluteLeftInches: BODY_LEFT + 15 / screenplayCharactersPerInch,
+    widthInches: 25 / screenplayCharactersPerInch,
     leftColumns: 15,
     widthColumns: 25,
     spaceBeforeLines: 0,
@@ -166,10 +187,10 @@ export const screenplayBlockFormatRules = {
     label: "Transition",
     textTransform: "uppercase",
     alignment: "right",
-    absoluteLeftInches: 1.5,
-    widthInches: 6,
+    absoluteLeftInches: BODY_LEFT,
+    widthInches: FULL_WIDTH,
     leftColumns: 0,
-    widthColumns: 60,
+    widthColumns: BODY_WIDTH_COLUMNS,
     spaceBeforeLines: 1,
     pageBreakPolicy: "keep-with-previous-render-unit",
     insertsAutomaticContinuationMarker: false,

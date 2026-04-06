@@ -27,6 +27,7 @@ import {
   updateUserProfileDisplayName,
 } from "@/features/user/profile";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { ThemePreference } from "@/lib/theme";
 
 import { EditorGlossaryModal } from "./editor-glossary-modal";
 import { StatePanel } from "./state-panel";
@@ -36,8 +37,32 @@ type SettingsScreenProps = {
   viewState: SettingsViewState;
   accountEmail: string | null;
   initialProfile: UserAppProfile | null;
+  passwordAuthAvailable: boolean;
   profileLoadFailed: boolean;
 };
+
+type PasswordFieldErrors = {
+  confirm?: string;
+  current?: string;
+  next?: string;
+};
+
+function mapPasswordChangeError(message: string): string {
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("invalid login credentials") ||
+    normalized.includes("invalid_credentials")
+  ) {
+    return "La contraseña actual no es correcta.";
+  }
+  if (normalized.includes("password should be at least") || normalized.includes("at least 6")) {
+    return "La nueva contraseña no cumple la política mínima del servicio.";
+  }
+  if (normalized.includes("same as")) {
+    return "La nueva contraseña debe ser distinta a la actual.";
+  }
+  return "No se pudo actualizar la contraseña. Intenta de nuevo.";
+}
 
 function defaultDisplayName(profile: UserAppProfile | null, email: string | null): string {
   const fromProfile = profile?.displayName?.trim();
@@ -80,6 +105,7 @@ export function SettingsScreen({
   viewState,
   accountEmail,
   initialProfile,
+  passwordAuthAvailable,
   profileLoadFailed,
 }: SettingsScreenProps) {
   const router = useRouter();
@@ -88,8 +114,14 @@ export function SettingsScreen({
   const [savedName, setSavedName] = useState(defaultName);
   const [nameError, setNameError] = useState<string>();
   const [isSaving, setIsSaving] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutScope, setSignOutScope] = useState<"global" | "local" | null>(null);
   const [signOutError, setSignOutError] = useState<string>();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordFieldErrors, setPasswordFieldErrors] = useState<PasswordFieldErrors>({});
+  const [passwordFormError, setPasswordFormError] = useState<string>();
+  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
   const [editorTipsEnabled, setEditorTipsEnabled] = useState(() =>
     resolveEditorTipsEnabled(initialProfile?.preferences),
   );
@@ -470,13 +502,135 @@ export function SettingsScreen({
     }
   }
 
-  async function handleSignOut() {
-    setSignOutError(undefined);
-    setIsSigningOut(true);
+  async function persistThemePreference(next: ThemePreference) {
+    const uid = initialProfile?.id;
+    if (!uid) {
+      return;
+    }
 
     try {
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signOut();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || user.id !== uid) {
+        return;
+      }
+
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(supabase, uid, {
+        theme: next,
+      });
+
+      if (error) {
+        showToast({
+          description: "No se pudo guardar el tema en tu cuenta.",
+          title: "Preferencia no guardada",
+          tone: "error",
+        });
+        return;
+      }
+
+      showToast({
+        description: appliedLocallyOnly
+          ? offlinePreferenceSuccessMessage()
+          : "El tema quedará sincronizado entre dispositivos.",
+        title: appliedLocallyOnly ? "Guardado en el dispositivo" : "Tema guardado",
+        tone: "success",
+      });
+      if (!appliedLocallyOnly) {
+        router.refresh();
+      }
+    } catch {
+      showToast({
+        description: "Algo salió mal al guardar el tema.",
+        title: "Error",
+        tone: "error",
+      });
+    }
+  }
+
+  function validatePasswordForm(): PasswordFieldErrors {
+    const nextErrors: PasswordFieldErrors = {};
+    if (currentPassword.trim().length === 0) {
+      nextErrors.current = "Este campo es obligatorio.";
+    }
+    if (newPassword.trim().length === 0) {
+      nextErrors.next = "Este campo es obligatorio.";
+    } else if (newPassword.trim().length < 8) {
+      nextErrors.next = "La contraseña debe tener al menos 8 caracteres.";
+    }
+    if (confirmPassword.trim().length === 0) {
+      nextErrors.confirm = "Confirmá la nueva contraseña.";
+    } else if (confirmPassword.trim() !== newPassword.trim()) {
+      nextErrors.confirm = "Las contraseñas nuevas no coinciden.";
+    }
+    return nextErrors;
+  }
+
+  async function handlePasswordSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordFormError(undefined);
+
+    if (isOffline || !accountEmail) {
+      setPasswordFormError(
+        isOffline ? "Necesitás conexión para cambiar la contraseña." : "No hay correo en la sesión.",
+      );
+      return;
+    }
+
+    const fieldErrors = validatePasswordForm();
+    if (Object.keys(fieldErrors).length > 0) {
+      setPasswordFieldErrors(fieldErrors);
+      return;
+    }
+    setPasswordFieldErrors({});
+
+    setIsPasswordSaving(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: signError } = await supabase.auth.signInWithPassword({
+        email: accountEmail,
+        password: currentPassword.trim(),
+      });
+
+      if (signError) {
+        setPasswordFormError(mapPasswordChangeError(signError.message));
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword.trim(),
+      });
+
+      if (updateError) {
+        setPasswordFormError(mapPasswordChangeError(updateError.message));
+        return;
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      showToast({
+        description: "Tu contraseña se actualizó correctamente.",
+        title: "Contraseña actualizada",
+        tone: "success",
+      });
+    } catch {
+      setPasswordFormError("Algo salió mal. Revisa tu conexión.");
+    } finally {
+      setIsPasswordSaving(false);
+    }
+  }
+
+  async function handleSignOut(scope: "global" | "local") {
+    setSignOutError(undefined);
+    setSignOutScope(scope);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signOut({ scope });
 
       if (error) {
         setSignOutError("No se pudo cerrar sesión. Intenta de nuevo.");
@@ -488,15 +642,13 @@ export function SettingsScreen({
     } catch {
       setSignOutError("No se pudo cerrar sesión. Revisa tu configuración de Supabase.");
     } finally {
-      setIsSigningOut(false);
+      setSignOutScope(null);
     }
   }
 
   const planLabel = initialProfile ? formatProfilePlanLabel(initialProfile.plan) : "—";
   const memberSinceLabel = initialProfile ? formatCreatedAtLabel(initialProfile.createdAt) : "—";
-  const onboardingLabel = initialProfile?.onboardingCompletedAt
-    ? formatCreatedAtLabel(initialProfile.onboardingCompletedAt)
-    : "Pendiente";
+  const isSigningOut = signOutScope !== null;
 
   return (
     <>
@@ -557,13 +709,108 @@ export function SettingsScreen({
             <header className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Apariencia</h2>
               <p className={styles.sectionDescription}>
-                El tema oscuro es el predeterminado. Cambiá a claro cuando te resulte más cómodo.
+                El tema oscuro es el predeterminado. Cambiá a claro cuando te resulte más cómodo. Se guarda
+                en tu cuenta para mantener la misma elección en cada dispositivo.
               </p>
             </header>
             <div className={styles.appearanceRow}>
               <span className={styles.readonlyLabel}>Tema de la interfaz</span>
-              <ThemeToggle />
+              <ThemeToggle
+                onAfterThemeChange={(next) => {
+                  void persistThemePreference(next);
+                }}
+              />
             </div>
+          </section>
+
+          <section className={styles.sectionCard}>
+            <header className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Seguridad</h2>
+              <p className={styles.sectionDescription}>
+                Cambiá la contraseña de acceso con correo y contraseña. Si no la recordás, pedí un enlace
+                de recuperación.
+              </p>
+            </header>
+
+            {passwordAuthAvailable && accountEmail ? (
+              <form className={styles.fieldRow} onSubmit={handlePasswordSubmit} noValidate>
+                <Input
+                  name="currentPassword"
+                  autoComplete="current-password"
+                  label="Contraseña actual"
+                  type="password"
+                  value={currentPassword}
+                  error={passwordFieldErrors.current}
+                  onChange={(event) => {
+                    setCurrentPassword(event.target.value);
+                    setPasswordFieldErrors((current) => ({ ...current, current: undefined }));
+                    setPasswordFormError(undefined);
+                  }}
+                  disabled={isOffline || isPasswordSaving}
+                  required
+                  requiredLabel="Obligatorio"
+                />
+                <Input
+                  name="newPassword"
+                  autoComplete="new-password"
+                  label="Nueva contraseña"
+                  type="password"
+                  value={newPassword}
+                  error={passwordFieldErrors.next}
+                  onChange={(event) => {
+                    setNewPassword(event.target.value);
+                    setPasswordFieldErrors((current) => ({ ...current, next: undefined }));
+                    setPasswordFormError(undefined);
+                  }}
+                  disabled={isOffline || isPasswordSaving}
+                  required
+                  requiredLabel="Obligatorio"
+                />
+                <Input
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  label="Confirmar nueva contraseña"
+                  type="password"
+                  value={confirmPassword}
+                  error={passwordFieldErrors.confirm}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setPasswordFieldErrors((current) => ({ ...current, confirm: undefined }));
+                    setPasswordFormError(undefined);
+                  }}
+                  disabled={isOffline || isPasswordSaving}
+                  required
+                  requiredLabel="Obligatorio"
+                />
+                {passwordFormError ? (
+                  <p className={styles.inlineNotice} role="alert">
+                    {passwordFormError}
+                  </p>
+                ) : null}
+                <div className={styles.fieldInline}>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={isOffline || isPasswordSaving}
+                  >
+                    {isPasswordSaving ? "Guardando..." : "Actualizar contraseña"}
+                  </Button>
+                  <Link
+                    href={routes.forgotPassword}
+                    className="ui-button"
+                    data-size="md"
+                    data-variant="ghost"
+                  >
+                    Olvidé mi contraseña
+                  </Link>
+                </div>
+              </form>
+            ) : (
+              <p className={styles.sectionNote}>
+                Tu sesión no usa contraseña de Scriptum (por ejemplo, solo otro proveedor). Para ajustar
+                el acceso, cerrá sesión y volvé a entrar con el método que suelas usar.
+              </p>
+            )}
           </section>
 
           <section className={styles.sectionCard}>
@@ -672,13 +919,9 @@ export function SettingsScreen({
               <span className={styles.readonlyValue}>{memberSinceLabel}</span>
             </div>
 
-            <div className={styles.readonlyCard}>
-              <span className={styles.readonlyLabel}>Onboarding</span>
-              <span className={styles.readonlyValue}>{onboardingLabel}</span>
-            </div>
-
             <p className={styles.sectionNote}>
-              Para cambiar la contraseña, usa recuperación de acceso.
+              «Cerrar sesión» deja este navegador. «Todos los dispositivos» también invalida las demás
+              sesiones abiertas.
             </p>
 
             {signOutError ? <p className={styles.inlineNotice}>{signOutError}</p> : null}
@@ -689,9 +932,18 @@ export function SettingsScreen({
                 variant="danger"
                 size="md"
                 disabled={isSigningOut}
-                onClick={handleSignOut}
+                onClick={() => void handleSignOut("local")}
               >
-                {isSigningOut ? "Cerrando..." : "Cerrar sesión"}
+                {signOutScope === "local" ? "Cerrando..." : "Cerrar sesión"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                disabled={isSigningOut}
+                onClick={() => void handleSignOut("global")}
+              >
+                {signOutScope === "global" ? "Cerrando..." : "Cerrar en todos los dispositivos"}
               </Button>
               <Link href={routes.home} className="ui-button" data-size="md" data-variant="ghost">
                 Volver al inicio
