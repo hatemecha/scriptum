@@ -1,16 +1,16 @@
 /*
   Screenplay block styles for the Lexical editor.
   Applied via className strings on DOM nodes created by ScreenplayBlockNode.
-  Margins follow standard screenplay format (US Letter, Courier 12pt equivalent).
+  Courier 12 pt / 12 pt line = mismo ritmo que PDF A4 (ver --scriptum-page-* en globals).
 */
 
 .screenplay-editor-root {
   outline: none;
-  min-height: 48rem;
+  min-height: 0;
   caret-color: var(--color-foreground);
   font-family: var(--font-script);
-  font-size: 1rem;
-  line-height: 1.62;
+  font-size: var(--scriptum-page-body-size, 12pt);
+  line-height: var(--scriptum-page-line-height, 12pt);
   color: var(--color-foreground);
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -27,13 +27,13 @@
 
 .screenplay-block {
   margin: 0;
-  padding: 2px 0;
-  font-family: var(--font-script);
-  font-size: 1rem;
-  line-height: 1.62;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
   white-space: pre-wrap;
   position: relative;
-  min-height: 1.62em;
+  min-height: var(--scriptum-page-line-height, 12pt);
   border-radius: 2px;
   transition:
     margin-left 120ms ease,
@@ -43,7 +43,7 @@
 }
 
 .screenplay-block + .screenplay-block {
-  margin-top: 0.6rem;
+  margin-top: 0.35em;
 }
 
 /* Scene Heading */
@@ -53,7 +53,7 @@
 }
 
 .screenplay-block--scene-heading + .screenplay-block {
-  margin-top: 0.6rem;
+  margin-top: 0.5em;
 }
 
 /* Action (default) */
@@ -64,7 +64,7 @@
 /* Character */
 .screenplay-block--character {
   text-transform: uppercase;
-  margin-top: 1.7rem;
+  margin-top: 2.25em;
   margin-left: 41%;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .screenplay-block--scene-heading + .screenplay-block--character {
-  margin-top: 1.1rem;
+  margin-top: 1.35em;
 }
 
 /* Dialogue */
@@ -93,7 +93,7 @@
 /* Transition */
 .screenplay-block--transition {
   text-transform: uppercase;
-  margin-top: 1.7rem;
+  margin-top: 2.25em;
   text-align: right;
 }
 
@@ -172,10 +172,6 @@
 }
 
 @media (max-width: 640px) {
-  .screenplay-block {
-    font-size: 0.96rem;
-  }
-
   .screenplay-block--character {
     margin-left: 24%;
   }

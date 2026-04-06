@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
@@ -46,37 +45,37 @@ export function DashboardLayout({ children, userEmail, userName }: DashboardLayo
           </Link>
         </div>
 
-        <div className={styles.headerMid}>
-          <nav className={styles.dashboardNav} aria-label="Dashboard navigation">
-            <Link
-              href={routes.projects}
-              className={cn(
-                styles.dashboardLink,
-                pathname === routes.projects && styles.dashboardLinkActive,
-              )}
-            >
-              Proyectos
-            </Link>
-            <Link
-              href={routes.settings}
-              className={cn(
-                styles.dashboardLink,
-                pathname === routes.settings && styles.dashboardLinkActive,
-              )}
-            >
-              Ajustes
-            </Link>
-          </nav>
+        <nav className={styles.dashboardNav} aria-label="Navegación del panel">
+          <Link
+            href={routes.projects}
+            className={cn(
+              styles.dashboardLink,
+              pathname === routes.projects && styles.dashboardLinkActive,
+            )}
+          >
+            Proyectos
+          </Link>
+          <Link
+            href={routes.settings}
+            className={cn(
+              styles.dashboardLink,
+              pathname === routes.settings && styles.dashboardLinkActive,
+            )}
+          >
+            Ajustes
+          </Link>
+        </nav>
 
-          <ThemeToggle />
-        </div>
-
-        <Link href={routes.settings} className={styles.userLink}>
-          <span className={styles.userAvatar}>{initials}</span>
-          <span className={styles.userMeta}>
-            <span className={styles.userName}>{userName}</span>
-            <span className={styles.userSecondary}>{userEmail}</span>
+        <Link
+          href={routes.settings}
+          className={styles.userLink}
+          title={userEmail ? userEmail : undefined}
+          aria-label={`Cuenta — ${userName}`}
+        >
+          <span className={styles.userAvatar} aria-hidden="true">
+            {initials}
           </span>
+          <span className={styles.userName}>{userName}</span>
         </Link>
       </header>
 

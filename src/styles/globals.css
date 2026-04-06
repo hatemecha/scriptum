@@ -91,6 +91,18 @@
   --font-script: "Courier Prime", "Courier New", monospace;
   --font-ui: "Manrope", "Segoe UI", sans-serif;
 
+  /* Guion en pantalla = misma geometría que impresión / PDF A4 (WYSIWYG) */
+  --scriptum-page-a4-width: 210mm;
+  --scriptum-page-a4-height: 297mm;
+  --scriptum-page-margin-top: 25mm;
+  --scriptum-page-margin-bottom: 25mm;
+  --scriptum-page-margin-binding: 38mm;
+  --scriptum-page-margin-outer: 22mm;
+  --scriptum-page-body-size: 12pt;
+  --scriptum-page-line-height: 12pt;
+  --scriptum-page-break-line: color-mix(in srgb, var(--color-foreground) 9%, transparent);
+  --color-editor-canvas-desk: #c8c1b6;
+
   /* Radio */
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
@@ -161,6 +173,8 @@ html[data-theme="dark"] {
   --skeleton-shimmer: rgba(231, 229, 231, 0.08);
   --shadow-soft: 0 28px 70px rgba(0, 0, 0, 0.34);
   --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.24);
+  --scriptum-page-break-line: color-mix(in srgb, var(--color-foreground) 14%, transparent);
+  --color-editor-canvas-desk: #0b0b0c;
 }
 
 *,

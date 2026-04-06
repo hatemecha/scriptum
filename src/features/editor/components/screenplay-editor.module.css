@@ -7,11 +7,11 @@
 .editorRoot {
   position: relative;
   outline: none;
-  min-height: 48rem;
+  min-height: 0;
   caret-color: var(--color-foreground);
   font-family: var(--font-script);
-  font-size: 1rem;
-  line-height: 1.62;
+  font-size: inherit;
+  line-height: inherit;
   color: var(--color-foreground);
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -30,8 +30,8 @@
   user-select: none;
   color: var(--color-placeholder);
   font-family: var(--font-script);
-  font-size: 1rem;
-  line-height: 1.62;
+  font-size: inherit;
+  line-height: inherit;
   font-style: italic;
 }
 

@@ -4,7 +4,7 @@
   "description": "Minimal screenplay writing application built with Next.js and TypeScript.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/run-next-dev.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",

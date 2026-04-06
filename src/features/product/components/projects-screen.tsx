@@ -479,6 +479,9 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
   const hasArchived = projects.some((p) => p.archivedAt !== null);
   const effectiveFilter = hasArchived ? filter : "all";
   const filtered = getFilteredProjects(projects, effectiveFilter);
+  const isEmptyProjectsList =
+    viewState !== "loading" && (viewState === "empty" || projects.length === 0);
+  const showHeaderCreateButton = viewState !== "loading" && !isEmptyProjectsList;
 
   async function handleCreateProject() {
     setIsCreating(true);
@@ -642,18 +645,20 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
             <h1 className={styles.pageTitle}>Tus proyectos</h1>
           </div>
 
-          <div className={styles.pageActions}>
-            <Button
-              variant="primary"
-              size="md"
-              disabled={isOffline || isCreating}
-              onClick={handleCreateProject}
-              isLoading={isCreating}
-              title={isOffline ? "Necesitas conexión para crear un proyecto." : undefined}
-            >
-              + Nuevo proyecto
-            </Button>
-          </div>
+          {showHeaderCreateButton ? (
+            <div className={styles.pageActions}>
+              <Button
+                variant="primary"
+                size="md"
+                disabled={isOffline || isCreating}
+                onClick={handleCreateProject}
+                isLoading={isCreating}
+                title={isOffline ? "Necesitas conexión para crear un proyecto." : undefined}
+              >
+                + Nuevo proyecto
+              </Button>
+            </div>
+          ) : null}
         </header>
 
         {isOffline ? (
@@ -686,7 +691,7 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
 
         {viewState === "loading" ? (
           <ProjectsLoadingState />
-        ) : viewState === "empty" || (projects.length === 0) ? (
+        ) : isEmptyProjectsList ? (
           <StatePanel
             title="Todavía no tienes proyectos"
             description="Crea tu primer guion para empezar."
@@ -697,6 +702,7 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
                 disabled={isOffline || isCreating}
                 onClick={handleCreateProject}
                 isLoading={isCreating}
+                title={isOffline ? "Necesitas conexión para crear un proyecto." : undefined}
               >
                 + Nuevo proyecto
               </Button>

@@ -1,20 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { $getNodeByKey, type EditorState, type LexicalEditor } from "lexical";
+
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { routes } from "@/config/routes";
+import { SET_BLOCK_TYPE_COMMAND } from "@/features/editor/commands";
 import { ScreenplayEditor } from "@/features/editor/components/ScreenplayEditor";
-import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
+import {
+  deriveActiveSceneKey,
+  deriveSceneNavigators,
+  estimatePagesFromEditorState,
+  type DerivedSceneNav,
+} from "@/features/editor/editor-derived-state";
+import { $isScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
+import { isScreenplayBlockType, screenplayBlockTypes, type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import {
   getPreviewLines,
   getPreviewProject,
-  getPreviewScenes,
   previewUser,
 } from "@/features/product/preview-data";
 import { type EditorViewState, type ExportViewState } from "@/features/product/view-states";
@@ -23,6 +31,14 @@ import { cn } from "@/lib/cn";
 import { StatePanel } from "./state-panel";
 import styles from "./workspace-screen.module.css";
 
+const BLOCK_TYPE_LABEL_ES: Record<ScreenplayBlockType, string> = {
+  "scene-heading": "Encabezado",
+  action: "Acción",
+  character: "Personaje",
+  dialogue: "Diálogo",
+  parenthetical: "Paréntesis",
+  transition: "Transición",
+};
 type EditorScreenProps = {
   initialExportState: ExportViewState;
   projectId: string;
@@ -175,19 +191,21 @@ function EditorLoadingScreen({ title }: { title: string }) {
 
 export function EditorScreen({ initialExportState, projectId, viewState }: EditorScreenProps) {
   const project = getPreviewProject(projectId);
-  const previewScenes = viewState === "empty" ? [] : getPreviewScenes(project.blocks);
   const previewLines = viewState === "empty" ? [] : getPreviewLines(project.blocks);
   const { showToast } = useToast();
   const saveTimeoutRef = useRef<number | null>(null);
   const saveFadeTimeoutRef = useRef<number | null>(null);
   const exportTimeoutRef = useRef<number | null>(null);
+  const lexicalEditorRef = useRef<LexicalEditor | null>(null);
   const [projectTitle, setProjectTitle] = useState(project.title);
   const [saveState, setSaveState] = useState<"saving" | "synced">(
     viewState === "saving" ? "saving" : "synced",
   );
   const [highlightSaved, setHighlightSaved] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [activeSceneId, setActiveSceneId] = useState<string | null>(previewScenes[0]?.id ?? null);
+  const [editorScenes, setEditorScenes] = useState<DerivedSceneNav[]>([]);
+  const [activeSceneKey, setActiveSceneKey] = useState<string | null>(null);
+  const [estimatedPages, setEstimatedPages] = useState(project.estimatedPages);
   const [isExportModalOpen, setIsExportModalOpen] = useState(initialExportState !== "closed");
   const [exportState, setExportState] = useState<LocalExportState>(
     initialExportState === "closed" ? "ready" : initialExportState,
@@ -200,6 +218,53 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     },
     [],
   );
+
+  const syncFromEditorState = useCallback((editorState: EditorState) => {
+    setEditorScenes(deriveSceneNavigators(editorState));
+    setActiveSceneKey(deriveActiveSceneKey(editorState));
+    setEstimatedPages(estimatePagesFromEditorState(editorState));
+  }, []);
+
+  const handleEditorReady = useCallback(
+    (editor: LexicalEditor) => {
+      lexicalEditorRef.current = editor;
+      syncFromEditorState(editor.getEditorState());
+    },
+    [syncFromEditorState],
+  );
+
+  const handleEditorChange = useCallback(
+    (editorState: EditorState, editor: LexicalEditor) => {
+      lexicalEditorRef.current = editor;
+      syncFromEditorState(editorState);
+    },
+    [syncFromEditorState],
+  );
+
+  const handleBlockTypeSelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    if (!isScreenplayBlockType(value)) return;
+    const editor = lexicalEditorRef.current;
+    if (!editor) return;
+    editor.dispatchCommand(SET_BLOCK_TYPE_COMMAND, { blockType: value });
+    setActiveBlockType(value);
+  }, []);
+
+  const handleSceneNavigate = useCallback((sceneKey: string) => {
+    setActiveSceneKey(sceneKey);
+    const editor = lexicalEditorRef.current;
+    if (!editor) return;
+    editor.update(() => {
+      const node = $getNodeByKey(sceneKey);
+      if (node && $isScreenplayBlockNode(node)) {
+        node.selectEnd();
+      }
+    });
+    queueMicrotask(() => {
+      const el = editor.getElementByKey(sceneKey);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -268,11 +333,8 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
     viewState,
   });
   const isOffline = viewState === "offline";
-  const resolvedSceneId = previewScenes.some((scene) => scene.id === activeSceneId)
-    ? activeSceneId
-    : (previewScenes[0]?.id ?? null);
-  const activeScene =
-    previewScenes.find((scene) => scene.id === resolvedSceneId) ?? previewScenes[0] ?? null;
+  const activeEditorScene =
+    editorScenes.find((scene) => scene.id === activeSceneKey) ?? null;
 
   function queueSaveConfirmation() {
     if (saveTimeoutRef.current) {
@@ -388,6 +450,24 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           </div>
         </div>
 
+        <div className={styles.editorHeaderBlockWrap}>
+          <label className={styles.visuallyHidden} htmlFor="editor-block-type">
+            Tipo de bloque del guion
+          </label>
+          <select
+            id="editor-block-type"
+            className={styles.editorBlockTypeSelect}
+            value={activeBlockType}
+            onChange={handleBlockTypeSelect}
+          >
+            {screenplayBlockTypes.map((type) => (
+              <option key={type} value={type}>
+                {BLOCK_TYPE_LABEL_ES[type]}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className={styles.editorHeaderActions}>
           <button
             type="button"
@@ -412,9 +492,6 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           <Link href={routes.settings} className={styles.editorHeaderQuiet}>
             Ajustes
           </Link>
-          <div className={styles.editorThemeToggle}>
-            <ThemeToggle />
-          </div>
           <Button
             variant="secondary"
             size="sm"
@@ -437,7 +514,10 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
           aria-label="Sidebar de escenas"
         >
           <div className={styles.editorSidebarHeader}>
-            <p className={styles.editorSidebarTitle}>Escenas</p>
+            <p className={styles.editorSidebarTitle}>
+              Escenas
+              <span className={styles.editorSceneCount}> · {editorScenes.length}</span>
+            </p>
             <button
               type="button"
               className={styles.editorSidebarToggle}
@@ -447,27 +527,30 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
             </button>
           </div>
 
-          {previewScenes.length === 0 ? (
+          {editorScenes.length === 0 ? (
             <div className={styles.sceneEmpty}>
               <div>
                 <div>Sin escenas todavía</div>
-                <div>Escribe un encabezado de escena para empezar.</div>
+                <div>Añade un bloque Encabezado (o Tab hasta Encabezado) y escribe INT./EXT.</div>
               </div>
             </div>
           ) : (
             <ol className={styles.sceneList}>
-              {previewScenes.map((scene) => (
+              {editorScenes.map((scene) => (
                 <li key={scene.id}>
                   <button
                     type="button"
                     className={cn(
                       styles.sceneButton,
-                      resolvedSceneId === scene.id && styles.sceneButtonActive,
+                      activeSceneKey === scene.id && styles.sceneButtonActive,
                     )}
-                    onClick={() => setActiveSceneId(scene.id)}
+                    onClick={() => handleSceneNavigate(scene.id)}
                   >
                     <span className={styles.sceneIndex}>{scene.indexLabel}</span>
                     <span className={styles.sceneHeading}>{scene.heading}</span>
+                    {scene.snippet ? (
+                      <span className={styles.sceneSnippet}>{scene.snippet}</span>
+                    ) : null}
                   </button>
                 </li>
               ))}
@@ -488,6 +571,8 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
                         type: line.type,
                       }))
                 }
+                onEditorReady={handleEditorReady}
+                onChange={handleEditorChange}
                 onBlockTypeChange={handleBlockTypeChange}
                 placeholder="Empieza a escribir tu guión..."
               />
@@ -498,12 +583,12 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
 
       <footer className={styles.editorFooter}>
         <div className={styles.editorFooterMeta}>
-          <span>{activeBlockType.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
-          <span>~{project.estimatedPages} páginas</span>
+          <span>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
+          <span>~{estimatedPages} páginas</span>
         </div>
         <div className={styles.editorFooterMeta}>
-          <span>{previewScenes.length} escenas</span>
-          <span>{activeScene ? activeScene.indexLabel : "Sin escenas"}</span>
+          <span>{editorScenes.length} escenas</span>
+          <span>{activeEditorScene ? activeEditorScene.indexLabel : "Sin escena activa"}</span>
         </div>
       </footer>
 
@@ -565,11 +650,11 @@ export function EditorScreen({ initialExportState, projectId, viewState }: Edito
                 </div>
                 <div className={styles.modalSummaryRow}>
                   <span>Escenas</span>
-                  <strong>{previewScenes.length}</strong>
+                  <strong>{editorScenes.length}</strong>
                 </div>
                 <div className={styles.modalSummaryRow}>
                   <span>Páginas</span>
-                  <strong>~{project.estimatedPages}</strong>
+                  <strong>~{estimatedPages}</strong>
                 </div>
               </div>
 

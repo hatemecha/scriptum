@@ -21,8 +21,10 @@ import {
   ScreenplayBlockNode,
 } from "@/features/editor/nodes/ScreenplayBlockNode";
 import { screenplayEditorTheme } from "@/features/editor/editor-theme";
+import { AutoDetectBlockTypePlugin } from "@/features/editor/plugins/AutoDetectBlockTypePlugin";
 import { AutoFocusPlugin } from "@/features/editor/plugins/AutoFocusPlugin";
 import { BlockTypeIndicatorPlugin } from "@/features/editor/plugins/BlockTypeIndicatorPlugin";
+import { EditorReadyPlugin } from "@/features/editor/plugins/EditorReadyPlugin";
 import { PlaceholderPlugin } from "@/features/editor/plugins/PlaceholderPlugin";
 import { ScreenplayPlugin } from "@/features/editor/plugins/ScreenplayPlugin";
 import { ScreenplaySuggestionsPlugin } from "@/features/editor/plugins/ScreenplaySuggestionsPlugin";
@@ -38,6 +40,7 @@ type ScreenplayBlock = {
 type ScreenplayEditorProps = {
   initialBlocks?: readonly ScreenplayBlock[];
   onChange?: (editorState: EditorState, editor: LexicalEditor) => void;
+  onEditorReady?: (editor: LexicalEditor) => void;
   onBlockTypeChange?: (blockType: ScreenplayBlockType) => void;
   placeholder?: string;
 };
@@ -71,6 +74,7 @@ function onError(error: Error): void {
 export function ScreenplayEditor({
   initialBlocks = [],
   onChange,
+  onEditorReady,
   onBlockTypeChange,
   placeholder = "Start writing your screenplay...",
 }: ScreenplayEditorProps) {
@@ -115,11 +119,13 @@ export function ScreenplayEditor({
         <PlaceholderPlugin text={placeholder} />
         <HistoryPlugin />
         <ScreenplayPlugin />
+        <AutoDetectBlockTypePlugin />
         <ScreenplaySuggestionsPlugin />
         <AutoFocusPlugin />
         <BlockTypeIndicatorPlugin onBlockTypeChange={onBlockTypeChange} />
+        {onEditorReady ? <EditorReadyPlugin onReady={onEditorReady} /> : null}
         {onChange ? (
-          <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
+          <OnChangePlugin onChange={handleChange} ignoreSelectionChange={false} />
         ) : null}
       </LexicalComposer>
     </div>

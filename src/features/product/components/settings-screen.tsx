@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -247,6 +248,19 @@ export function SettingsScreen({
                 <span className={styles.readonlyValue}>{accountEmail ?? "—"}</span>
               </div>
             </form>
+          </section>
+
+          <section className={styles.sectionCard}>
+            <header className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Apariencia</h2>
+              <p className={styles.sectionDescription}>
+                El tema oscuro es el predeterminado. Cambiá a claro cuando te resulte más cómodo.
+              </p>
+            </header>
+            <div className={styles.appearanceRow}>
+              <span className={styles.readonlyLabel}>Tema de la interfaz</span>
+              <ThemeToggle />
+            </div>
           </section>
 
           <section className={styles.sectionCard}>
