@@ -97,8 +97,7 @@ export class ScreenplayBlockNode extends ElementNode {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  exportDOM(_editor: LexicalEditor): DOMExportOutput {
+  exportDOM(): DOMExportOutput {
     const element = document.createElement("div");
     element.className = BLOCK_TYPE_TO_CSS[this.__blockType];
     element.setAttribute("data-screenplay-block-type", this.__blockType);

@@ -27,7 +27,6 @@ export default async function AuthenticatedDashboardLayout({
       userDisplayName = userProfile?.displayName ?? null;
     }
   } catch {
-    // Graceful degradation — dashboard still renders with fallback data.
   }
 
   return (

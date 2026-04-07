@@ -86,8 +86,7 @@ export function ScreenplayEditor({
 }: ScreenplayEditorProps) {
   const editorStateInit = useMemo(
     () => buildInitialEditorState(initialBlocks),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [initialBlocks],
   );
 
   const initialConfig = useMemo(
