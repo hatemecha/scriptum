@@ -1,5 +1,6 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
+import { ensureAuthReadyForDataMutation } from "@/lib/supabase/auth-session";
 import { type Database, type Json } from "@/lib/supabase/types";
 
 /** Aligned with `dataArchitectureProfilePlans` in `data-architecture.ts`. */
@@ -265,17 +266,50 @@ export async function updateUserProfileDisplayName(
   return { profile: mapProfileRowToAppProfile(data as UserProfileRowLike), error: null };
 }
 
-export async function mergeUserProfilePreferences(
+export function preferencesPatchToJson(patch: UserProfilePreferences): Json {
+  const out: Record<string, Json> = {};
+  for (const key of Object.keys(patch) as (keyof UserProfilePreferences)[]) {
+    const value = patch[key];
+    if (value !== undefined) {
+      out[key as string] = value as Json;
+    }
+  }
+  return out;
+}
+
+/** PostgREST may return one row as an object or as a single-element array. */
+function profileRowFromMergeRpcPayload(data: unknown): UserProfileRowLike | null {
+  if (data == null) {
+    return null;
+  }
+  if (Array.isArray(data)) {
+    const first = data[0];
+    return first && typeof first === "object" ? (first as UserProfileRowLike) : null;
+  }
+  if (typeof data === "object") {
+    return data as UserProfileRowLike;
+  }
+  return null;
+}
+
+function isMergeProfilePreferencesRpcMissing(error: unknown): boolean {
+  if (error == null || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as { code?: string; message?: string };
+  const code = typeof candidate.code === "string" ? candidate.code : "";
+  const message = (typeof candidate.message === "string" ? candidate.message : "").toLowerCase();
+
+  return code === "PGRST202" || message.includes("could not find the function");
+}
+
+async function mergeUserProfilePreferencesLegacy(
   supabase: SupabaseClient<Database>,
   userId: string,
   patch: UserProfilePreferences,
+  current: UserAppProfile,
 ): Promise<{ profile: UserAppProfile | null; error: Error | null }> {
-  const current = await fetchUserProfile(supabase, userId);
-
-  if (!current) {
-    return { profile: null, error: new Error("Profile not found.") };
-  }
-
   const next: UserProfilePreferences = {
     ...current.preferences,
     ...patch,
@@ -301,6 +335,80 @@ export async function mergeUserProfilePreferences(
   }
 
   return { profile: mapProfileRowToAppProfile(data as UserProfileRowLike), error: null };
+}
+
+export async function mergeUserProfilePreferences(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  patch: UserProfilePreferences,
+): Promise<{ profile: UserAppProfile | null; error: Error | null }> {
+  const auth = await ensureAuthReadyForDataMutation(supabase);
+
+  if (!auth.user) {
+    return { profile: null, error: auth.error };
+  }
+
+  if (auth.user.id !== userId) {
+    return { profile: null, error: new Error("Not authenticated.") };
+  }
+
+  const user = auth.user;
+
+  const ensured = await ensureUserProfile(supabase, user);
+  if (!ensured) {
+    return { profile: null, error: new Error("Profile not found.") };
+  }
+
+  const patchJson = preferencesPatchToJson(patch);
+  if (
+    typeof patchJson === "object" &&
+    patchJson !== null &&
+    !Array.isArray(patchJson) &&
+    Object.keys(patchJson).length === 0
+  ) {
+    return { profile: ensured, error: null };
+  }
+
+  const { data: rpcData, error: rpcError } = await supabase.rpc("merge_profile_preferences", {
+    p_patch: patchJson,
+  });
+
+  const rpcRow = profileRowFromMergeRpcPayload(rpcData);
+  if (!rpcError && rpcRow) {
+    return { profile: mapProfileRowToAppProfile(rpcRow), error: null };
+  }
+
+  if (!rpcError && !rpcRow) {
+    return mergeUserProfilePreferencesLegacy(supabase, userId, patch, ensured);
+  }
+
+  if (rpcError && isMissingPreferencesColumnError(rpcError)) {
+    return { profile: ensured, error: createMissingPreferencesColumnError() };
+  }
+
+  if (rpcError && isMergeProfilePreferencesRpcMissing(rpcError)) {
+    return mergeUserProfilePreferencesLegacy(supabase, userId, patch, ensured);
+  }
+
+  if (rpcError) {
+    const message = (rpcError as { message?: string }).message ?? String(rpcError);
+    if (message.includes("Profile not found")) {
+      const retryEnsured = await ensureUserProfile(supabase, user);
+      if (retryEnsured) {
+        const second = await supabase.rpc("merge_profile_preferences", { p_patch: patchJson });
+        const secondRow = profileRowFromMergeRpcPayload(second.data);
+        if (!second.error && secondRow) {
+          return {
+            profile: mapProfileRowToAppProfile(secondRow),
+            error: null,
+          };
+        }
+      }
+    }
+    return { profile: null, error: rpcError as Error };
+  }
+
+  return { profile: null, error: new Error("Failed to update preferences.") };
 }
 
 export async function completeUserOnboarding(

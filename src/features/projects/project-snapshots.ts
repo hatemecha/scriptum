@@ -217,7 +217,7 @@ export async function saveProjectSnapshot(
   error: Error | null;
 }> {
   try {
-    const title = normalizeProjectTitle(input.title ?? input.project.title, "");
+    const title = normalizeProjectTitle(input.title ?? input.project.title, "Sin título");
     const author = normalizeProjectAuthor(input.project.author);
     const description = normalizeProjectDescription(input.description ?? input.project.description);
     const language = normalizeProjectLanguage(input.language ?? input.project.language);

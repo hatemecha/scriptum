@@ -168,7 +168,7 @@ export async function renameProject(
   try {
     const { data, error } = await supabase
       .from("projects")
-      .update({ title: normalizeProjectTitle(title, ""), updated_at: now })
+      .update({ title: normalizeProjectTitle(title, "Sin título"), updated_at: now })
       .eq("id", projectId)
       .is("deleted_at", null)
       .select("*")
@@ -193,7 +193,7 @@ export async function updateProjectMetadata(
 
   try {
     if (input.title !== undefined) {
-      patch.title = normalizeProjectTitle(input.title, "");
+      patch.title = normalizeProjectTitle(input.title, "Sin título");
     }
 
     if (input.author !== undefined) {

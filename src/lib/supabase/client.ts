@@ -1,10 +1,16 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 import { appEnvironment } from "@/config/env";
 
+import { ensureAuthReadyForDataMutation } from "./auth-session";
 import { type Database } from "./types";
+
+export type SupabaseBrowserAuth =
+  | { ok: true; supabase: SupabaseClient<Database>; user: User }
+  | { ok: false; supabase: SupabaseClient<Database>; error: Error };
 
 function getSupabasePublicConfiguration() {
   const { publishableKey, url } = appEnvironment.public.supabase;
@@ -24,4 +30,14 @@ function getSupabasePublicConfiguration() {
 export function createSupabaseBrowserClient() {
   const { publishableKey, url } = getSupabasePublicConfiguration();
   return createBrowserClient<Database>(url, publishableKey);
+}
+
+/** Browser client plus refreshed session for mutations (preferences, projects, snapshots). */
+export async function getSupabaseBrowserClientWithUser(): Promise<SupabaseBrowserAuth> {
+  const supabase = createSupabaseBrowserClient();
+  const auth = await ensureAuthReadyForDataMutation(supabase);
+  if (!auth.user) {
+    return { ok: false, supabase, error: auth.error };
+  }
+  return { ok: true, supabase, user: auth.user };
 }

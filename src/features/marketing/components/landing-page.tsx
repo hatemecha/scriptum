@@ -116,8 +116,7 @@ export function LandingPage() {
         </div>
 
         <div className={styles.previewGrid}>
-          <aside className={`${styles.sceneColumn} foundation-scene-column`}>
-            <p className="foundation-kicker">Escenas</p>
+          <aside className={`${styles.sceneColumn} foundation-scene-column`} aria-label="Escenas">
             <ol className="foundation-scene-list">
               {scenes.map((scene, index) => (
                 <li key={scene.id}>

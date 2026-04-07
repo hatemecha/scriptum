@@ -9,19 +9,17 @@ import {
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
-  type Dispatch,
   type SetStateAction,
 } from "react";
 
 import { $getNodeByKey, type EditorState, type LexicalEditor } from "lexical";
+import { Eye, EyeOff, GripVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { HoverDelayTip } from "@/components/ui/hover-delay-tip";
 import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
-import { SET_BLOCK_TYPE_COMMAND } from "@/features/editor/commands";
 import { ScreenplayEditor } from "@/features/editor/components/ScreenplayEditor";
 import {
   deriveActiveBlockContext,
@@ -34,11 +32,7 @@ import {
 } from "@/features/editor/editor-derived-state";
 import { useSceneScrollSpy } from "@/features/editor/hooks/use-scene-scroll-spy";
 import { $isScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
-import {
-  isScreenplayBlockType,
-  screenplayBlockTypes,
-  type ScreenplayBlockType,
-} from "@/features/screenplay/blocks";
+import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import { resolveScreenplayContextHint } from "@/features/screenplay/editor-help/context-hints";
 import {
   getGlossaryEntryById,
@@ -59,6 +53,7 @@ import { getPreviewLines, getPreviewProject, previewUser } from "@/features/prod
 import { type EditorViewState } from "@/features/product/view-states";
 import { mapPersistErrorForDisplay } from "@/features/projects/persist-user-messages";
 import {
+  normalizeSerializedBlocksForPersist,
   saveProjectSnapshot,
   type PersistedProjectEditorData,
   type SerializedEditorBlock,
@@ -70,11 +65,20 @@ import {
   readPreferenceOverlay,
 } from "@/features/user/local-profile-preferences-overlay";
 import { type EditorTipsDetailLevel } from "@/features/user/profile";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClientWithUser } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 import { EditorGlossaryModal } from "./editor-glossary-modal";
 import { StatePanel } from "./state-panel";
+import {
+  DraggableScenesPanel,
+  DraggableScriptMetaPanel,
+  DroppableEditorSide,
+  EditorWorkspaceDnd,
+  EDITOR_DROP_LEFT,
+  EDITOR_DROP_RIGHT,
+  type ScenePanelSide,
+} from "./editor-workspace-dnd";
 import styles from "./workspace-screen.module.css";
 
 const BLOCK_TYPE_LABEL_ES: Record<ScreenplayBlockType, string> = {
@@ -102,6 +106,27 @@ type SaveTone = "danger" | "muted" | "success" | "warning";
 type ExportModalPhase = "error" | "exporting" | "ready" | "success";
 
 const MOBILE_EDITOR_MEDIA_QUERY = "(max-width: 768px)";
+
+const SCENE_PANEL_SIDE_STORAGE_KEY = "scriptum:editor-scene-panel-side";
+
+const SCRIPT_STATS_NUMBER_FORMAT = new Intl.NumberFormat("es-419");
+
+function computeEditorScriptStats(blocks: readonly SerializedEditorBlock[]): {
+  characters: number;
+  letters: number;
+  words: number;
+} {
+  const text = blocks.map((b) => b.text).join("\n");
+  const letters = text.match(/\p{L}/gu)?.length ?? 0;
+  const trimmed = text.trim();
+  const words = trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
+
+  return {
+    characters: text.length,
+    letters,
+    words,
+  };
+}
 
 function sanitizeExportFileName(raw: string): string {
   const trimmed = raw.trim().toLowerCase().replace(/\s+/g, "-");
@@ -235,13 +260,29 @@ function createPersistSignature(title: string, blocks: readonly SerializedEditor
   return JSON.stringify({ blocks, title });
 }
 
+/** Same shaping as `saveProjectSnapshot` so “dirty” matches what actually syncs (avoids false unsaved after guardar). */
+function persistComparisonSignature(
+  titleInput: string,
+  blocks: readonly SerializedEditorBlock[],
+): string {
+  const title = normalizeEditableProjectTitle(titleInput);
+  const normalizedBlocks = normalizeSerializedBlocksForPersist(blocks);
+  return createPersistSignature(title, normalizedBlocks);
+}
+
 function isLikelyTransientPersistError(error: Error | null | undefined): boolean {
   if (!error) {
     return false;
   }
   const message = error.message.toLowerCase();
+  const code = "code" in error && typeof (error as { code?: string }).code === "string"
+    ? (error as { code: string }).code
+    : "";
   return (
     error.name === "TypeError" ||
+    code === "401" ||
+    message.includes("jwt") ||
+    message.includes("session") ||
     message.includes("network") ||
     message.includes("fetch") ||
     message.includes("failed to fetch") ||
@@ -446,81 +487,80 @@ function GlossaryTooltipBody({ entry }: { entry: ScreenplayGlossaryEntry }) {
   );
 }
 
-function ScenesPanelTooltipBody() {
-  const scene = getGlossaryEntryById("scene");
-  if (!scene) {
-    return null;
-  }
+type EditorPanelKind = "data" | "scenes";
 
-  return (
-    <>
-      <strong>Panel de escenas</strong>
-      <p>{scene.definition}</p>
-      <p>Elegí una fila para ir al encabezado correspondiente en el guion.</p>
-    </>
-  );
-}
-
-function ScenesToggleTooltipBody() {
-  const scene = getGlossaryEntryById("scene");
-  if (!scene) {
-    return null;
-  }
-
-  return (
-    <>
-      <strong>Lista de escenas</strong>
-      <p>{scene.definition}</p>
-      <p>
-        El control queda a la izquierda, junto al listado de escenas (como en el playground
-        foundation).
-      </p>
-    </>
-  );
-}
-
-function EditorSceneRailToggle({
-  tipsHoverEnabled,
-  isSidebarVisible,
-  setIsSidebarVisible,
+function EditorPanelVisibilityEye({
+  className,
+  compact,
+  isOpen,
+  onToggle,
+  panel,
 }: {
-  tipsHoverEnabled: boolean;
-  isSidebarVisible: boolean;
-  setIsSidebarVisible: Dispatch<SetStateAction<boolean>>;
+  className?: string;
+  compact?: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+  panel: EditorPanelKind;
 }) {
-  const button = (
+  const label = isOpen
+    ? panel === "scenes"
+      ? "Ocultar lista de escenas"
+      : "Ocultar datos del guion"
+    : panel === "scenes"
+      ? "Mostrar lista de escenas"
+      : "Mostrar datos del guion";
+
+  return (
     <button
       type="button"
-      className={styles.editorSceneRailButton}
-      onClick={() => setIsSidebarVisible((current) => !current)}
-      aria-label={isSidebarVisible ? "Ocultar lista de escenas" : "Mostrar lista de escenas"}
-      aria-pressed={isSidebarVisible}
+      className={cn(
+        styles.editorPanelVisibilityEye,
+        compact && styles.editorPanelVisibilityEyeCompact,
+        className,
+      )}
+      onClick={onToggle}
+      aria-label={label}
+      aria-pressed={isOpen}
     >
-      <svg
-        className={styles.editorScenesIcon}
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        aria-hidden={true}
-      >
-        <path fill="currentColor" d="M4 5h16v2H4V5zm0 6h10v2H4v-2zm0 6h16v2H4v-2z" />
-      </svg>
+      {isOpen ? (
+        <Eye
+          className={styles.editorSidebarEyeIcon}
+          size={compact ? 16 : 17}
+          strokeWidth={1.6}
+          aria-hidden
+        />
+      ) : (
+        <EyeOff
+          className={styles.editorSidebarEyeIcon}
+          size={compact ? 16 : 17}
+          strokeWidth={1.6}
+          aria-hidden
+        />
+      )}
     </button>
   );
+}
 
-  if (tipsHoverEnabled) {
-    return (
-      <HoverDelayTip
-        className={styles.editorSceneRailTipWrap}
-        content={<ScenesToggleTooltipBody />}
-        delayMs={720}
-      >
-        {button}
-      </HoverDelayTip>
-    );
-  }
+function EditorSidePanelCollapsedStrip({
+  onExpand,
+  panel,
+}: {
+  onExpand: () => void;
+  panel: EditorPanelKind;
+}) {
+  const regionLabel =
+    panel === "scenes" ? "Lista de escenas colapsada" : "Datos del guion colapsados";
 
-  return button;
+  return (
+    <div className={styles.editorSidePanelCollapsedStrip} role="region" aria-label={regionLabel}>
+      <EditorPanelVisibilityEye
+        className={styles.editorPanelVisibilityEyeInStrip}
+        isOpen={false}
+        panel={panel}
+        onToggle={onExpand}
+      />
+    </div>
+  );
 }
 
 function EditorLoadingScreen({ title }: { title: string }) {
@@ -541,10 +581,6 @@ function EditorLoadingScreen({ title }: { title: string }) {
           </div>
 
           <div className={styles.editorHeaderTrailing}>
-            <div className={styles.editorHeaderFormatTools}>
-              <Skeleton height="2.25rem" width="min(11rem, 38vw)" radius="0.65rem" />
-            </div>
-            <span className={styles.editorHeaderTrailingDivider} aria-hidden={true} />
             <div className={styles.editorHeaderFileCluster}>
               <Skeleton height="2.25rem" width="4.5rem" radius="0.65rem" />
               <Skeleton height="2.25rem" width="5.5rem" radius="0.75rem" />
@@ -553,38 +589,53 @@ function EditorLoadingScreen({ title }: { title: string }) {
         </div>
       </header>
 
-      <div className={cn(styles.editorWorkspace, styles.editorWorkspaceWithScenePanel)}>
-        <div className={styles.editorSceneRail} aria-label="Panel de escenas">
-          <Skeleton height="3rem" width="3rem" radius="1rem" />
-        </div>
-        <aside className={styles.editorSidebar}>
-          <div className={styles.editorSidebarHeader}>
-            <p className="foundation-kicker">Escenas</p>
-          </div>
-
-          <div className={styles.skeletonList}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={`scene-skeleton-${index}`} className={styles.skeletonRowMain}>
-                <Skeleton height="0.85rem" width="34%" radius="999px" />
-                <Skeleton height="1.05rem" width="88%" radius="0.75rem" />
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        <main className={styles.editorCanvas}>
-          <div className={styles.editorCanvasStage}>
-            <div className={cn(styles.editorPaper, styles.editorPaperLoading)}>
+      <div className={cn(styles.editorWorkspace, styles.editorWorkspaceTriple)}>
+        <div className={styles.editorWorkspaceTripleInner}>
+          <div className={styles.editorWorkspaceSideSlot}>
+            <aside className={styles.editorSidebar} aria-label="Lista de escenas">
               <div className={styles.skeletonList}>
-                <Skeleton height="0.95rem" width="26%" radius="999px" />
-                <Skeleton height="0.95rem" width="92%" radius="999px" />
-                <Skeleton height="0.95rem" width="84%" radius="999px" />
-                <Skeleton height="0.95rem" width="36%" radius="999px" />
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={`scene-skeleton-${index}`} className={styles.skeletonRowMain}>
+                    <Skeleton height="0.85rem" width="34%" radius="999px" />
+                    <Skeleton height="1.05rem" width="88%" radius="0.75rem" />
+                  </div>
+                ))}
               </div>
-              <p className={styles.editorLoadingCopy}>Cargando...</p>
-            </div>
+            </aside>
           </div>
-        </main>
+
+          <main className={styles.editorCanvas}>
+            <div className={styles.editorCanvasStage}>
+              <div className={cn(styles.editorPaper, styles.editorPaperLoading)}>
+                <div className={styles.skeletonList}>
+                  <Skeleton height="0.95rem" width="26%" radius="999px" />
+                  <Skeleton height="0.95rem" width="92%" radius="999px" />
+                  <Skeleton height="0.95rem" width="84%" radius="999px" />
+                  <Skeleton height="0.95rem" width="36%" radius="999px" />
+                </div>
+                <p className={styles.editorLoadingCopy}>Cargando...</p>
+              </div>
+            </div>
+          </main>
+
+          <div className={styles.editorWorkspaceSideSlot}>
+            <aside className={styles.editorMetaSidebar}>
+              <div className={styles.editorMetaSidebarHeader}>
+                <p className="foundation-kicker">Datos del guion</p>
+              </div>
+              <div className={styles.editorMetaSidebarBody}>
+                <div className={styles.skeletonList}>
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={`meta-skeleton-${index}`} className={styles.skeletonRowMain}>
+                      <Skeleton height="0.8rem" width="40%" radius="999px" />
+                      <Skeleton height="1rem" width="72%" radius="0.75rem" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
       </div>
 
       <footer className={styles.editorFooter}>
@@ -592,8 +643,16 @@ function EditorLoadingScreen({ title }: { title: string }) {
           <span>Documento</span>
           <span>{title}</span>
         </div>
-        <div className={styles.editorFooterMeta}>
-          <span>Esperando snapshot</span>
+        <div className={styles.editorFooterMeta} aria-label="Estadísticas del guion">
+          <span>— palabras</span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>— caracteres</span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>— letras</span>
         </div>
       </footer>
     </div>
@@ -615,10 +674,7 @@ export function EditorScreen({
   );
   const initialProjectRecord = initialData?.project ?? null;
   const initialTitle = initialSeed.title;
-  const initialSignature = createPersistSignature(
-    normalizeEditableProjectTitle(initialTitle),
-    initialSeed.blocks,
-  );
+  const initialSignature = persistComparisonSignature(initialTitle, initialSeed.blocks);
   const router = useRouter();
 
   const autosaveTimeoutRef = useRef<number | null>(null);
@@ -653,7 +709,9 @@ export function EditorScreen({
   const [isBrowserOffline, setIsBrowserOffline] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [highlightSaved, setHighlightSaved] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isScenesPanelVisible, setIsScenesPanelVisible] = useState(true);
+  const [isDataPanelVisible, setIsDataPanelVisible] = useState(true);
+  const [scenePanelSide, setScenePanelSide] = useState<ScenePanelSide>("left");
   const [editorScenes, setEditorScenes] = useState<DerivedSceneNav[]>([]);
   const [caretActiveSceneKey, setCaretActiveSceneKey] = useState<string | null>(null);
   const [mountedEditor, setMountedEditor] = useState<LexicalEditor | null>(null);
@@ -737,10 +795,44 @@ export function EditorScreen({
     };
   }, []);
 
-  const handleSidebarVisibilityChange = useCallback((next: SetStateAction<boolean>) => {
+  const handleScenesPanelVisibleChange = useCallback((next: SetStateAction<boolean>) => {
     autoCollapsedSidebarRef.current = false;
-    setIsSidebarVisible(next);
+    setIsScenesPanelVisible(next);
   }, []);
+
+  const handleDataPanelVisibleChange = useCallback((next: SetStateAction<boolean>) => {
+    autoCollapsedSidebarRef.current = false;
+    setIsDataPanelVisible(next);
+  }, []);
+
+  const openScenesPanel = useCallback(() => {
+    autoCollapsedSidebarRef.current = false;
+    setIsScenesPanelVisible(true);
+  }, []);
+
+  const openDataPanel = useCallback(() => {
+    autoCollapsedSidebarRef.current = false;
+    setIsDataPanelVisible(true);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SCENE_PANEL_SIDE_STORAGE_KEY);
+      if (raw === "left" || raw === "right") {
+        setScenePanelSide(raw);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SCENE_PANEL_SIDE_STORAGE_KEY, scenePanelSide);
+    } catch {
+      // ignore
+    }
+  }, [scenePanelSide]);
 
   useLayoutEffect(() => {
     if (typeof window === "undefined") {
@@ -756,7 +848,13 @@ export function EditorScreen({
       }
 
       if (matches) {
-        setIsSidebarVisible((current) => {
+        setIsScenesPanelVisible((current) => {
+          if (current) {
+            autoCollapsedSidebarRef.current = true;
+          }
+          return false;
+        });
+        setIsDataPanelVisible((current) => {
           if (current) {
             autoCollapsedSidebarRef.current = true;
           }
@@ -767,7 +865,8 @@ export function EditorScreen({
 
       if (autoCollapsedSidebarRef.current) {
         autoCollapsedSidebarRef.current = false;
-        setIsSidebarVisible(true);
+        setIsScenesPanelVisible(true);
+        setIsDataPanelVisible(true);
       }
     }
 
@@ -789,17 +888,14 @@ export function EditorScreen({
 
     function flushOverlay() {
       void (async () => {
-        const supabase = createSupabaseBrowserClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user || user.id !== userId) {
+        const auth = await getSupabaseBrowserClientWithUser();
+        if (!auth.ok || auth.user.id !== userId) {
           return;
         }
         if (Object.keys(readPreferenceOverlay(userId)).length === 0) {
           return;
         }
-        await flushPreferenceOverlayToServer(supabase, userId);
+        await flushPreferenceOverlayToServer(auth.supabase, userId);
       })();
     }
 
@@ -850,6 +946,8 @@ export function EditorScreen({
 
   const sceneKeys = useMemo(() => editorScenes.map((s) => s.id), [editorScenes]);
 
+  const scriptStats = useMemo(() => computeEditorScriptStats(editorBlocks), [editorBlocks]);
+
   const scrollSpySceneKey = useSceneScrollSpy({
     editor: mountedEditor,
     sceneKeys,
@@ -898,7 +996,7 @@ export function EditorScreen({
     }
 
     const normalizedTitle = normalizeEditableProjectTitle(projectTitleRef.current);
-    const nextSignature = createPersistSignature(normalizedTitle, editorBlocksRef.current);
+    const nextSignature = persistComparisonSignature(projectTitleRef.current, editorBlocksRef.current);
     const requestedTitle = normalizedTitle;
 
     if (nextSignature === lastPersistedSignatureRef.current) {
@@ -934,6 +1032,22 @@ export function EditorScreen({
     const persistRetryDelaysMs = [700, 1900] as const;
     let snapshotResult: Awaited<ReturnType<typeof saveProjectSnapshot>> | null = null;
 
+    const authClient = await getSupabaseBrowserClientWithUser();
+    if (!authClient.ok) {
+      if (savingIndicatorDelayRef.current !== null) {
+        window.clearTimeout(savingIndicatorDelayRef.current);
+        savingIndicatorDelayRef.current = null;
+      }
+      isSavingRef.current = false;
+      setPersistState("error");
+      setPersistErrorMessage(
+        "Tu sesión no está activa. Recargá la página o volvé a iniciar sesión e intentá guardar de nuevo.",
+      );
+      queuedPersistRef.current = false;
+      return false;
+    }
+    let supabase = authClient.supabase;
+
     attemptLoop: for (let attempt = 0; attempt < 1 + persistRetryDelaysMs.length; attempt++) {
       if (attempt > 0) {
         const waitMs = persistRetryDelaysMs[attempt - 1]!;
@@ -951,9 +1065,13 @@ export function EditorScreen({
           queuedPersistRef.current = false;
           return false;
         }
+        const again = await getSupabaseBrowserClientWithUser();
+        if (again.ok) {
+          supabase = again.supabase;
+        }
       }
 
-      snapshotResult = await saveProjectSnapshot(createSupabaseBrowserClient(), {
+      snapshotResult = await saveProjectSnapshot(supabase, {
         blocks: editorBlocksRef.current,
         documentId: documentIdRef.current,
         project: projectRecordRef.current ?? currentProject,
@@ -990,8 +1108,8 @@ export function EditorScreen({
       return false;
     }
 
-    lastPersistedSignatureRef.current = createPersistSignature(
-      normalizeEditableProjectTitle(result.data.project.title),
+    lastPersistedSignatureRef.current = persistComparisonSignature(
+      result.data.project.title,
       result.data.blocks,
     );
     clearStoredEditorDraft(projectId);
@@ -1019,8 +1137,8 @@ export function EditorScreen({
 
     if (queuedPersistRef.current) {
       queuedPersistRef.current = false;
-      const latestSignature = createPersistSignature(
-        normalizeEditableProjectTitle(projectTitleRef.current),
+      const latestSignature = persistComparisonSignature(
+        projectTitleRef.current,
         editorBlocksRef.current,
       );
 
@@ -1118,23 +1236,6 @@ export function EditorScreen({
     ],
   );
 
-  const handleBlockTypeSelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-
-    if (!isScreenplayBlockType(value)) {
-      return;
-    }
-
-    const editor = lexicalEditorRef.current;
-
-    if (!editor) {
-      return;
-    }
-
-    editor.dispatchCommand(SET_BLOCK_TYPE_COMMAND, { blockType: value });
-    setActiveBlockType(value);
-  }, []);
-
   useEffect(() => {
     setTipsEnabled(initialEditorTipsEnabled);
   }, [initialEditorTipsEnabled]);
@@ -1183,12 +1284,8 @@ export function EditorScreen({
     setTipsPreferenceFeedback(null);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || user.id !== userId) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok || auth.user.id !== userId) {
         setTipsPreferenceFeedback({
           tone: "error",
           message: "Iniciá sesión de nuevo para guardar esta preferencia.",
@@ -1197,7 +1294,7 @@ export function EditorScreen({
       }
 
       const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
-        supabase,
+        auth.supabase,
         userId,
         {
           editorTipsEnabled: false,
@@ -1289,13 +1386,13 @@ export function EditorScreen({
 
   /** Keep the active scene row visible inside the sidebar when the scene list scrolls (Day 11 / Day 24). */
   useEffect(() => {
-    if (!isSidebarVisible || !displayActiveSceneKey) {
+    if (!isScenesPanelVisible || !displayActiveSceneKey) {
       return;
     }
 
     const button = activeSceneNavButtonRef.current;
     button?.scrollIntoView({ block: "nearest", behavior: "auto" });
-  }, [displayActiveSceneKey, isSidebarVisible]);
+  }, [displayActiveSceneKey, isScenesPanelVisible]);
 
   const editorInstanceKeyBootRef = useRef(true);
   useEffect(() => {
@@ -1364,8 +1461,7 @@ export function EditorScreen({
         if (!navigator.onLine) {
           return;
         }
-        const normalizedTitle = normalizeEditableProjectTitle(projectTitleRef.current);
-        const nextSignature = createPersistSignature(normalizedTitle, editorBlocksRef.current);
+        const nextSignature = persistComparisonSignature(projectTitleRef.current, editorBlocksRef.current);
         if (nextSignature === lastPersistedSignatureRef.current) {
           return;
         }
@@ -1468,7 +1564,7 @@ export function EditorScreen({
     }
 
     const normalizedTitle = normalizeEditableProjectTitle(projectTitle);
-    const nextSignature = createPersistSignature(normalizedTitle, editorBlocks);
+    const nextSignature = persistComparisonSignature(projectTitle, editorBlocks);
     const isDirty = nextSignature !== lastPersistedSignatureRef.current;
 
     setHasUnsavedChanges(isDirty);
@@ -1644,7 +1740,6 @@ export function EditorScreen({
   const exportAuthor = projectRecord?.author ?? initialSeed.author ?? previewUser.name;
   const blockTypeGlossaryEntry = getGlossaryEntryForBlockType(activeBlockType);
   const pageMinuteGlossaryEntry = getGlossaryEntryById("page-minute");
-  const sceneGlossaryEntry = getGlossaryEntryById("scene");
   const hasContextHint =
     tipsContextStripEnabled && (formatAutoMessage != null || contextHint != null);
   const hasHelpBarLeading = tipsContextStripEnabled;
@@ -1719,6 +1814,132 @@ export function EditorScreen({
     }
   }
 
+  const scenesSidebarBody =
+    editorScenes.length === 0 ? (
+      <div className={styles.sceneEmpty}>
+        <div>
+          <div>Sin escenas todavía</div>
+          <div>Añade un bloque Encabezado (o Tab hasta Encabezado) y escribe INT./EXT.</div>
+        </div>
+      </div>
+    ) : (
+      <ol className="foundation-scene-list">
+        {editorScenes.map((scene) => (
+          <li key={scene.id}>
+            <button
+              type="button"
+              ref={scene.id === displayActiveSceneKey ? activeSceneNavButtonRef : undefined}
+              className="foundation-scene-item"
+              data-active={displayActiveSceneKey === scene.id ? "true" : "false"}
+              aria-current={displayActiveSceneKey === scene.id ? "true" : undefined}
+              onClick={() => handleSceneNavigate(scene.id)}
+            >
+              <span className="foundation-scene-item__index">{scene.indexLabel}</span>
+              <span className="foundation-scene-item__title">{scene.heading}</span>
+              {scene.snippet ? (
+                <span className="foundation-scene-item__snippet">{scene.snippet}</span>
+              ) : null}
+            </button>
+          </li>
+        ))}
+      </ol>
+    );
+
+  const scenesHeaderPlain = (
+    <EditorPanelVisibilityEye
+      isOpen={isScenesPanelVisible}
+      panel="scenes"
+      onToggle={() => handleScenesPanelVisibleChange((v) => !v)}
+    />
+  );
+
+  const scenesPanelEl = (
+    <DraggableScenesPanel
+      dragHandle={<GripVertical size={18} strokeWidth={2} aria-hidden />}
+      dragHandleLabel="Arrastrar el panel de escenas al otro lateral"
+      headerTrailing={scenesHeaderPlain}
+      body={<div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>}
+    />
+  );
+
+  const scriptMetaAside = (
+    <DraggableScriptMetaPanel
+      dragHandle={<GripVertical size={18} strokeWidth={2} aria-hidden />}
+      dragHandleLabel="Arrastrar datos del guion al otro lateral"
+      headerTrailing={
+        <>
+          <p className={cn("foundation-kicker", styles.editorSidebarTitleWrap)}>Datos del guion</p>
+          <EditorPanelVisibilityEye
+            isOpen={isDataPanelVisible}
+            panel="data"
+            onToggle={() => handleDataPanelVisibleChange((v) => !v)}
+          />
+        </>
+      }
+      body={
+        <div className={styles.editorMetaSidebarBody}>
+          <div className={styles.modalSummary}>
+            <div className={styles.modalSummaryRow}>
+              <span>Título</span>
+              <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Autor</span>
+              <strong>{exportAuthor ?? "Sin definir"}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Escenas</span>
+              <strong>{editorScenes.length}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Páginas (aprox.)</span>
+              <strong>~{estimatedPages}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Escena activa</span>
+              <strong>{activeEditorScene ? activeEditorScene.indexLabel : "—"}</strong>
+            </div>
+            <div className={styles.modalSummaryRow}>
+              <span>Bloque activo</span>
+              <strong>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</strong>
+            </div>
+          </div>
+        </div>
+      }
+    />
+  );
+
+  const leftPanelCollapsed =
+    scenePanelSide === "left" ? !isScenesPanelVisible : !isDataPanelVisible;
+  const rightPanelCollapsed =
+    scenePanelSide === "right" ? !isScenesPanelVisible : !isDataPanelVisible;
+
+  const leftWorkspaceCell =
+    scenePanelSide === "left" ? (
+      isScenesPanelVisible ? (
+        scenesPanelEl
+      ) : (
+        <EditorSidePanelCollapsedStrip panel="scenes" onExpand={openScenesPanel} />
+      )
+    ) : isDataPanelVisible ? (
+      scriptMetaAside
+    ) : (
+      <EditorSidePanelCollapsedStrip panel="data" onExpand={openDataPanel} />
+    );
+
+  const rightWorkspaceCell =
+    scenePanelSide === "right" ? (
+      isScenesPanelVisible ? (
+        scenesPanelEl
+      ) : (
+        <EditorSidePanelCollapsedStrip panel="scenes" onExpand={openScenesPanel} />
+      )
+    ) : isDataPanelVisible ? (
+      scriptMetaAside
+    ) : (
+      <EditorSidePanelCollapsedStrip panel="data" onExpand={openDataPanel} />
+    );
+
   return (
     <div className={styles.editorShell}>
       {localDraftNotice ? (
@@ -1791,52 +2012,6 @@ export function EditorScreen({
           </div>
 
           <div className={styles.editorHeaderTrailing}>
-            <div className={styles.editorHeaderFormatTools}>
-              <div className={styles.editorBlockTypeCluster}>
-                {tipsHoverEnabled && blockTypeGlossaryEntry ? (
-                  <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
-                    <div className={styles.editorBlockTypeHoverWrap}>
-                      <label className={styles.visuallyHidden} htmlFor="editor-block-type">
-                        Tipo de bloque del guion
-                      </label>
-                      <select
-                        id="editor-block-type"
-                        className={styles.editorBlockTypeSelect}
-                        value={activeBlockType}
-                        onChange={handleBlockTypeSelect}
-                      >
-                        {screenplayBlockTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {BLOCK_TYPE_LABEL_ES[type]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </HoverDelayTip>
-                ) : (
-                  <>
-                    <label className={styles.visuallyHidden} htmlFor="editor-block-type">
-                      Tipo de bloque del guion
-                    </label>
-                    <select
-                      id="editor-block-type"
-                      className={styles.editorBlockTypeSelect}
-                      value={activeBlockType}
-                      onChange={handleBlockTypeSelect}
-                    >
-                      {screenplayBlockTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {BLOCK_TYPE_LABEL_ES[type]}
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <span className={styles.editorHeaderTrailingDivider} aria-hidden={true} />
-
             <div className={styles.editorHeaderFileCluster}>
               <Link
                 href={routes.settings}
@@ -1960,99 +2135,95 @@ export function EditorScreen({
       <div
         className={cn(
           styles.editorWorkspace,
-          isSidebarVisible
-            ? styles.editorWorkspaceWithScenePanel
-            : styles.editorWorkspaceSceneCollapsed,
+          !isMobileEditorLayout && styles.editorWorkspaceTriple,
+          isMobileEditorLayout && styles.editorWorkspaceSceneCollapsed,
         )}
       >
-        <div className={styles.editorSceneRail} aria-label="Panel de escenas">
-          <EditorSceneRailToggle
-            tipsHoverEnabled={tipsHoverEnabled}
-            isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={handleSidebarVisibilityChange}
-          />
-        </div>
-        <aside
-          className={cn(styles.editorSidebar, !isSidebarVisible && styles.editorSidebarHidden)}
-          aria-label="Sidebar de escenas"
-        >
-          <div className={styles.editorSidebarHeader}>
-            {tipsHoverEnabled && sceneGlossaryEntry ? (
-              <HoverDelayTip
-                className={styles.editorSidebarTitleWrap}
-                content={<ScenesPanelTooltipBody />}
+        {!isMobileEditorLayout ? (
+          <EditorWorkspaceDnd
+            onScenePanelSideChange={setScenePanelSide}
+            scenePanelSide={scenePanelSide}
+          >
+            <div className={styles.editorWorkspaceTripleInner}>
+              <DroppableEditorSide
+                droppableId={EDITOR_DROP_LEFT}
+                slotLayout={leftPanelCollapsed ? "collapse-start" : "fill"}
               >
-                <p className={cn("foundation-kicker", styles.editorTipDotted)}>
-                  Escenas
-                  <span className={styles.editorSceneCount}> · {editorScenes.length}</span>
-                </p>
-              </HoverDelayTip>
-            ) : (
-              <p className="foundation-kicker">
-                Escenas
-                <span className={styles.editorSceneCount}> · {editorScenes.length}</span>
-              </p>
-            )}
-            <button
-              type="button"
-              className={styles.editorSidebarToggle}
-              onClick={() => handleSidebarVisibilityChange(false)}
-            >
-              Cerrar
-            </button>
-          </div>
-
-          <div className={styles.editorSidebarBody}>
-            {editorScenes.length === 0 ? (
-              <div className={styles.sceneEmpty}>
-                <div>
-                  <div>Sin escenas todavía</div>
-                  <div>Añade un bloque Encabezado (o Tab hasta Encabezado) y escribe INT./EXT.</div>
+                {leftWorkspaceCell}
+              </DroppableEditorSide>
+              <main ref={editorCanvasRef} className={styles.editorCanvas}>
+                <div className={styles.editorCanvasStage}>
+                  <article ref={editorFocusRootRef} className={styles.editorPaper}>
+                    <ScreenplayEditor
+                      key={`screenplay-editor-${editorInstanceKey}`}
+                      initialBlocks={toScreenplayEditorSeedBlocks(editorSeedBlocks)}
+                      onEditorReady={handleEditorReady}
+                      onChange={handleEditorChange}
+                      onBlockTypeChange={handleBlockTypeChange}
+                      onEnterPersist={
+                        prototypeMode || !editorAutosaveEnabled ? undefined : schedulePersistOnEnter
+                      }
+                      persistOnEnterEnabled={!prototypeMode && editorAutosaveEnabled}
+                      placeholder="Empieza a escribir tu guión..."
+                    />
+                  </article>
                 </div>
-              </div>
-            ) : (
-              <ol className="foundation-scene-list">
-                {editorScenes.map((scene) => (
-                  <li key={scene.id}>
-                    <button
-                      type="button"
-                      ref={scene.id === displayActiveSceneKey ? activeSceneNavButtonRef : undefined}
-                      className="foundation-scene-item"
-                      data-active={displayActiveSceneKey === scene.id ? "true" : "false"}
-                      aria-current={displayActiveSceneKey === scene.id ? "true" : undefined}
-                      onClick={() => handleSceneNavigate(scene.id)}
-                    >
-                      <span className="foundation-scene-item__index">{scene.indexLabel}</span>
-                      <span className="foundation-scene-item__title">{scene.heading}</span>
-                      {scene.snippet ? (
-                        <span className="foundation-scene-item__snippet">{scene.snippet}</span>
-                      ) : null}
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-        </aside>
-
-        <main ref={editorCanvasRef} className={styles.editorCanvas}>
-          <div className={styles.editorCanvasStage}>
-            <article ref={editorFocusRootRef} className={styles.editorPaper}>
-              <ScreenplayEditor
-                key={`screenplay-editor-${editorInstanceKey}`}
-                initialBlocks={toScreenplayEditorSeedBlocks(editorSeedBlocks)}
-                onEditorReady={handleEditorReady}
-                onChange={handleEditorChange}
-                onBlockTypeChange={handleBlockTypeChange}
-                onEnterPersist={
-                  prototypeMode || !editorAutosaveEnabled ? undefined : schedulePersistOnEnter
-                }
-                persistOnEnterEnabled={!prototypeMode && editorAutosaveEnabled}
-                placeholder="Empieza a escribir tu guión..."
+              </main>
+              <DroppableEditorSide
+                droppableId={EDITOR_DROP_RIGHT}
+                slotLayout={rightPanelCollapsed ? "collapse-end" : "fill"}
+              >
+                {rightWorkspaceCell}
+              </DroppableEditorSide>
+            </div>
+          </EditorWorkspaceDnd>
+        ) : (
+          <>
+            <div
+              className={styles.editorWorkspaceMobilePanelBar}
+              role="group"
+              aria-label="Mostrar u ocultar paneles del editor"
+            >
+              <EditorPanelVisibilityEye
+                compact
+                isOpen={isScenesPanelVisible}
+                panel="scenes"
+                onToggle={() => handleScenesPanelVisibleChange((v) => !v)}
               />
-            </article>
-          </div>
-        </main>
+              <EditorPanelVisibilityEye
+                compact
+                isOpen={isDataPanelVisible}
+                panel="data"
+                onToggle={() => handleDataPanelVisibleChange((v) => !v)}
+              />
+            </div>
+            {isScenesPanelVisible ? (
+              <aside className={styles.editorSidebar} aria-label="Sidebar de escenas">
+                <div className={styles.editorSidebarHeader}>{scenesHeaderPlain}</div>
+                <div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>
+              </aside>
+            ) : null}
+            {isDataPanelVisible ? scriptMetaAside : null}
+            <main ref={editorCanvasRef} className={styles.editorCanvas}>
+              <div className={styles.editorCanvasStage}>
+                <article ref={editorFocusRootRef} className={styles.editorPaper}>
+                  <ScreenplayEditor
+                    key={`screenplay-editor-${editorInstanceKey}`}
+                    initialBlocks={toScreenplayEditorSeedBlocks(editorSeedBlocks)}
+                    onEditorReady={handleEditorReady}
+                    onChange={handleEditorChange}
+                    onBlockTypeChange={handleBlockTypeChange}
+                    onEnterPersist={
+                      prototypeMode || !editorAutosaveEnabled ? undefined : schedulePersistOnEnter
+                    }
+                    persistOnEnterEnabled={!prototypeMode && editorAutosaveEnabled}
+                    placeholder="Empieza a escribir tu guión..."
+                  />
+                </article>
+              </div>
+            </main>
+          </>
+        )}
       </div>
 
       <footer className={styles.editorFooter}>
@@ -2072,15 +2243,25 @@ export function EditorScreen({
             <span>~{estimatedPages} páginas</span>
           )}
         </div>
-        <div className={styles.editorFooterMeta}>
-          {tipsHoverEnabled && sceneGlossaryEntry ? (
-            <HoverDelayTip content={<GlossaryTooltipBody entry={sceneGlossaryEntry} />}>
-              <span className={styles.editorTipDotted}>{editorScenes.length} escenas</span>
-            </HoverDelayTip>
-          ) : (
-            <span>{editorScenes.length} escenas</span>
-          )}
-          <span>{activeEditorScene ? activeEditorScene.indexLabel : "Sin escena activa"}</span>
+        <div className={styles.editorFooterMeta} aria-label="Estadísticas del guion">
+          <span>
+            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.words)}{" "}
+            {scriptStats.words === 1 ? "palabra" : "palabras"}
+          </span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>
+            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.characters)}{" "}
+            {scriptStats.characters === 1 ? "carácter" : "caracteres"}
+          </span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>
+            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.letters)}{" "}
+            {scriptStats.letters === 1 ? "letra" : "letras"}
+          </span>
         </div>
       </footer>
 

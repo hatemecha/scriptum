@@ -26,7 +26,7 @@ import {
   type UserAppProfile,
   updateUserProfileDisplayName,
 } from "@/features/user/profile";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient, getSupabaseBrowserClientWithUser } from "@/lib/supabase/client";
 import type { ThemePreference } from "@/lib/theme";
 
 import { EditorGlossaryModal } from "./editor-glossary-modal";
@@ -172,17 +172,14 @@ export function SettingsScreen({
 
     function flushOverlay() {
       void (async () => {
-        const supabase = createSupabaseBrowserClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user || user.id !== uid) {
+        const auth = await getSupabaseBrowserClientWithUser();
+        if (!auth.ok || auth.user.id !== uid) {
           return;
         }
         if (Object.keys(readPreferenceOverlay(uid)).length === 0) {
           return;
         }
-        const { ok } = await flushPreferenceOverlayToServer(supabase, uid);
+        const { ok } = await flushPreferenceOverlayToServer(auth.supabase, uid);
         if (ok) {
           router.refresh();
         }
@@ -251,17 +248,17 @@ export function SettingsScreen({
     setIsSaving(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok) {
         setNameError("No hay sesión activa.");
         return;
       }
 
-      const { error } = await updateUserProfileDisplayName(supabase, user.id, displayName.trim());
+      const { error } = await updateUserProfileDisplayName(
+        auth.supabase,
+        auth.user.id,
+        displayName.trim(),
+      );
 
       if (error) {
         setNameError("No se pudo guardar. Intenta de nuevo.");
@@ -301,12 +298,8 @@ export function SettingsScreen({
     setIsEditorTipsSaving(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || user.id !== uid) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok || auth.user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -316,7 +309,7 @@ export function SettingsScreen({
       }
 
       const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
-        supabase,
+        auth.supabase,
         uid,
         {
           editorTipsEnabled: nextEnabled,
@@ -374,12 +367,8 @@ export function SettingsScreen({
     setIsEditorTipsSaving(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || user.id !== uid) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok || auth.user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -389,7 +378,7 @@ export function SettingsScreen({
       }
 
       const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
-        supabase,
+        auth.supabase,
         uid,
         {
           editorTipsDetailLevel: nextLevel,
@@ -447,12 +436,8 @@ export function SettingsScreen({
     setIsEditorTipsSaving(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || user.id !== uid) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok || auth.user.id !== uid) {
         showToast({
           description: "No hay sesión activa.",
           title: "Error",
@@ -462,7 +447,7 @@ export function SettingsScreen({
       }
 
       const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
-        supabase,
+        auth.supabase,
         uid,
         {
           editorAutosaveEnabled: nextEnabled,
@@ -509,18 +494,18 @@ export function SettingsScreen({
     }
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user || user.id !== uid) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok || auth.user.id !== uid) {
         return;
       }
 
-      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(supabase, uid, {
-        theme: next,
-      });
+      const { appliedLocallyOnly, error } = await mergeUserProfilePreferencesResilient(
+        auth.supabase,
+        uid,
+        {
+          theme: next,
+        },
+      );
 
       if (error) {
         showToast({

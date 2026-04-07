@@ -2,6 +2,7 @@
   display: inline-flex;
   max-width: 100%;
   vertical-align: middle;
+  text-decoration: none;
 }
 
 .popover {

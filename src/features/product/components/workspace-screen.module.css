@@ -378,13 +378,23 @@
 
 .editorShell {
   min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-height: 100dvh;
+  /* Espacio para el footer fijo (altura aprox. + safe area iOS). */
+  --editor-footer-reserve: 3.45rem;
+  padding-bottom: calc(var(--editor-footer-reserve) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
   background: var(--color-background);
   box-sizing: border-box;
 }
 
+.editorShell > .editorTransientNotice,
+.editorShell > .inlineNotice {
+  flex-shrink: 0;
+}
+
 .editorHeader {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -651,10 +661,7 @@
 
 .editorTipDotted {
   cursor: help;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 0.18em;
-  text-decoration-color: color-mix(in srgb, var(--color-fg-muted) 55%, transparent);
+  text-decoration: none;
 }
 
 .settingsToggleRow {
@@ -927,11 +934,6 @@
   color: var(--color-accent-strong);
 }
 
-.editorScenesIcon {
-  display: block;
-  flex-shrink: 0;
-}
-
 .editorTitleInput {
   flex: 1 1 11rem;
   min-width: 0;
@@ -1054,72 +1056,214 @@
 
 /* Misma lectura que foundation-editor-grid: carril + escenas 20rem + lienzo (playground/foundation). */
 .editorWorkspace {
+  flex: 1 1 auto;
   min-height: 0;
-  padding: 1.5rem clamp(1.25rem, 2.5vw, 2.6rem) 2.5rem;
+  padding: 1.5rem clamp(1.25rem, 2.5vw, 2.6rem) 1.25rem;
   background: var(--color-background);
   display: grid;
-  align-items: start;
-  grid-template-columns: 3.35rem minmax(0, 1fr);
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
   column-gap: clamp(1.15rem, 2.2vw, 2.35rem);
 }
 
 .editorWorkspaceWithScenePanel {
-  grid-template-columns: 3.35rem 20rem minmax(0, 1fr);
+  grid-template-columns: 20rem minmax(0, 1fr);
 }
 
-.editorWorkspaceSceneCollapsed {
-  grid-template-columns: 3.35rem minmax(0, 1fr);
+/*
+ * Tres columnas con anchos fijos en los laterales: el lienzo no salta al
+ * colapsar paneles; solo cambia el contenido dentro de cada 20rem.
+ */
+.editorWorkspaceTriple {
+  grid-template-columns: 20rem minmax(0, 1fr) 20rem;
 }
 
-.editorSceneRail {
-  position: sticky;
-  top: 0.85rem;
+.editorWorkspaceTripleInner {
+  display: contents;
+}
+
+.editorWorkspaceSideSlot {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-top: 0.15rem;
-  align-self: start;
-  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0.65rem;
+  transition:
+    box-shadow var(--transition-base),
+    background var(--transition-base);
 }
 
-.editorSceneRailTipWrap {
-  display: flex;
-  justify-content: center;
+.editorWorkspaceSideSlotStretch {
+  align-items: stretch;
+}
+
+.editorWorkspaceSideSlotStretch > .editorSidebar,
+.editorWorkspaceSideSlotStretch > .editorMetaSidebar {
   width: 100%;
 }
 
-.editorSceneRailButton {
-  width: 3rem;
-  height: 3rem;
+.editorWorkspaceSideSlotAlignStart {
+  align-items: flex-start;
+}
+
+.editorWorkspaceSideSlotAlignEnd {
+  align-items: flex-end;
+}
+
+.editorWorkspaceSideSlotOver {
+  box-shadow: inset 0 0 0 2px var(--color-accent-soft-strong);
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+}
+
+.editorScenesDragHandle {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
   border: 0;
-  border-radius: 1rem;
+  border-radius: 0.45rem;
   background: transparent;
   color: var(--color-fg-muted);
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
   transition:
     background var(--transition-base),
-    box-shadow var(--transition-base),
     color var(--transition-base);
 }
 
-.editorSceneRailButton:hover {
+.editorScenesDragHandle:hover {
   background: var(--color-editor-scene-hover);
-  color: var(--color-accent);
-}
-
-.editorSceneRailButton[aria-pressed="true"] {
-  background: var(--color-editor-scene-active-bg);
-  box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
   color: var(--color-accent-strong);
 }
 
-.editorSceneRailButton:focus-visible {
+.editorScenesDragHandle:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.editorSidebarDragging {
+  z-index: 30;
+  opacity: 0.92;
+  box-shadow: var(--shadow-soft);
+  cursor: grabbing;
+}
+
+.editorMetaSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.editorMetaSidebarHeader {
+  flex-shrink: 0;
+}
+
+.editorMetaSidebarBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+  scrollbar-gutter: stable;
+}
+
+.editorWorkspaceSceneCollapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.editorSidebarEyeIcon {
+  display: block;
+  flex-shrink: 0;
+  opacity: 0.88;
+}
+
+/* Ojo por panel (escenas / datos), sin carril global. */
+.editorPanelVisibilityEye {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-fg-muted) 72%, transparent);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--transition-base),
+    color var(--transition-base);
+}
+
+.editorPanelVisibilityEye:hover {
+  background: var(--color-editor-scene-hover);
+  color: var(--color-accent-strong);
+}
+
+.editorPanelVisibilityEye[aria-pressed="true"] .editorSidebarEyeIcon {
+  opacity: 1;
+  color: color-mix(in srgb, var(--color-accent-strong) 82%, var(--color-fg-muted));
+}
+
+.editorPanelVisibilityEye:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.editorPanelVisibilityEyeCompact {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-inline-start: 0;
+  border-radius: 0.38rem;
+}
+
+.editorPanelVisibilityEyeInStrip {
+  margin-inline-start: 0;
+  color: color-mix(in srgb, var(--color-fg-muted) 78%, transparent);
+}
+
+/* Barra fija bajo el header (móvil): no mueve el chrome del header. */
+.editorWorkspaceMobilePanelBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.65rem;
+  margin-block: 0 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 42%, transparent);
+  background: color-mix(in srgb, var(--color-foreground) 2.6%, transparent);
+}
+
+.editorSidePanelCollapsedStrip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-width: 2.75rem;
+  min-height: 2.75rem;
+  margin-top: 0.08rem;
+  padding: 0.25rem 0.15rem;
+  border-radius: 0.55rem;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--color-foreground) 2.5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 38%, transparent);
 }
 
 .editorSidebar {
@@ -1150,8 +1294,7 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .editorSidebarTitleWrap {
@@ -1197,9 +1340,10 @@
 
 .editorCanvas {
   min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: auto;
-  padding: 0.25rem 0.5rem 2rem;
+  padding: 0.25rem 0.5rem 1rem;
   background: transparent;
 }
 
@@ -1321,11 +1465,18 @@
 }
 
 .editorFooter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.5rem clamp(1rem, 3vw, 1.75rem);
+  padding: 0.5rem clamp(1rem, 3vw, 1.75rem)
+    calc(0.5rem + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--color-editor-chrome-border);
   background: var(--color-editor-chrome-surface);
   color: var(--color-fg-muted);
@@ -1340,6 +1491,11 @@
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
+}
+
+.editorFooterStatSep {
+  opacity: 0.45;
+  user-select: none;
 }
 
 .modalSection {
@@ -1447,6 +1603,10 @@
 }
 
 @media (max-width: 960px) {
+  .editorShell {
+    --editor-footer-reserve: 5.35rem;
+  }
+
   .pageHeader,
   .fieldInline,
   .editorFooter {
@@ -1489,11 +1649,15 @@
   }
 
   .editorWorkspaceWithScenePanel {
-    grid-template-columns: 3.15rem minmax(0, 42vw) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 42vw) minmax(0, 1fr);
+  }
+
+  .editorWorkspaceTriple {
+    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr) minmax(17rem, 20rem);
   }
 
   .editorWorkspaceSceneCollapsed {
-    grid-template-columns: 3.15rem minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .editorCanvas {
@@ -1515,6 +1679,8 @@
 
 @media (max-width: 768px) {
   .editorShell {
+    display: flex;
+    flex-direction: column;
     min-height: 100dvh;
     max-width: 100vw;
     overflow-x: hidden;
@@ -1599,28 +1765,15 @@
 
   .editorWorkspace,
   .editorWorkspaceWithScenePanel,
+  .editorWorkspaceTriple,
   .editorWorkspaceSceneCollapsed {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
-    padding: 0.65rem 0.85rem 1.15rem;
+    padding: 0.65rem 0.85rem 0.85rem;
     overflow-x: hidden;
     min-height: 0;
-  }
-
-  .editorSceneRail {
-    position: static;
-    top: auto;
-    align-items: flex-start;
-    padding-top: 0;
-  }
-
-  .editorSceneRailButton {
-    width: 2.75rem;
-    height: 2.75rem;
-    border: 1px solid var(--color-editor-chrome-border);
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--color-editor-chrome-surface) 88%, transparent);
   }
 
   .editorSidebar {
@@ -1639,7 +1792,7 @@
 
   .editorCanvas {
     flex: 1 1 auto;
-    min-height: min(52vh, 28rem);
+    min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     padding: 0;
@@ -1648,7 +1801,7 @@
 
   .editorCanvasStage {
     align-items: stretch;
-    min-height: min(100%, 24rem);
+    min-height: 0;
   }
 
   .editorPaper {
@@ -1666,7 +1819,8 @@
 
   .editorFooter {
     gap: 0.5rem;
-    padding-block: 0.75rem;
+    padding-block-start: 0.75rem;
+    padding-block-end: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   .editorFooterMeta {

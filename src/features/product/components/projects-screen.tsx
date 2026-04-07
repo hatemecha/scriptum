@@ -22,7 +22,7 @@ import {
   updateProjectMetadata,
   type UserProject,
 } from "@/features/projects/projects";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClientWithUser } from "@/lib/supabase/client";
 
 import { StatePanel } from "./state-panel";
 import styles from "./workspace-screen.module.css";
@@ -487,17 +487,13 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
     setIsCreating(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok) {
         showToast({ title: "Error", description: "No hay sesión activa.", tone: "error" });
         return;
       }
 
-      const { project, error } = await createProject(supabase, user.id);
+      const { project, error } = await createProject(auth.supabase, auth.user.id);
 
       if (error || !project) {
         showToast({
@@ -523,8 +519,11 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
   async function handleRename(newTitle: string) {
     if (!renameTarget) return;
 
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await renameProject(supabase, renameTarget.id, newTitle);
+    const auth = await getSupabaseBrowserClientWithUser();
+    if (!auth.ok) {
+      throw auth.error;
+    }
+    const { error } = await renameProject(auth.supabase, renameTarget.id, newTitle);
 
     if (error) {
       throw error;
@@ -539,8 +538,12 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
     if (!deleteTarget) return;
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error } = await deleteProject(supabase, deleteTarget.id);
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok) {
+        showToast({ title: "Error", description: "No hay sesión activa.", tone: "error" });
+        return;
+      }
+      const { error } = await deleteProject(auth.supabase, deleteTarget.id);
 
       if (error) {
         showToast({ title: "Error", description: "No se pudo eliminar el proyecto.", tone: "error" });
@@ -563,11 +566,15 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
     const isArchived = project.archivedAt !== null;
 
     try {
-      const supabase = createSupabaseBrowserClient();
+      const auth = await getSupabaseBrowserClientWithUser();
+      if (!auth.ok) {
+        showToast({ title: "Error", description: "No hay sesión activa.", tone: "error" });
+        return;
+      }
 
       const { error } = isArchived
-        ? await unarchiveProject(supabase, project.id)
-        : await archiveProject(supabase, project.id);
+        ? await unarchiveProject(auth.supabase, project.id)
+        : await archiveProject(auth.supabase, project.id);
 
       if (error) {
         showToast({
@@ -600,8 +607,11 @@ export function ProjectsScreen({ projects, viewState }: ProjectsScreenProps) {
   async function handleMetadataSave(data: { title: string; author: string; description: string }) {
     if (!metadataTarget) return;
 
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await updateProjectMetadata(supabase, metadataTarget.id, {
+    const auth = await getSupabaseBrowserClientWithUser();
+    if (!auth.ok) {
+      throw auth.error;
+    }
+    const { error } = await updateProjectMetadata(auth.supabase, metadataTarget.id, {
       title: data.title,
       author: data.author || null,
       description: data.description || null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { type PreviewLine } from "@/features/product/preview-data";
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
@@ -52,20 +52,19 @@ export function LandingPreviewPaper({ lines }: LandingPreviewPaperProps) {
     return [...new Set(merged.filter(Boolean))];
   }, [lines, animLineIndex]);
 
-  const stringsRef = useRef(rotateStrings);
-  stringsRef.current = rotateStrings;
-
   const [display, setDisplay] = useState("");
   const [phase, setPhase] = useState<"typing" | "pause" | "deleting">("typing");
 
   useEffect(() => {
-    if (stringsRef.current.length === 0) {
+    /* Typewriter demo: dependency change resets display synchronously; further updates run inside timeouts. */
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (rotateStrings.length === 0) {
       setDisplay("");
       return;
     }
 
     if (reducedMotion) {
-      setDisplay(stringsRef.current[0] ?? "");
+      setDisplay(rotateStrings[0] ?? "");
       return;
     }
 
@@ -75,7 +74,7 @@ export function LandingPreviewPaper({ lines }: LandingPreviewPaperProps) {
     let timeoutId: number | undefined;
 
     const tick = () => {
-      const list = stringsRef.current;
+      const list = rotateStrings;
       const full = list[strIdx] ?? "";
       if (localPhase === "typing") {
         if (charIdx < full.length) {
@@ -111,6 +110,7 @@ export function LandingPreviewPaper({ lines }: LandingPreviewPaperProps) {
     setDisplay("");
     localPhase = "typing";
     tick();
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     return () => {
       if (timeoutId !== undefined) {

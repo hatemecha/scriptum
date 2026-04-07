@@ -138,6 +138,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      merge_profile_preferences: {
+        Args: { p_patch: Json };
+        Returns: Database["public"]["Tables"]["profiles"]["Row"];
+      };
       soft_delete_project: {
         Args: { p_project_id: string };
         Returns: undefined;
