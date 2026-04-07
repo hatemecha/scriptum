@@ -1,6 +1,30 @@
 .landing {
-  display: grid;
-  gap: clamp(3rem, 8vw, 5rem);
+  /* Mitad del aire por encima/debajo de cada regla; el total entre secciones queda equilibrado. */
+  --landing-section-pad-y: clamp(1.35rem, 3.2vw, 2rem);
+
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* El bloque CTA (`.closing`) ya define su propio padding simétrico; no lo pisamos aquí. */
+.landing > *:not(:last-child):not(.closing) {
+  padding-bottom: var(--landing-section-pad-y);
+}
+
+.landing > * + *:not(footer) {
+  border-top: 1px solid color-mix(in srgb, var(--color-border-subtle) 38%, transparent);
+  padding-top: var(--landing-section-pad-y);
+}
+
+.landing > footer {
+  /* `.closing` no usa el padding inferior del ritmo global; el margen evita que el pie quede pegado al CTA. */
+  margin-top: clamp(2rem, 4.5vw, 3rem);
+  border-top: 1px solid color-mix(in srgb, var(--color-border-subtle) 38%, transparent);
+  padding-top: clamp(1.35rem, 3vw, 2rem);
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .kicker {
@@ -15,12 +39,11 @@
 /* Hero */
 
 .hero {
-  max-width: 76rem;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  gap: 4rem;
+  column-gap: clamp(2rem, 4vw, 4rem);
+  row-gap: clamp(1.75rem, 3.5vw, 2.75rem);
   animation: surface-rise 600ms ease both;
 }
 
@@ -179,11 +202,14 @@
 
 .preview {
   display: grid;
-  gap: clamp(1.75rem, 4vw, 2.5rem);
+  gap: clamp(2rem, 4vw, 2.85rem);
 }
 
 .previewLead {
-  max-width: 38rem;
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .sectionTitle {
@@ -195,7 +221,8 @@
 }
 
 .previewLeadCopy {
-  margin: 0.85rem 0 0;
+  margin: 0.85rem auto 0;
+  max-width: 52ch;
   color: color-mix(in srgb, var(--color-foreground) 72%, transparent);
   font-size: 0.98rem;
   line-height: 1.55;
@@ -203,121 +230,136 @@
 
 .previewGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 18rem;
-  gap: 2.5rem;
+  /* Mismo orden y ancho de panel que el editor (20rem + lienzo). */
+  grid-template-columns: 20rem minmax(0, 1fr);
+  gap: clamp(1.15rem, 2.2vw, 2.35rem);
   align-items: start;
 }
 
 .scriptStage {
   min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0.25rem 0 0.5rem;
 }
 
-.paper {
-  min-height: 28rem;
-  padding: 2.8rem 3rem 3.5rem;
-  border-radius: 0.25rem;
-  background: var(--color-paper-surface);
+/*
+ * Misma tipografía y ancho A4 que el editor; solo se muestra ~la mitad superior
+ * con desvanecimiento (hoja “continúa” bajo el recorte).
+ */
+.paperViewport {
+  --landing-paper-peek: 0.52;
+  width: var(--scriptum-page-a4-width);
+  max-width: 100%;
+  max-height: calc(var(--scriptum-page-a4-height) * var(--landing-paper-peek));
+  flex-shrink: 0;
+  margin-inline: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
   border: 1px solid var(--color-paper-border);
-  box-shadow: var(--shadow-soft);
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 5%, transparent);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 55%,
+    rgba(0, 0, 0, 0.55) 78%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 55%,
+    rgba(0, 0, 0, 0.55) 78%,
+    transparent 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.paperViewport .paper {
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* La demo usa clases de bloque del editor; al borrar el typewriter el nodo queda :empty y Lexical muestra hints EN (“Dialogue…”). Aquí no aplican. */
+.paperViewport :global(.screenplay-block:empty::before),
+.paperViewport :global(.screenplay-block--scene-heading:empty::after),
+.paperViewport :global(.screenplay-block--character:empty::after),
+.paperViewport :global(.screenplay-block--dialogue:empty::after),
+.paperViewport :global(.screenplay-block--parenthetical:empty::after),
+.paperViewport :global(.screenplay-block--transition:empty::after) {
+  content: none;
+}
+
+.typeCaret {
+  display: inline-block;
+  margin-left: 0.04em;
+  color: var(--color-accent-strong);
+  font-weight: 400;
+  animation: landing-caret-blink 0.95s step-end infinite;
+}
+
+@keyframes landing-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typeCaret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Misma geometría A4 / tipografía que `.editorPaper` en workspace. */
+.paper {
+  width: 100%;
+  min-height: var(--scriptum-page-a4-height);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: var(--scriptum-page-margin-top) var(--scriptum-page-margin-outer)
+    var(--scriptum-page-margin-bottom) var(--scriptum-page-margin-binding);
+  border-radius: 1px;
+  font-size: var(--scriptum-page-body-size);
+  line-height: var(--scriptum-page-line-height);
+  color: var(--color-foreground);
+  background-color: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--scriptum-page-a4-height) - 1px),
+    var(--scriptum-page-break-line) calc(var(--scriptum-page-a4-height) - 1px),
+    var(--scriptum-page-break-line) var(--scriptum-page-a4-height)
+  );
+  border: 1px solid var(--color-paper-border);
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 5%, transparent);
   animation: surface-rise 800ms ease both;
   animation-delay: 150ms;
 }
 
-.scriptLine {
-  margin: 0;
-  font-family: var(--font-script);
-  font-size: 1rem;
-  line-height: 1.58;
-  white-space: pre-wrap;
-}
-
-.scriptLine + .scriptLine {
-  margin-top: 0.55rem;
-}
-
-.scriptLine[data-line-type="scene-heading"],
-.scriptLine[data-line-type="character"],
-.scriptLine[data-line-type="transition"] {
-  text-transform: uppercase;
-}
-
-.scriptLine[data-line-type="scene-heading"] {
-  margin-top: 1.5rem;
-}
-
-.scriptLine[data-line-type="scene-heading"]:first-child {
-  margin-top: 0;
-}
-
-.scriptLine[data-line-type="character"] {
-  margin-top: 1.5rem;
-  margin-left: 38%;
-}
-
-.scriptLine[data-line-type="dialogue"] {
-  max-width: 29ch;
-  margin-left: 26%;
-}
-
-.scriptLine[data-line-type="parenthetical"] {
-  max-width: 18ch;
-  margin-left: 30%;
-}
-
-.scriptLine[data-line-type="transition"] {
-  margin-top: 1.5rem;
-  text-align: right;
+.paper :global(.screenplay-editor-root) {
+  min-height: calc(
+    var(--scriptum-page-a4-height) - var(--scriptum-page-margin-top) -
+      var(--scriptum-page-margin-bottom)
+  );
 }
 
 /* Scene column */
 
 .sceneColumn {
-  display: grid;
-  gap: 1rem;
-  align-content: start;
+  min-width: 0;
   animation: surface-rise 800ms ease both;
   animation-delay: 250ms;
-}
-
-.sceneList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.sceneItem {
-  display: grid;
-  gap: 0.3rem;
-  padding: 0.85rem 0.95rem;
-  border-radius: 0.9rem;
-  transition:
-    background var(--transition-base),
-    box-shadow var(--transition-base);
-}
-
-.sceneItem[data-active="true"] {
-  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
-  box-shadow: inset 0 0 0 1px var(--color-accent-soft-strong);
-}
-
-.sceneIndex {
-  color: var(--color-fg-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sceneItem[data-active="true"] .sceneIndex {
-  color: var(--color-accent);
-}
-
-.sceneTitle {
-  font-size: 0.88rem;
-  line-height: 1.45;
-  text-transform: uppercase;
 }
 
 .sceneMeta {
@@ -333,16 +375,18 @@
 
 .values {
   display: grid;
-  gap: clamp(1.5rem, 3vw, 2rem);
-  padding-top: 0.25rem;
+  gap: clamp(1.65rem, 3.2vw, 2.15rem);
 }
 
 .valuesIntro {
-  max-width: 36rem;
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .valueList {
-  margin: 2rem 0 0;
+  margin: clamp(1.25rem, 2.5vw, 2rem) 0 0;
   padding: 0;
   list-style: none;
   display: grid;
@@ -376,26 +420,27 @@
 
 .valueDescription {
   margin: 0;
-  max-width: 52ch;
   color: color-mix(in srgb, var(--color-foreground) 74%, transparent);
   font-size: 0.95rem;
   line-height: 1.55;
 }
 
-.valueItem:last-child {
-  /* Removed bottom border since it's now a column layout */
-}
-
 .closing {
-  margin-top: clamp(0.5rem, 2vw, 1rem);
+  margin-top: 0;
+  margin-inline: auto;
   padding: clamp(2rem, 5vw, 2.75rem) clamp(1.5rem, 4vw, 2.25rem);
   border-radius: 1rem;
   background: color-mix(in srgb, var(--color-foreground) 3.5%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 6%, transparent);
+  text-align: center;
+  max-width: 44rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .closingInner {
-  max-width: 32rem;
+  margin-inline: auto;
+  max-width: 38rem;
 }
 
 .closingTitle {
@@ -417,6 +462,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 1rem 1.35rem;
   margin-top: 1.35rem;
 }
@@ -436,21 +482,27 @@
 }
 
 .footer {
-  padding-top: 1.25rem;
   color: var(--color-fg-muted);
   font-size: 0.85rem;
+  text-align: center;
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 860px) {
   .hero {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 3rem;
+    row-gap: 2.25rem;
   }
 
   .heroContent {
     align-items: center;
     text-align: center;
+  }
+
+  .headline,
+  .subheadline {
+    margin-inline: auto;
   }
 
   .heroVisual {
@@ -467,6 +519,33 @@
 
   .previewGrid {
     grid-template-columns: 1fr;
+  }
+
+  .paperViewport {
+    width: 100%;
+    max-height: min(48vh, calc(var(--scriptum-page-a4-height) * 0.52));
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .paper {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    padding: clamp(1.15rem, 3vw, 1.35rem);
+    border-radius: 1rem;
+    background-image: none;
+  }
+
+  .paperViewport .paper {
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: clamp(1.15rem, 3vw, 1.35rem);
+  }
+
+  .paper :global(.screenplay-editor-root) {
+    min-height: 24rem;
   }
   
   .valueList {
@@ -490,20 +569,4 @@
     align-items: stretch;
   }
 
-  .paper {
-    min-height: auto;
-    padding: 2rem 1.5rem 2.5rem;
-  }
-
-  .scriptLine[data-line-type="character"] {
-    margin-left: 28%;
-  }
-
-  .scriptLine[data-line-type="dialogue"] {
-    margin-left: 16%;
-  }
-
-  .scriptLine[data-line-type="parenthetical"] {
-    margin-left: 20%;
-  }
 }

@@ -7,6 +7,7 @@ import {
   getPreviewScenes,
 } from "@/features/product/preview-data";
 
+import { LandingPreviewPaper } from "./landing-preview-paper";
 import styles from "./landing-page.module.css";
 
 const highlights = [
@@ -38,11 +39,11 @@ export function LandingPage() {
         <div className={styles.heroContent}>
           <p className={styles.heroKicker}>Editor de guion cinematográfico</p>
           <h1 className={styles.headline}>
-            Tu historia, con formato profesional desde el primer párrafo.
+            Tu guion cinematográfico, con formato profesional desde el inicio.
           </h1>
           <p className={styles.subheadline}>
-            Abrí un proyecto, escribí en una página clara y bajá un PDF listo para leer o enviar. Sin
-            suites recargadas ni curva de aprendizaje absurda.
+            Abrí un proyecto y empeza a escribir. 
+            Sin suites recargadas ni curva de aprendizaje absurda.
           </p>
           <div className={styles.actions}>
             <Link
@@ -63,9 +64,9 @@ export function LandingPage() {
             </Link>
           </div>
           <p className={styles.heroProof} aria-hidden="true">
-            <span>Escenas</span>
+            <span>Personalizable</span>
             <span className={styles.heroProofDot} />
-            <span>Autoguardado</span>
+            <span>Profesional</span>
             <span className={styles.heroProofDot} />
             <span>Exportación PDF</span>
           </p>
@@ -106,37 +107,30 @@ export function LandingPage() {
           <div>
             <p className={styles.kicker}>Así se ve adentro</p>
             <h2 id="preview-heading" className={styles.sectionTitle}>
-              El guion al centro. El resto, en segundo plano.
+              La escritura como prioridad. El resto, en segundo plano.
             </h2>
             <p className={styles.previewLeadCopy}>
-              Vista previa real del modelo de bloques: encabezados, personaje, dialogo y escenas
-              ordenadas como en un guion de verdad.
+              Escribí en un formato profesional y claro sin distracciones o interfaces raras.
             </p>
           </div>
         </div>
 
         <div className={styles.previewGrid}>
-          <div className={styles.scriptStage}>
-            <article className={styles.paper}>
-              {lines.map((line) => (
-                <p key={line.id} className={styles.scriptLine} data-line-type={line.type}>
-                  {line.text}
-                </p>
-              ))}
-            </article>
-          </div>
-
-          <aside className={styles.sceneColumn}>
-            <p className={styles.kicker}>Escenas</p>
-            <ol className={styles.sceneList}>
+          <aside className={`${styles.sceneColumn} foundation-scene-column`}>
+            <p className="foundation-kicker">Escenas</p>
+            <ol className="foundation-scene-list">
               {scenes.map((scene, index) => (
-                <li
-                  key={scene.id}
-                  className={styles.sceneItem}
-                  data-active={index === 0 ? "true" : "false"}
-                >
-                  <span className={styles.sceneIndex}>{scene.indexLabel}</span>
-                  <span className={styles.sceneTitle}>{scene.heading}</span>
+                <li key={scene.id}>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="foundation-scene-item"
+                    data-active={index === 0 ? "true" : "false"}
+                    aria-current={index === 0 ? "true" : undefined}
+                  >
+                    <span className="foundation-scene-item__index">{scene.indexLabel}</span>
+                    <span className="foundation-scene-item__title">{scene.heading}</span>
+                  </button>
                 </li>
               ))}
             </ol>
@@ -145,6 +139,10 @@ export function LandingPage() {
               <span>~{project.estimatedPages} páginas</span>
             </div>
           </aside>
+
+          <div className={styles.scriptStage}>
+            <LandingPreviewPaper lines={lines} />
+          </div>
         </div>
       </section>
 

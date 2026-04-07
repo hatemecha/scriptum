@@ -25,7 +25,7 @@ export function VisualFoundation() {
   const [exportFileName, setExportFileName] = useState("foundation-preview");
   const [exportFileNameError, setExportFileNameError] = useState<string>();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [demoProjectTitle, setDemoProjectTitle] = useState("The Silent Editor");
+  const [demoProjectTitle, setDemoProjectTitle] = useState("El editor silencioso");
   const { showToast } = useToast();
 
   const activeScene =

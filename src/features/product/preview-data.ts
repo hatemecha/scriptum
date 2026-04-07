@@ -84,12 +84,12 @@ const silentEditorBlocks: readonly PreviewBlock[] = [
   {
     id: "blk-silent-scene-1",
     type: "scene-heading",
-    text: "INT. COFFEE SHOP - DAY",
+    text: "INT. CAFETERÍA - DÍA",
   },
   {
     id: "blk-silent-action-1",
     type: "action",
-    text: "The room is quiet except for the scrape of a spoon against porcelain.",
+    text: "La sala está en silencio, salvo el roce de una cuchara contra la porcelana.",
   },
   {
     id: "blk-silent-character-1",
@@ -99,17 +99,17 @@ const silentEditorBlocks: readonly PreviewBlock[] = [
   {
     id: "blk-silent-dialogue-1",
     type: "dialogue",
-    text: "If the page stays calm, maybe I can stay calm too.",
+    text: "Si la página se mantiene quieta, quizá yo también pueda estarlo.",
   },
   {
     id: "blk-silent-scene-2",
     type: "scene-heading",
-    text: "INT. HALLWAY - EVENING",
+    text: "INT. PASILLO - ANOCHECER",
   },
   {
     id: "blk-silent-action-2",
     type: "action",
-    text: "A strip of warm light cuts across the floor while footsteps pass behind the door.",
+    text: "Una franja de luz cálida cruza el suelo mientras pasos retumban tras la puerta.",
   },
   {
     id: "blk-silent-character-2",
@@ -119,27 +119,27 @@ const silentEditorBlocks: readonly PreviewBlock[] = [
   {
     id: "blk-silent-parenthetical-1",
     type: "parenthetical",
-    text: "softly",
+    text: "en voz baja",
   },
   {
     id: "blk-silent-dialogue-2",
     type: "dialogue",
-    text: "Leave the draft open. We will know what it needs when the noise is gone.",
+    text: "Dejá el borrador abierto. Sabremos qué necesita cuando baje el ruido.",
   },
   {
     id: "blk-silent-scene-3",
     type: "scene-heading",
-    text: "EXT. TERRACE - NIGHT",
+    text: "EXT. TERRAZA - NOCHE",
   },
   {
     id: "blk-silent-action-3",
     type: "action",
-    text: "The city below keeps moving. On the table, a single page waits under a glass of water.",
+    text: "La ciudad de abajo no se detiene. Sobre la mesa, una sola página aguarda bajo un vaso de agua.",
   },
   {
     id: "blk-silent-transition-1",
     type: "transition",
-    text: "CUT TO:",
+    text: "CORTE A:",
   },
 ] as const;
 
@@ -228,7 +228,7 @@ export const previewProjects: readonly PreviewProject[] = [
     id: "the-silent-editor",
     lastEditedLabel: "hace 2 horas",
     summary: "Un guión sobre una página que exige silencio antes de dejarse terminar.",
-    title: "The Silent Editor",
+    title: "El editor silencioso",
   }),
   createProject({
     author: "Ines Duarte",

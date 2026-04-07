@@ -81,7 +81,7 @@ const sections: PrototypeSection[] = [
       "Demos del editor bajo /playground/editor (misma semilla que preview-data). La ruta /projects/[id] solo abre proyectos reales del usuario.",
     title: "Editor y escritura",
     links: [
-      { href: routes.playgroundEditor("the-silent-editor"), label: "The Silent Editor" },
+      { href: routes.playgroundEditor("the-silent-editor"), label: "El editor silencioso" },
       { href: routes.playgroundEditor("manana-sin-mapa"), label: "Mañana sin mapa" },
       { href: routes.playgroundEditor("last-call"), label: "Last Call" },
       {

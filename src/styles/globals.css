@@ -133,6 +133,9 @@
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
 
+  /* Public marketing shell: header and page share this width (common ~1152px editorial measure). */
+  --layout-public-max-width: 72rem;
+
   /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;

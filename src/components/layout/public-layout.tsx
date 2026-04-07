@@ -49,6 +49,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         </Link>
 
         <nav className={styles.publicNav} aria-label="Navegación pública">
+          <ThemeToggle className={styles.publicThemeToggle} />
+
           {isHomeRoute || isRegisterRoute ? (
             <Link href={routes.login} className={styles.publicLink}>
               Iniciar sesión
@@ -69,8 +71,6 @@ export function PublicLayout({ children }: PublicLayoutProps) {
               Crear cuenta
             </Link>
           ) : null}
-
-          <ThemeToggle />
         </nav>
       </header>
 
