@@ -75,7 +75,7 @@
   margin: 1.15rem 0 0;
   max-width: 42ch;
   color: color-mix(in srgb, var(--color-foreground) 78%, transparent);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2.8vw, 1.1rem);
   line-height: 1.6;
 }
 
@@ -109,8 +109,11 @@
 .heroVisual {
   position: relative;
   width: 100%;
+  min-width: 0;
   aspect-ratio: 4/3.5;
   perspective: 1200px;
+  overflow: hidden;
+  border-radius: 0.75rem;
   animation: fade-in-scale 1000ms ease both;
   animation-delay: 200ms;
 }
@@ -230,8 +233,8 @@
 
 .previewGrid {
   display: grid;
-  /* Mismo orden y ancho de panel que el editor (20rem + lienzo). */
-  grid-template-columns: 20rem minmax(0, 1fr);
+  /* Panel de escenas acotado como en el editor; la primera pista no roba todo el ancho intermedio. */
+  grid-template-columns: minmax(min(100%, 20rem), 20rem) minmax(0, 1fr);
   gap: clamp(1.15rem, 2.2vw, 2.35rem);
   align-items: start;
 }
@@ -317,6 +320,11 @@
     animation: none;
     opacity: 1;
   }
+
+  .mockupMain,
+  .mockupSecondary {
+    animation: none;
+  }
 }
 
 /* Misma geometría A4 / tipografía que `.editorPaper` en workspace. */
@@ -390,8 +398,8 @@
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
   animation: surface-rise 800ms ease both;
   animation-delay: 250ms;
 }
@@ -547,16 +555,24 @@
   .paper :global(.screenplay-editor-root) {
     min-height: 24rem;
   }
-  
-  .valueList {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
 }
 
 @media (max-width: 640px) {
   .headline {
     font-size: clamp(2.4rem, 14vw, 3.6rem);
+  }
+
+  .mockupMain,
+  .mockupSecondary {
+    animation: none;
+  }
+
+  .mockupMain {
+    transform: rotateY(-3deg) rotateX(2deg) translateZ(8px);
+  }
+
+  .mockupSecondary {
+    transform: rotateY(2deg) rotateX(1deg) translateZ(20px);
   }
 
   .actions :global(.ui-button),

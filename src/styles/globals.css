@@ -289,11 +289,15 @@ html[data-theme="dark"] {
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  overflow-x: clip;
+  min-width: 0;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: clip;
+  min-width: 0;
   background:
     radial-gradient(circle at top left, var(--color-page-glow-1), transparent 32%),
     radial-gradient(circle at bottom right, var(--color-page-glow-2), transparent 28%),

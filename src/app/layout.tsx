@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Courier_Prime, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 
@@ -23,6 +23,12 @@ const scriptFont = Courier_Prime({
   variable: "--font-script",
   weight: ["400"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
