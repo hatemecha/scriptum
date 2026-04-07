@@ -165,4 +165,33 @@
   text-decoration: underline;
 }
 
-/* Misma rejilla en todos los viewports para coincidir con el PDF (desplazamiento horizontal en el lienzo). */
+@media (max-width: 768px) {
+  .screenplay-editor-root {
+    font-size: clamp(0.72rem, 2.9vw, var(--scriptum-page-body-size, 12pt));
+    line-height: 1.55;
+  }
+
+  .screenplay-block + .screenplay-block--scene-heading {
+    margin-top: 1.5em;
+  }
+
+  .screenplay-block--character {
+    margin-top: 1.7em;
+    margin-left: 18%;
+    max-width: 74%;
+  }
+
+  .screenplay-block--scene-heading + .screenplay-block--character {
+    margin-top: 1.05em;
+  }
+
+  .screenplay-block--dialogue {
+    margin-left: 8%;
+    max-width: 82%;
+  }
+
+  .screenplay-block--parenthetical {
+    margin-left: 12%;
+    max-width: 70%;
+  }
+}

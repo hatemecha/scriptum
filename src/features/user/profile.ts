@@ -38,6 +38,16 @@ export type UserAppProfile = {
   deletedAt: string | null;
 };
 
+export type UserProfileRowLike = Omit<
+  Database["public"]["Tables"]["profiles"]["Row"],
+  "preferences"
+> & {
+  preferences?: Json | null;
+};
+
+const MISSING_PREFERENCES_COLUMN_CODE = "42703";
+const MISSING_PREFERENCES_COLUMN_FRAGMENT = "preferences";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -46,7 +56,9 @@ function parsePlan(value: string): UserProfilePlan {
   return userProfilePlans.includes(value as UserProfilePlan) ? (value as UserProfilePlan) : "free";
 }
 
-export function parseUserProfilePreferences(value: Json): UserProfilePreferences {
+export function parseUserProfilePreferences(
+  value: Json | null | undefined,
+): UserProfilePreferences {
   if (!isRecord(value)) {
     return {};
   }
@@ -86,18 +98,54 @@ export function resolveEditorTipsDetailLevel(
 }
 
 /** Autoguardado al escribir desactivado salvo que el usuario lo active en Ajustes. */
-export function resolveEditorAutosaveEnabled(preferences: UserProfilePreferences | undefined): boolean {
+export function resolveEditorAutosaveEnabled(
+  preferences: UserProfilePreferences | undefined,
+): boolean {
   return preferences?.editorAutosaveEnabled === true;
 }
 
-function rowToAppProfile(row: Database["public"]["Tables"]["profiles"]["Row"]): UserAppProfile {
+export function isMissingPreferencesColumnError(error: unknown): boolean {
+  if (error == null || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as {
+    code?: string;
+    details?: string;
+    hint?: string;
+    message?: string;
+  };
+  const code = typeof candidate.code === "string" ? candidate.code : "";
+
+  if (code !== MISSING_PREFERENCES_COLUMN_CODE) {
+    return false;
+  }
+
+  const combined = [
+    typeof candidate.message === "string" ? candidate.message : "",
+    typeof candidate.details === "string" ? candidate.details : "",
+    typeof candidate.hint === "string" ? candidate.hint : "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return combined.includes(MISSING_PREFERENCES_COLUMN_FRAGMENT);
+}
+
+function createMissingPreferencesColumnError(): Error & { code: string } {
+  return Object.assign(new Error("Profile preferences are not available on this server yet."), {
+    code: MISSING_PREFERENCES_COLUMN_CODE,
+  });
+}
+
+export function mapProfileRowToAppProfile(row: UserProfileRowLike): UserAppProfile {
   return {
     id: row.id,
     email: row.email,
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     plan: parsePlan(row.plan),
-    preferences: parseUserProfilePreferences(row.preferences),
+    preferences: parseUserProfilePreferences(row.preferences ?? null),
     onboardingCompletedAt: row.onboarding_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -109,13 +157,17 @@ export async function fetchUserProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<UserAppProfile | null> {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (error || !data) {
     return null;
   }
 
-  return rowToAppProfile(data);
+  return mapProfileRowToAppProfile(data as UserProfileRowLike);
 }
 
 /**
@@ -135,19 +187,31 @@ export async function ensureUserProfile(
 
   if (!existing) {
     const now = new Date().toISOString();
-    const { data: inserted, error } = await supabase
+    const baseInsert = {
+      id: user.id,
+      email: authEmail,
+      display_name: metaName,
+      plan: "free",
+      created_at: now,
+      updated_at: now,
+    } satisfies Database["public"]["Tables"]["profiles"]["Insert"];
+
+    let { data: inserted, error } = await supabase
       .from("profiles")
       .insert({
-        id: user.id,
-        email: authEmail,
-        display_name: metaName,
-        plan: "free",
+        ...baseInsert,
         preferences: {},
-        created_at: now,
-        updated_at: now,
       })
       .select("*")
       .single();
+
+    if (isMissingPreferencesColumnError(error)) {
+      ({ data: inserted, error } = await supabase
+        .from("profiles")
+        .insert(baseInsert)
+        .select("*")
+        .single());
+    }
 
     if (error?.code === "23505") {
       return fetchUserProfile(supabase, user.id);
@@ -157,7 +221,7 @@ export async function ensureUserProfile(
       return null;
     }
 
-    return rowToAppProfile(inserted);
+    return mapProfileRowToAppProfile(inserted as UserProfileRowLike);
   }
 
   if (existing.email !== authEmail) {
@@ -169,7 +233,7 @@ export async function ensureUserProfile(
       .single();
 
     if (!error && updated) {
-      return rowToAppProfile(updated);
+      return mapProfileRowToAppProfile(updated as UserProfileRowLike);
     }
   }
 
@@ -198,7 +262,7 @@ export async function updateUserProfileDisplayName(
     return { profile: null, error: error ?? new Error("Failed to update profile.") };
   }
 
-  return { profile: rowToAppProfile(data), error: null };
+  return { profile: mapProfileRowToAppProfile(data as UserProfileRowLike), error: null };
 }
 
 export async function mergeUserProfilePreferences(
@@ -224,11 +288,19 @@ export async function mergeUserProfilePreferences(
     .select("*")
     .single();
 
-  if (error || !data) {
-    return { profile: null, error: error ?? new Error("Failed to update preferences.") };
+  if (error) {
+    if (isMissingPreferencesColumnError(error)) {
+      return { profile: current, error: createMissingPreferencesColumnError() };
+    }
+
+    return { profile: null, error };
   }
 
-  return { profile: rowToAppProfile(data), error: null };
+  if (!data) {
+    return { profile: null, error: new Error("Failed to update preferences.") };
+  }
+
+  return { profile: mapProfileRowToAppProfile(data as UserProfileRowLike), error: null };
 }
 
 export async function completeUserOnboarding(
@@ -247,7 +319,7 @@ export async function completeUserOnboarding(
     return { profile: null, error: error ?? new Error("Failed to complete onboarding.") };
   }
 
-  return { profile: rowToAppProfile(data), error: null };
+  return { profile: mapProfileRowToAppProfile(data as UserProfileRowLike), error: null };
 }
 
 export function formatProfilePlanLabel(plan: UserProfilePlan): string {

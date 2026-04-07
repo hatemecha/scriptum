@@ -26,10 +26,11 @@ import {
 import { isCollapsedCaretAtEndOfScreenplayBlock } from "@/features/editor/screenplay-caret-offset";
 import { getNextBlockTypeOnEnter } from "@/features/editor/screenplay-flow";
 
-/**
- * El guión es texto plano: bloques tipados (encabezado, personaje…), sin negrita/subrayado
- * de RichText ni pegado con estilos desde Word. Evita el subrayado “fantasma” (Ctrl+U, formato).
- */
+function getCurrentRangeSelection() {
+  const selection = $getSelection();
+  return $isRangeSelection(selection) ? selection : null;
+}
+
 export function ScreenplayPlainTextGuardPlugin(): null {
   const [editor] = useLexicalComposerContext();
 
@@ -56,17 +57,20 @@ export function ScreenplayPlainTextGuardPlugin(): null {
         const text = event.clipboardData?.getData("text/plain") ?? "";
         editor.update(() => {
           function insertPlainChunks(fragment: string): void {
-            for (const chunk of chunkStringForPaste(fragment, DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE)) {
-              const sel = $getSelection();
-              if (!$isRangeSelection(sel)) {
+            for (const chunk of chunkStringForPaste(
+              fragment,
+              DEFAULT_PLAIN_TEXT_PASTE_CHUNK_SIZE,
+            )) {
+              const selection = getCurrentRangeSelection();
+              if (!selection) {
                 return;
               }
-              sel.insertRawText(chunk);
+              selection.insertRawText(chunk);
             }
           }
 
-          let selection = $getSelection();
-          if (!$isRangeSelection(selection)) {
+          let selection = getCurrentRangeSelection();
+          if (!selection) {
             return;
           }
 
@@ -80,14 +84,19 @@ export function ScreenplayPlainTextGuardPlugin(): null {
 
           if (!selection.isCollapsed()) {
             selection.removeText();
-            const afterRemove = $getSelection();
-            if (!$isRangeSelection(afterRemove)) {
+            const afterRemove = getCurrentRangeSelection();
+            if (!afterRemove) {
               return;
             }
             selection = afterRemove;
           }
 
-          const anchorNode = selection.anchor.getNode();
+          const rangeForBlocks = getCurrentRangeSelection();
+          if (!rangeForBlocks) {
+            return;
+          }
+
+          const anchorNode = rangeForBlocks.anchor.getNode();
           const blockNode = $isScreenplayBlockNode(anchorNode)
             ? anchorNode
             : anchorNode.getParent();
@@ -96,8 +105,8 @@ export function ScreenplayPlainTextGuardPlugin(): null {
             $isScreenplayBlockNode(blockNode) &&
             isCollapsedCaretAtEndOfScreenplayBlock(
               blockNode,
-              selection.anchor.getNode(),
-              selection.anchor.offset,
+              rangeForBlocks.anchor.getNode(),
+              rangeForBlocks.anchor.offset,
             );
 
           if (!splitIntoBlocks) {
@@ -109,11 +118,11 @@ export function ScreenplayPlainTextGuardPlugin(): null {
 
           for (let i = 1; i < lines.length; i++) {
             const line = lines[i] ?? "";
-            const sel = $getSelection();
-            if (!$isRangeSelection(sel)) {
+            const currentSelection = getCurrentRangeSelection();
+            if (!currentSelection) {
               break;
             }
-            const an = sel.anchor.getNode();
+            const an = currentSelection.anchor.getNode();
             const bn = $isScreenplayBlockNode(an) ? an : an.getParent();
             if (!$isScreenplayBlockNode(bn)) {
               insertPlainChunks(`\n${lines.slice(i).join("\n")}`);
@@ -147,8 +156,7 @@ export function ScreenplayPlainTextGuardPlugin(): null {
       const indent = node.getIndent();
       const textFormat = node.getTextFormat();
       const style = node.getStyle();
-      const defaultAlign =
-        formatType === "" || formatType === "start" || formatType === "left";
+      const defaultAlign = formatType === "" || formatType === "start" || formatType === "left";
       if (defaultAlign && indent === 0 && textFormat === 0 && style === "") {
         return;
       }

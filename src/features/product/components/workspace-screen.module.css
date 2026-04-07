@@ -381,6 +381,7 @@
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   background: var(--color-background);
+  box-sizing: border-box;
 }
 
 .editorHeader {
@@ -458,7 +459,9 @@
   text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
-  transition: color var(--transition-base), background var(--transition-base);
+  transition:
+    color var(--transition-base),
+    background var(--transition-base);
 }
 
 .editorHelpGlossaryLink:hover {
@@ -503,7 +506,9 @@
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 0.14em;
-  transition: color var(--transition-base), background var(--transition-base);
+  transition:
+    color var(--transition-base),
+    background var(--transition-base);
 }
 
 .editorContextHintGlossaryTrigger:hover {
@@ -578,6 +583,70 @@
   opacity: 0.5;
   cursor: not-allowed;
   text-decoration: none;
+}
+
+.editorHelpMobileCollapsed {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.35rem clamp(1rem, 3vw, 2rem) 0.45rem;
+  border-top: 1px solid var(--color-editor-chrome-border);
+}
+
+.editorHelpMobileExpandButton {
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--color-overlay-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
+}
+
+.editorHelpMobileExpandButton:hover {
+  border-color: var(--color-accent-soft-strong);
+  color: var(--color-accent-strong);
+  background: var(--color-accent-soft);
+}
+
+.editorHelpMobileExpandButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.editorHelpCollapseLink {
+  margin: 0;
+  padding: 0.15rem 0.25rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  transition: color var(--transition-base);
+}
+
+.editorHelpCollapseLink:hover {
+  color: var(--color-accent-strong);
+}
+
+.editorHelpCollapseLink:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-focus-shadow);
 }
 
 .editorTipDotted {
@@ -893,7 +962,11 @@
 }
 
 .editorTitleInput:hover {
-  border-bottom-color: color-mix(in srgb, var(--color-muted) 50%, var(--color-editor-chrome-border) 50%);
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--color-muted) 50%,
+    var(--color-editor-chrome-border) 50%
+  );
 }
 
 .editorTitleInput:focus {
@@ -1437,6 +1510,169 @@
 
   .editorLineParenthetical {
     margin-left: 21%;
+  }
+}
+
+@media (max-width: 768px) {
+  .editorShell {
+    min-height: 100dvh;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .editorHeaderTop {
+    gap: 0.9rem;
+    padding-block: 0.55rem;
+  }
+
+  .editorHeaderLeading,
+  .editorHeaderTrailing,
+  .editorHeaderFormatTools {
+    width: 100%;
+  }
+
+  .editorHeaderIdentity {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .editorTitleRow {
+    align-items: center;
+    gap: 0.45rem 0.75rem;
+  }
+
+  .editorTitleInput {
+    max-width: none;
+  }
+
+  .editorHeaderTrailing {
+    gap: 0.65rem;
+  }
+
+  .editorHeaderFileCluster {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .editorHeaderFileCluster > * {
+    min-width: 0;
+  }
+
+  .editorHeaderFileCluster :global(.ui-button),
+  .editorHeaderQuiet {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .editorHelpDismissBar {
+    padding-top: 0.45rem;
+    gap: 0.5rem;
+  }
+
+  .editorHelpDismissMainRow,
+  .editorHelpDismissMainRowWithHint {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.6rem;
+  }
+
+  .editorContextHintInline {
+    max-width: none;
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    font-size: 0.75rem;
+  }
+
+  .editorHelpDismissActions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .editorHelpFeedback {
+    text-align: left;
+  }
+
+  .editorWorkspace,
+  .editorWorkspaceWithScenePanel,
+  .editorWorkspaceSceneCollapsed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem 1.15rem;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+
+  .editorSceneRail {
+    position: static;
+    top: auto;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+
+  .editorSceneRailButton {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-editor-chrome-border);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--color-editor-chrome-surface) 88%, transparent);
+  }
+
+  .editorSidebar {
+    gap: 0.8rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--color-editor-chrome-border);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--color-editor-chrome-surface) 92%, transparent);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .editorSidebarBody {
+    max-height: min(34vh, 18rem);
+    padding-right: 0;
+  }
+
+  .editorCanvas {
+    flex: 1 1 auto;
+    min-height: min(52vh, 28rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .editorCanvasStage {
+    align-items: stretch;
+    min-height: min(100%, 24rem);
+  }
+
+  .editorPaper {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    padding: clamp(1.15rem, 3vw, 1.35rem);
+    border-radius: 1rem;
+    background-image: none;
+  }
+
+  .editorPaper > :first-child {
+    min-height: 24rem;
+  }
+
+  .editorFooter {
+    gap: 0.5rem;
+    padding-block: 0.75rem;
+  }
+
+  .editorFooterMeta {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
   }
 }
 

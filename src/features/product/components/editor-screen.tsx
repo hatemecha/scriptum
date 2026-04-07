@@ -34,7 +34,11 @@ import {
 } from "@/features/editor/editor-derived-state";
 import { useSceneScrollSpy } from "@/features/editor/hooks/use-scene-scroll-spy";
 import { $isScreenplayBlockNode } from "@/features/editor/nodes/ScreenplayBlockNode";
-import { isScreenplayBlockType, screenplayBlockTypes, type ScreenplayBlockType } from "@/features/screenplay/blocks";
+import {
+  isScreenplayBlockType,
+  screenplayBlockTypes,
+  type ScreenplayBlockType,
+} from "@/features/screenplay/blocks";
 import { resolveScreenplayContextHint } from "@/features/screenplay/editor-help/context-hints";
 import {
   getGlossaryEntryById,
@@ -46,15 +50,19 @@ import { getTransitionAutoDetectReason } from "@/features/screenplay/editor-help
 import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
 import { buildScreenplayPdfFromBlocks } from "@/features/screenplay/screenplay-pdf";
 import { layoutScreenplayForExport } from "@/features/screenplay/screenplay-layout";
-import { clearStoredEditorDraft, readStoredEditorDraft, writeStoredEditorDraft } from "@/features/product/editor-draft";
 import {
-  getPreviewLines,
-  getPreviewProject,
-  previewUser,
-} from "@/features/product/preview-data";
+  clearStoredEditorDraft,
+  readStoredEditorDraft,
+  writeStoredEditorDraft,
+} from "@/features/product/editor-draft";
+import { getPreviewLines, getPreviewProject, previewUser } from "@/features/product/preview-data";
 import { type EditorViewState } from "@/features/product/view-states";
 import { mapPersistErrorForDisplay } from "@/features/projects/persist-user-messages";
-import { saveProjectSnapshot, type PersistedProjectEditorData, type SerializedEditorBlock } from "@/features/projects/project-snapshots";
+import {
+  saveProjectSnapshot,
+  type PersistedProjectEditorData,
+  type SerializedEditorBlock,
+} from "@/features/projects/project-snapshots";
 import {
   flushPreferenceOverlayToServer,
   mergeUserProfilePreferencesResilient,
@@ -92,6 +100,8 @@ type EditorScreenProps = {
 type SaveTone = "danger" | "muted" | "success" | "warning";
 
 type ExportModalPhase = "error" | "exporting" | "ready" | "success";
+
+const MOBILE_EDITOR_MEDIA_QUERY = "(max-width: 768px)";
 
 function sanitizeExportFileName(raw: string): string {
   const trimmed = raw.trim().toLowerCase().replace(/\s+/g, "-");
@@ -158,10 +168,7 @@ function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
     case "saved":
       return (
         <svg {...common}>
-          <path
-            fill="currentColor"
-            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
-          />
+          <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
         </svg>
       );
     case "unsaved":
@@ -175,7 +182,10 @@ function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
       );
     case "saving":
       return (
-        <svg {...common} className={cn(styles.editorSaveStatusGlyph, styles.editorSaveStatusGlyphSpin)}>
+        <svg
+          {...common}
+          className={cn(styles.editorSaveStatusGlyph, styles.editorSaveStatusGlyphSpin)}
+        >
           <path
             fill="currentColor"
             d="M12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6V4zm0-2v4l2.5-2.5L12 2z"
@@ -322,7 +332,8 @@ function getStatusPresentation({
         label: "Error al guardar",
         tone: "danger",
         icon: "error",
-        detail: "Algo falló al guardar en la simulación; en producción verías copia local y reintento.",
+        detail:
+          "Algo falló al guardar en la simulación; en producción verías copia local y reintento.",
       };
     }
 
@@ -331,7 +342,8 @@ function getStatusPresentation({
         label: "Sin guardar",
         tone: "warning",
         icon: "unsaved",
-        detail: "Hay cambios que todavía no se marcaron como guardados en este flujo de demostración.",
+        detail:
+          "Hay cambios que todavía no se marcaron como guardados en este flujo de demostración.",
       };
     }
 
@@ -340,7 +352,8 @@ function getStatusPresentation({
         label: "Sincronizando...",
         tone: "muted",
         icon: "saving",
-        detail: "Simulamos la sincronización con el servidor; el icono gira mientras dura el proceso.",
+        detail:
+          "Simulamos la sincronización con el servidor; el icono gira mientras dura el proceso.",
       };
     }
 
@@ -349,7 +362,8 @@ function getStatusPresentation({
         label: "Guardando...",
         tone: "muted",
         icon: "saving",
-        detail: "Enviando el borrador al servidor o guardándolo en la simulación. No cierres la pestaña si podés evitarlo.",
+        detail:
+          "Enviando el borrador al servidor o guardándolo en la simulación. No cierres la pestaña si podés evitarlo.",
       };
     }
 
@@ -398,7 +412,8 @@ function getStatusPresentation({
       label: "Guardando...",
       tone: "muted",
       icon: "saving",
-      detail: "Estamos enviando el guion al servidor. Si tarda, comprobá la conexión pero no hace falta perder lo ya escrito.",
+      detail:
+        "Estamos enviando el guion al servidor. Si tarda, comprobá la conexión pero no hace falta perder lo ya escrito.",
     };
   }
 
@@ -456,7 +471,10 @@ function ScenesToggleTooltipBody() {
     <>
       <strong>Lista de escenas</strong>
       <p>{scene.definition}</p>
-      <p>El control queda a la izquierda, junto al listado de escenas (como en el playground foundation).</p>
+      <p>
+        El control queda a la izquierda, junto al listado de escenas (como en el playground
+        foundation).
+      </p>
     </>
   );
 }
@@ -625,6 +643,7 @@ export function EditorScreen({
   const titlePersistTimeoutRef = useRef<number | null>(null);
   const editorAutosaveEnabledRef = useRef(initialEditorAutosaveEnabled);
   const onlineReconnectPersistTimeoutRef = useRef<number | null>(null);
+  const autoCollapsedSidebarRef = useRef(false);
 
   const [prototypeSaveState, setPrototypeSaveState] = useState<PrototypeSaveState>(
     viewState === "saving" ? "saving" : "synced",
@@ -665,6 +684,8 @@ export function EditorScreen({
   const [tipsDetailLevel, setTipsDetailLevel] = useState<EditorTipsDetailLevel>(
     initialEditorTipsDetailLevel,
   );
+  const [isMobileEditorLayout, setIsMobileEditorLayout] = useState(false);
+  const [mobileEditorHelpExpanded, setMobileEditorHelpExpanded] = useState(false);
   const tipsHoverEnabled = tipsEnabled && tipsDetailLevel === "full";
   const tipsContextStripEnabled = tipsEnabled && tipsDetailLevel === "full";
 
@@ -680,6 +701,51 @@ export function EditorScreen({
       setTipsDetailLevel(overlay.editorTipsDetailLevel);
     }
   }, [prototypeMode, userId]);
+
+  const handleSidebarVisibilityChange = useCallback((next: SetStateAction<boolean>) => {
+    autoCollapsedSidebarRef.current = false;
+    setIsSidebarVisible(next);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_EDITOR_MEDIA_QUERY);
+
+    function syncSidebarVisibility(matches: boolean) {
+      setIsMobileEditorLayout(matches);
+      if (!matches) {
+        setMobileEditorHelpExpanded(false);
+      }
+
+      if (matches) {
+        setIsSidebarVisible((current) => {
+          if (current) {
+            autoCollapsedSidebarRef.current = true;
+          }
+          return false;
+        });
+        return;
+      }
+
+      if (autoCollapsedSidebarRef.current) {
+        autoCollapsedSidebarRef.current = false;
+        setIsSidebarVisible(true);
+      }
+    }
+
+    syncSidebarVisibility(mediaQuery.matches);
+    const onChange = (event: MediaQueryListEvent) => {
+      syncSidebarVisibility(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", onChange);
+    return () => {
+      mediaQuery.removeEventListener("change", onChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (prototypeMode || typeof navigator === "undefined" || !navigator.onLine) {
@@ -713,7 +779,9 @@ export function EditorScreen({
   const [formatAutoMessage, setFormatAutoMessage] = useState<string | null>(null);
   const [activeBlockType, setActiveBlockType] = useState<ScreenplayBlockType>("action");
   const [projectTitle, setProjectTitle] = useState(initialTitle);
-  const [editorBlocks, setEditorBlocks] = useState<readonly SerializedEditorBlock[]>(initialSeed.blocks);
+  const [editorBlocks, setEditorBlocks] = useState<readonly SerializedEditorBlock[]>(
+    initialSeed.blocks,
+  );
   const [editorSeedBlocks, setEditorSeedBlocks] = useState<readonly SerializedEditorBlock[]>(
     initialSeed.blocks,
   );
@@ -1006,7 +1074,13 @@ export function EditorScreen({
         queuePrototypeSaveConfirmation();
       }
     },
-    [prototypeMode, queuePrototypeSaveConfirmation, syncFromEditorState, tipsDetailLevel, tipsEnabled],
+    [
+      prototypeMode,
+      queuePrototypeSaveConfirmation,
+      syncFromEditorState,
+      tipsDetailLevel,
+      tipsEnabled,
+    ],
   );
 
   const handleBlockTypeSelect = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
@@ -1446,7 +1520,9 @@ export function EditorScreen({
       exportDownloadUrlRef.current = url;
       setExportPhase("success");
 
-      const fileStem = sanitizeExportFileName(normalizeEditableProjectTitle(projectTitleRef.current));
+      const fileStem = sanitizeExportFileName(
+        normalizeEditableProjectTitle(projectTitleRef.current),
+      );
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = `${fileStem}.pdf`;
@@ -1517,13 +1593,17 @@ export function EditorScreen({
   const status = getStatusPresentation({
     hasUnsavedChanges,
     highlightSaved,
-    isOffline: prototypeMode ? viewState === "offline" : isBrowserOffline || viewState === "offline",
+    isOffline: prototypeMode
+      ? viewState === "offline"
+      : isBrowserOffline || viewState === "offline",
     persistState,
     prototypeMode,
     prototypeSaveState,
     viewState,
   });
-  const isOffline = prototypeMode ? viewState === "offline" : isBrowserOffline || viewState === "offline";
+  const isOffline = prototypeMode
+    ? viewState === "offline"
+    : isBrowserOffline || viewState === "offline";
   const activeEditorScene =
     editorScenes.find((scene) => scene.id === displayActiveSceneKey) ?? null;
   const exportAuthor = projectRecord?.author ?? initialSeed.author ?? previewUser.name;
@@ -1533,6 +1613,8 @@ export function EditorScreen({
   const hasContextHint =
     tipsContextStripEnabled && (formatAutoMessage != null || contextHint != null);
   const hasHelpBarLeading = tipsContextStripEnabled;
+  const showMobileHelpCollapsed =
+    tipsEnabled && isMobileEditorLayout && !mobileEditorHelpExpanded;
 
   function handleTitleChange(nextTitle: string) {
     setProjectTitle(nextTitle);
@@ -1648,7 +1730,12 @@ export function EditorScreen({
                   onChange={(event) => handleTitleChange(event.target.value)}
                   onBlur={handleTitleBlur}
                 />
-                <span className={styles.visuallyHidden} role="status" aria-live="polite" aria-atomic="true">
+                <span
+                  className={styles.visuallyHidden}
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
                   {status.label}
                 </span>
                 <HoverDelayTip
@@ -1747,83 +1834,107 @@ export function EditorScreen({
         </div>
 
         {tipsEnabled ? (
-          <div className={styles.editorHelpDismissBar}>
-            <div
-              className={cn(
-                styles.editorHelpDismissMainRow,
-                hasHelpBarLeading && styles.editorHelpDismissMainRowWithHint,
-              )}
-            >
-              {hasHelpBarLeading ? (
-                hasContextHint ? (
-                  <p className={styles.editorContextHintInline} role="status" aria-live="polite">
-                    {formatAutoMessage ?? contextHint}
-                  </p>
-                ) : (
-                  <div className={styles.editorContextHintInline} role="status" aria-live="polite">
-                    <span>Abrí el </span>
+          showMobileHelpCollapsed ? (
+            <div className={styles.editorHelpMobileCollapsed}>
+              <button
+                type="button"
+                className={styles.editorHelpMobileExpandButton}
+                aria-expanded={false}
+                onClick={() => setMobileEditorHelpExpanded(true)}
+              >
+                Ayudas del editor
+              </button>
+            </div>
+          ) : (
+            <div className={styles.editorHelpDismissBar}>
+              <div
+                className={cn(
+                  styles.editorHelpDismissMainRow,
+                  hasHelpBarLeading && styles.editorHelpDismissMainRowWithHint,
+                )}
+              >
+                {hasHelpBarLeading ? (
+                  hasContextHint ? (
+                    <p className={styles.editorContextHintInline} role="status" aria-live="polite">
+                      {formatAutoMessage ?? contextHint}
+                    </p>
+                  ) : (
+                    <div className={styles.editorContextHintInline} role="status" aria-live="polite">
+                      <span>Abrí el </span>
+                      <button
+                        type="button"
+                        className={styles.editorContextHintGlossaryTrigger}
+                        onClick={() => setIsGlossaryOpen(true)}
+                      >
+                        Glosario
+                      </button>
+                      <span>
+                        {" "}
+                        y buscá qué querés hacer (escena, diálogo, personaje, INT./EXT., transición…).
+                      </span>
+                    </div>
+                  )
+                ) : null}
+                <div className={styles.editorHelpDismissActions}>
+                  {isMobileEditorLayout ? (
                     <button
                       type="button"
-                      className={styles.editorContextHintGlossaryTrigger}
+                      className={styles.editorHelpCollapseLink}
+                      onClick={() => setMobileEditorHelpExpanded(false)}
+                    >
+                      Contraer
+                    </button>
+                  ) : null}
+                  {hasContextHint || !hasHelpBarLeading ? (
+                    <button
+                      type="button"
+                      className={styles.editorHelpGlossaryLink}
                       onClick={() => setIsGlossaryOpen(true)}
                     >
                       Glosario
                     </button>
-                    <span>
-                      {" "}
-                      y buscá qué querés hacer (escena, diálogo, personaje, INT./EXT., transición…).
-                    </span>
-                  </div>
-                )
-              ) : null}
-              <div className={styles.editorHelpDismissActions}>
-                {hasContextHint || !hasHelpBarLeading ? (
+                  ) : null}
                   <button
                     type="button"
-                    className={styles.editorHelpGlossaryLink}
-                    onClick={() => setIsGlossaryOpen(true)}
+                    className={styles.editorHelpDismissLink}
+                    disabled={isTipsPreferenceSaving}
+                    onClick={() => void handleDisableEditorTips()}
                   >
-                    Glosario
+                    {isTipsPreferenceSaving ? "Guardando…" : "Ocultar ayudas"}
                   </button>
-                ) : null}
-                <button
-                  type="button"
-                  className={styles.editorHelpDismissLink}
-                  disabled={isTipsPreferenceSaving}
-                  onClick={() => void handleDisableEditorTips()}
-                >
-                  {isTipsPreferenceSaving ? "Guardando…" : "Ocultar ayudas"}
-                </button>
+                </div>
               </div>
+              {tipsPreferenceFeedback ? (
+                <p
+                  className={cn(
+                    styles.editorHelpFeedback,
+                    tipsPreferenceFeedback.tone === "error"
+                      ? styles.editorHelpFeedbackError
+                      : styles.editorHelpFeedbackSuccess,
+                  )}
+                  role="status"
+                >
+                  {tipsPreferenceFeedback.message}
+                </p>
+              ) : null}
             </div>
-            {tipsPreferenceFeedback ? (
-              <p
-                className={cn(
-                  styles.editorHelpFeedback,
-                  tipsPreferenceFeedback.tone === "error"
-                    ? styles.editorHelpFeedbackError
-                    : styles.editorHelpFeedbackSuccess,
-                )}
-                role="status"
-              >
-                {tipsPreferenceFeedback.message}
-              </p>
-            ) : null}
-          </div>
+          )
         ) : null}
       </header>
 
       <div
         className={cn(
           styles.editorWorkspace,
-          isSidebarVisible ? styles.editorWorkspaceWithScenePanel : styles.editorWorkspaceSceneCollapsed,
+          isSidebarVisible
+            ? styles.editorWorkspaceWithScenePanel
+            : styles.editorWorkspaceSceneCollapsed,
         )}
       >
         <div className={styles.editorSceneRail} aria-label="Panel de escenas">
           <EditorSceneRailToggle
             tipsHoverEnabled={tipsHoverEnabled}
             isSidebarVisible={isSidebarVisible}
-            setIsSidebarVisible={setIsSidebarVisible}
+            setIsSidebarVisible={handleSidebarVisibilityChange}
           />
         </div>
         <aside
@@ -1850,7 +1961,7 @@ export function EditorScreen({
             <button
               type="button"
               className={styles.editorSidebarToggle}
-              onClick={() => setIsSidebarVisible(false)}
+              onClick={() => handleSidebarVisibilityChange(false)}
             >
               Cerrar
             </button>
@@ -1953,7 +2064,11 @@ export function EditorScreen({
         closeLabel="Seguir editando"
         footer={
           <>
-            <Button variant="ghost" disabled={isLeaveSaving} onClick={() => handleLeaveWithoutSaving()}>
+            <Button
+              variant="ghost"
+              disabled={isLeaveSaving}
+              onClick={() => handleLeaveWithoutSaving()}
+            >
               Salir sin guardar
             </Button>
             <Button
@@ -2003,7 +2118,11 @@ export function EditorScreen({
                 disabled={exportPhase === "exporting"}
                 onClick={() => void handleExportPdf()}
               >
-                {exportPhase === "error" ? "Reintentar" : exportPhase === "exporting" ? "Exportando…" : "Exportar PDF"}
+                {exportPhase === "error"
+                  ? "Reintentar"
+                  : exportPhase === "exporting"
+                    ? "Exportando…"
+                    : "Exportar PDF"}
               </Button>
             </>
           )

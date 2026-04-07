@@ -10,6 +10,7 @@ export const routes = {
   home: "/",
   login: "/login",
   playgroundFoundation: "/playground/foundation",
+  playgroundEditor: (projectId: string) => `/playground/editor/${encodeURIComponent(projectId)}`,
   playgroundPrototype: "/playground/prototype",
   projects: "/projects",
   register: "/register",

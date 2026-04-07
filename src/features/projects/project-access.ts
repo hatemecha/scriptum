@@ -1,20 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { isAuthenticatedEditorPrototypeProjectId } from "@/features/product/preview-data";
+import { isPreviewDemoProjectId } from "@/features/product/preview-data";
 import { type Database } from "@/lib/supabase/types";
 
 /**
  * Returns true if the signed-in user may open `/projects/[projectId]` in the editor.
- * Prototype IDs (preview fixtures) are shared demos, not other users' private rows.
- * Real projects must exist in `public.projects` with matching `owner_profile_id`.
+ * Projects must exist in `public.projects` with matching `owner_profile_id`.
+ * Demo ids from preview/playground are never accepted here (use `/playground/editor/*`).
  */
 export async function canAccessProjectEditor(
   supabase: SupabaseClient<Database>,
   userId: string,
   projectId: string,
 ): Promise<boolean> {
-  if (isAuthenticatedEditorPrototypeProjectId(projectId)) {
-    return true;
+  if (isPreviewDemoProjectId(projectId)) {
+    return false;
   }
 
   const { data, error } = await supabase

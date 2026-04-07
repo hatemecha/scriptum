@@ -38,6 +38,18 @@ export type PreviewUser = {
   plan: "Free" | "Premium";
 };
 
+/** Demo `projectId` strings for landing and `/playground/editor/*` only — not valid on `/projects/[id]`. */
+export const PREVIEW_DEMO_PROJECT_IDS = [
+  "the-silent-editor",
+  "manana-sin-mapa",
+  "last-call",
+  "sin-titulo",
+] as const;
+
+export function isPreviewDemoProjectId(projectId: string): boolean {
+  return (PREVIEW_DEMO_PROJECT_IDS as readonly string[]).includes(projectId);
+}
+
 function createInitials(name: string): string {
   return name
     .split(" ")
@@ -237,20 +249,9 @@ export const previewProjects: readonly PreviewProject[] = [
 ] as const;
 
 /**
- * Editor routes under `/projects/[id]` that are static prototypes (no `projects` row).
- * Real cloud projects use DB ownership checks instead.
+ * Resolves seeded preview data for marketing and playground editor demos.
+ * Unknown ids still get a synthetic empty project (playground “nuevo” states).
  */
-export const authenticatedEditorPrototypeProjectIds: readonly string[] = [
-  ...previewProjects.map((project) => project.id),
-  "sin-titulo",
-];
-
-const authenticatedEditorPrototypeIdSet = new Set(authenticatedEditorPrototypeProjectIds);
-
-export function isAuthenticatedEditorPrototypeProjectId(projectId: string): boolean {
-  return authenticatedEditorPrototypeIdSet.has(projectId);
-}
-
 export function getPreviewProject(projectId: string): PreviewProject {
   const matchingProject = previewProjects.find((project) => project.id === projectId);
 

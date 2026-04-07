@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { type Database, type Json } from "@/lib/supabase/types";
 
 import {
+  isMissingPreferencesColumnError,
   mergeUserProfilePreferences,
   parseUserProfilePreferences,
   type UserProfilePreferences,
@@ -104,10 +105,16 @@ export function isLikelyNetworkFailure(error: unknown, browserReportsOnline: boo
 }
 
 const OFFLINE_SUCCESS_HINT =
-  "Cambio aplicado en este dispositivo; se sincronizará con tu cuenta cuando haya conexión.";
+  "Cambio aplicado en este dispositivo; se sincronizará con tu cuenta cuando el servidor esté listo.";
 
 export function offlinePreferenceSuccessMessage(): string {
   return OFFLINE_SUCCESS_HINT;
+}
+
+function shouldKeepPreferencePatchLocally(error: unknown, browserReportsOnline: boolean): boolean {
+  return (
+    isLikelyNetworkFailure(error, browserReportsOnline) || isMissingPreferencesColumnError(error)
+  );
 }
 
 /**
@@ -131,7 +138,7 @@ export async function mergeUserProfilePreferencesResilient(
       return { appliedLocallyOnly: false, error: null };
     }
 
-    if (isLikelyNetworkFailure(error, online)) {
+    if (shouldKeepPreferencePatchLocally(error, online)) {
       mergePreferenceOverlay(userId, patch);
       return { appliedLocallyOnly: true, error: null };
     }
@@ -139,7 +146,7 @@ export async function mergeUserProfilePreferencesResilient(
     return { appliedLocallyOnly: false, error };
   } catch (caught) {
     const err = caught instanceof Error ? caught : new Error(String(caught));
-    if (isLikelyNetworkFailure(err, online)) {
+    if (shouldKeepPreferencePatchLocally(err, online)) {
       mergePreferenceOverlay(userId, patch);
       return { appliedLocallyOnly: true, error: null };
     }
