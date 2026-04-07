@@ -40,7 +40,10 @@ function normalizeOptionalPublicSupabaseUrl(): string | undefined {
 }
 
 function normalizeOptionalPublicSupabasePublishableKey(): string | undefined {
-  return normalizeOptionalString(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+  return (
+    normalizeOptionalString(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ??
+    normalizeOptionalString(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY)
+  );
 }
 
 export const appEnvironment = {

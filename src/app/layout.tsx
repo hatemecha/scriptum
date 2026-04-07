@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import type { Metadata } from "next";
-import { Courier_Prime, Manrope } from "next/font/google";
+import { Courier_Prime, Manrope, Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AppProviders } from "@/app/providers";
@@ -9,6 +9,9 @@ import { DEFAULT_THEME_PREFERENCE, THEME_COOKIE_NAME, isThemePreference } from "
 
 import "@/styles/globals.css";
 import "@/features/editor/editor-blocks.css";
+import { cn } from "*/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const uiFont = Manrope({
   preload: false,
@@ -51,7 +54,7 @@ export default async function RootLayout({
     <html
       lang="es"
       data-theme={initialTheme}
-      className={`${uiFont.variable} ${scriptFont.variable}`}
+      className={cn(uiFont.variable, scriptFont.variable, "font-sans", geist.variable)}
     >
       <body className="app-body">
         <AppProviders initialTheme={initialTheme}>{children}</AppProviders>
