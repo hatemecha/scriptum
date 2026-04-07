@@ -9,7 +9,7 @@ import {
   SCREENPLAY_GLOSSARY_ENTRIES,
   filterGlossaryEntriesBySearch,
 } from "@/features/screenplay/editor-help/glossary";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 
 import styles from "./editor-glossary-modal.module.css";
 

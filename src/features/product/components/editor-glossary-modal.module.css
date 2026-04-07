@@ -17,7 +17,7 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .searchField :global(.ui-input) {
@@ -45,7 +45,7 @@
   font-family: var(--font-ui);
   font-size: 0.88rem;
   line-height: 1.5;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .meta {
@@ -55,7 +55,7 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .list {
@@ -75,7 +75,7 @@
   margin: 0 0 1.1rem;
   font-size: 0.92rem;
   line-height: 1.55;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .definitionText {
@@ -98,7 +98,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .scriptSamplePaper {
@@ -160,7 +160,7 @@
   text-align: center;
   font-style: italic;
   font-weight: 500;
-  color: color-mix(in srgb, var(--color-foreground) 88%, var(--color-muted) 12%);
+  color: color-mix(in srgb, var(--color-foreground) 88%, var(--color-fg-muted) 12%);
   font-size: 0.74rem;
 }
 
@@ -180,7 +180,7 @@
   border-top: 1px solid var(--color-overlay-border);
   font-size: 0.82rem;
   line-height: 1.55;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .footer a {

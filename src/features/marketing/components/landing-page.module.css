@@ -5,7 +5,7 @@
 
 .kicker {
   margin: 0;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -62,7 +62,7 @@
   align-items: center;
   gap: 0.45rem 0.65rem;
   margin: 1.6rem 0 0;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -73,7 +73,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+  background: color-mix(in srgb, var(--color-fg-muted) 55%, transparent);
 }
 
 .actions {
@@ -303,7 +303,7 @@
 }
 
 .sceneIndex {
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -326,7 +326,7 @@
   margin-top: 0.5rem;
   padding-top: 0.85rem;
   border-top: 1px solid var(--color-border-subtle);
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.85rem;
   line-height: 1.5;
 }
@@ -422,11 +422,11 @@
 }
 
 .closingLink {
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.92rem;
   font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--color-muted) 45%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--color-fg-muted) 45%, transparent);
   text-underline-offset: 0.2em;
   transition: color var(--transition-base);
 }
@@ -437,7 +437,7 @@
 
 .footer {
   padding-top: 1.25rem;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-size: 0.85rem;
 }
 

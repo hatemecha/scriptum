@@ -16,7 +16,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .title {
@@ -30,7 +30,7 @@
   margin: 0 0 var(--space-6);
   font-size: 0.95rem;
   line-height: 1.55;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .section {
@@ -52,7 +52,7 @@
   margin: 0 0 var(--space-4);
   font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
 }
 
 .list {
@@ -87,13 +87,13 @@
 
 .hint {
   font-size: 0.8rem;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-family: var(--font-script);
 }
 
 .footerNote {
   margin: var(--space-6) 0 0;
   font-size: 0.8rem;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   line-height: 1.5;
 }

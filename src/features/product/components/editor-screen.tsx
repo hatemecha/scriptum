@@ -71,7 +71,7 @@ import {
 } from "@/features/user/local-profile-preferences-overlay";
 import { type EditorTipsDetailLevel } from "@/features/user/profile";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 
 import { EditorGlossaryModal } from "./editor-glossary-modal";
 import { StatePanel } from "./state-panel";
@@ -701,6 +701,41 @@ export function EditorScreen({
       setTipsDetailLevel(overlay.editorTipsDetailLevel);
     }
   }, [prototypeMode, userId]);
+
+  useEffect(() => {
+    function closeEditorOverlays() {
+      setLeaveTargetHref(null);
+      setLeaveModalError(null);
+      setIsLeaveSaving(false);
+      setIsExportModalOpen(false);
+      setExportPhase("ready");
+      setIsGlossaryOpen(false);
+      if (exportDownloadUrlRef.current) {
+        URL.revokeObjectURL(exportDownloadUrlRef.current);
+        exportDownloadUrlRef.current = null;
+      }
+    }
+
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) {
+        closeEditorOverlays();
+      }
+    }
+
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (exportDownloadUrlRef.current) {
+        URL.revokeObjectURL(exportDownloadUrlRef.current);
+        exportDownloadUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const handleSidebarVisibilityChange = useCallback((next: SetStateAction<boolean>) => {
     autoCollapsedSidebarRef.current = false;

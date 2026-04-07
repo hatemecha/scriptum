@@ -3,7 +3,7 @@
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 
 import styles from "./hover-delay-tip.module.css";
 

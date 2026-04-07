@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 
 import { routes } from "@/config/routes";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 
 import styles from "./shells.module.css";
 

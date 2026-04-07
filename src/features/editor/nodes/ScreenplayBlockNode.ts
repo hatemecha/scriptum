@@ -4,7 +4,6 @@ import {
   type DOMConversionOutput,
   type DOMExportOutput,
   type EditorConfig,
-  type LexicalEditor,
   type LexicalNode,
   type NodeKey,
   type RangeSelection,

@@ -11,7 +11,7 @@ const PrototypeMap = dynamic(
         style={{
           fontFamily: "var(--font-ui)",
           padding: "var(--space-6)",
-          color: "var(--color-muted)",
+          color: "var(--color-fg-muted)",
         }}
       >
         Cargando mapa del prototipo...

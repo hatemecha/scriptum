@@ -214,7 +214,7 @@ export async function updateProjectMetadata(
 
     const { data, error } = await supabase
       .from("projects")
-      .update(patch)
+      .update(patch as Database["public"]["Tables"]["projects"]["Update"])
       .eq("id", projectId)
       .is("deleted_at", null)
       .select("*")

@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes } from "react";
 import { forwardRef, useId } from "react";
 
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
   error?: string;
@@ -46,7 +46,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {...props}
         id={inputId}
         required={required}
-        className={cn("ui-input", className)}
+        className={cn(
+          "ui-input focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]",
+          className,
+        )}
         data-invalid={Boolean(error)}
         aria-describedby={describedBy}
         aria-invalid={Boolean(error)}

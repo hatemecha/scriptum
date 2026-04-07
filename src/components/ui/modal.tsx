@@ -1,10 +1,11 @@
 "use client";
 
-import type { MouseEvent, ReactNode } from "react";
-import { useEffect, useId, useRef } from "react";
+import { Dialog } from "@base-ui/react/dialog";
+import type { ReactNode } from "react";
+import { useId } from "react";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ModalProps = {
   children: ReactNode;
@@ -17,14 +18,6 @@ type ModalProps = {
   open: boolean;
   title: string;
 };
-
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => !element.hasAttribute("disabled"));
-}
 
 export function Modal({
   children,
@@ -39,112 +32,58 @@ export function Modal({
 }: ModalProps) {
   const descriptionId = useId();
   const titleId = useId();
-  const surfaceRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open || !surfaceRef.current) {
-      return undefined;
-    }
-
-    const surfaceElement = surfaceRef.current;
-    const previouslyFocusedElement =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const originalOverflow = document.body.style.overflow;
-    const focusableElements = getFocusableElements(surfaceElement);
-    const firstFocusableElement = focusableElements[0];
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onOpenChange(false);
-        return;
-      }
-
-      if (event.key !== "Tab") {
-        return;
-      }
-
-      const availableFocusableElements = getFocusableElements(surfaceElement);
-
-      if (availableFocusableElements.length === 0) {
-        event.preventDefault();
-        return;
-      }
-
-      const firstElement = availableFocusableElements[0];
-      const lastElement = availableFocusableElements[availableFocusableElements.length - 1];
-      const activeElement =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-      if (event.shiftKey && activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      } else if (!event.shiftKey && activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    }
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleKeyDown);
-    window.requestAnimationFrame(() => {
-      (firstFocusableElement ?? surfaceElement).focus();
-    });
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocusedElement?.focus();
-    };
-  }, [onOpenChange, open]);
-
-  if (!open) {
-    return null;
-  }
-
-  function handleBackdropMouseDown(event: MouseEvent<HTMLDivElement>) {
-    if (event.target === event.currentTarget) {
-      onOpenChange(false);
-    }
-  }
 
   return (
-    <div className="ui-modal" role="presentation" onMouseDown={handleBackdropMouseDown}>
-      <div
-        ref={surfaceRef}
-        className={cn("ui-modal__surface", className)}
-        role="dialog"
-        tabIndex={-1}
-        aria-describedby={description ? descriptionId : undefined}
-        aria-labelledby={titleId}
-        aria-modal="true"
-      >
-        <div className="ui-modal__header">
-          <div className="ui-modal__heading">
-            {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
-            <h2 className="ui-modal__title" id={titleId}>
-              {title}
-            </h2>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(nextOpen: boolean) => {
+        onOpenChange(nextOpen);
+      }}
+      modal
+    >
+      {open ? (
+        <Dialog.Portal>
+          <Dialog.Viewport className="fixed inset-0 isolate z-[1000] grid place-items-center p-[var(--space-5)]">
+            <Dialog.Backdrop className="fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]" />
+            <Dialog.Popup
+              className={cn(
+                "ui-modal__surface relative z-[1] max-h-[min(100dvh-2rem,48rem)] overflow-y-auto",
+                className,
+              )}
+              initialFocus
+              aria-labelledby={titleId}
+              aria-describedby={description ? descriptionId : undefined}
+            >
+              <div className="ui-modal__header">
+                <div className="ui-modal__heading">
+                  {eyebrow ? <p className="section-eyebrow">{eyebrow}</p> : null}
 
-            {description ? (
-              <p className="ui-modal__description" id={descriptionId}>
-                {description}
-              </p>
-            ) : null}
-          </div>
+                  <Dialog.Title className="ui-modal__title" id={titleId}>
+                    {title}
+                  </Dialog.Title>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            aria-label={closeLabel}
-          >
-            Cerrar
-          </Button>
-        </div>
+                  {description ? (
+                    <Dialog.Description className="ui-modal__description" id={descriptionId}>
+                      {description}
+                    </Dialog.Description>
+                  ) : null}
+                </div>
 
-        <div className="ui-modal__content">{children}</div>
-        {footer ? <div className="ui-modal__footer">{footer}</div> : null}
-      </div>
-    </div>
+                <Dialog.Close
+                  type="button"
+                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                  aria-label={closeLabel}
+                >
+                  Cerrar
+                </Dialog.Close>
+              </div>
+
+              <div className="ui-modal__content">{children}</div>
+              {footer ? <div className="ui-modal__footer">{footer}</div> : null}
+            </Dialog.Popup>
+          </Dialog.Viewport>
+        </Dialog.Portal>
+      ) : null}
+    </Dialog.Root>
   );
 }

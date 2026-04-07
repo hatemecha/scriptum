@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@/components/theme/theme-provider";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/utils";
 import type { ThemePreference } from "@/lib/theme";
 
 type ThemeToggleProps = {

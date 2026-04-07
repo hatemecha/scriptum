@@ -33,7 +33,7 @@
 
 .popover p {
   margin: 0;
-  color: var(--color-muted);
+  color: var(--color-fg-muted);
   font-weight: 500;
   text-transform: none;
   letter-spacing: 0.02em;
