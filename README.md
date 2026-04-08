@@ -11,11 +11,12 @@ Scriptum is a screenplay writing tool focused on being simple, fast, minimal, an
 - Next.js 16 with App Router
 - React 19
 - TypeScript 5 in strict mode
-- Lexical as the future editor engine
+- Lexical as the editor engine
 - ESLint 9 with `eslint-config-next`
 - Prettier 3
 - npm as the package manager
-- Future-compatible architecture for Supabase and Stripe integrations
+- Supabase Auth + Postgres integration
+- Stripe planned for a later phase
 
 ## Getting Started
 
@@ -55,11 +56,13 @@ npm run dev
 
 ## Environment Variables
 
-The initial setup only requires the public application metadata used by the app shell:
+The app shell requires the public application metadata, and authenticated flows require Supabase:
 
 ```env
 NEXT_PUBLIC_APP_NAME=Scriptum
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Environment rules:
@@ -69,7 +72,7 @@ Environment rules:
 - Add every new variable to `.env.example`.
 - Centralize environment reads in `src/config/env.ts`.
 
-Planned future integration names:
+Current and planned integration names:
 
 - Supabase: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - Stripe: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`

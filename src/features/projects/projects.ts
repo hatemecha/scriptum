@@ -64,7 +64,7 @@ function safeRowStatus(value: ProjectRow["status"]): ProjectStatus {
   }
 }
 
-function rowToProject(row: ProjectRow): UserProject {
+export function rowToProject(row: ProjectRow): UserProject {
   return {
     id: row.id,
     ownerProfileId: row.owner_profile_id,

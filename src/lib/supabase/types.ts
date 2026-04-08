@@ -142,6 +142,24 @@ export type Database = {
         Args: { p_patch: Json };
         Returns: Database["public"]["Tables"]["profiles"]["Row"];
       };
+      save_project_snapshot: {
+        Args: {
+          p_project_id: string;
+          p_snapshot_id: string;
+          p_document_id: string;
+          p_revision: number;
+          p_snapshot_kind: string;
+          p_document_schema_version: number;
+          p_document_data: Json;
+          p_title: string;
+          p_author: string | null;
+          p_description: string | null;
+          p_language: string;
+          p_status: string;
+          p_saved_at: string;
+        };
+        Returns: Database["public"]["Tables"]["projects"]["Row"];
+      };
       soft_delete_project: {
         Args: { p_project_id: string };
         Returns: undefined;

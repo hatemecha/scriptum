@@ -105,7 +105,7 @@ export function LandingPage() {
       <section className={styles.preview} aria-labelledby="preview-heading">
         <div className={styles.previewLead}>
           <div>
-            <p className={styles.kicker}>Así se ve adentro</p>
+            {/* <p className={styles.kicker}>Así se ve adentro</p> */}
             <h2 id="preview-heading" className={styles.sectionTitle}>
               La escritura como prioridad. El resto, en segundo plano.
             </h2>

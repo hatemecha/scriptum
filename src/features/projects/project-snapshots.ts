@@ -19,7 +19,7 @@ import {
   type ProjectLanguage,
   type ProjectStatus,
 } from "./project-contract";
-import { getProject, type UserProject } from "./projects";
+import { getProject, rowToProject, type UserProject } from "./projects";
 
 type SnapshotRow = Database["public"]["Tables"]["document_snapshots"]["Row"];
 
@@ -266,20 +266,24 @@ export async function saveProjectSnapshot(
       }
 
       const snapshotId = createSnapshotId();
-      const { error: insertError } = await supabase.from("document_snapshots").insert({
-        id: snapshotId,
-        project_id: input.project.id,
-        owner_profile_id: input.project.ownerProfileId,
-        document_id: document.document.id,
-        revision: document.document.revision,
-        snapshot_kind: input.snapshotKind ?? "autosave",
-        document_schema_version: document.schema.version,
-        document_data: document as unknown as Json,
-        created_at: now,
+      const { data: updatedProjectRow, error: saveError } = await supabase.rpc("save_project_snapshot", {
+        p_author: author,
+        p_description: description,
+        p_document_data: document as unknown as Json,
+        p_document_id: document.document.id,
+        p_document_schema_version: document.schema.version,
+        p_language: language,
+        p_project_id: input.project.id,
+        p_revision: document.document.revision,
+        p_saved_at: now,
+        p_snapshot_id: snapshotId,
+        p_snapshot_kind: input.snapshotKind ?? "autosave",
+        p_status: status,
+        p_title: title,
       });
 
-      if (insertError) {
-        if (isSnapshotRevisionConflictError(insertError) && attempt < maxAttempts - 1) {
+      if (saveError) {
+        if (isSnapshotRevisionConflictError(saveError) && attempt < maxAttempts - 1) {
           const maxRev = await fetchMaxSnapshotRevision(supabase, input.project.id);
           if (maxRev != null) {
             revision = Math.max(input.project.latestRevision, maxRev) + 1;
@@ -289,53 +293,20 @@ export async function saveProjectSnapshot(
           continue;
         }
 
-        return { data: null, error: insertError };
-      }
-
-      const { data: updatedProjectRow, error: updateError } = await supabase
-        .from("projects")
-        .update({
-          author,
-          current_snapshot_id: snapshotId,
-          description,
-          language,
-          last_edited_at: now,
-          latest_revision: document.document.revision,
-          status,
-          title,
-          updated_at: now,
-        })
-        .eq("id", input.project.id)
-        .is("deleted_at", null)
-        .select("*")
-        .single();
-
-      if (updateError) {
-        return { data: null, error: updateError };
+        return { data: null, error: saveError };
       }
 
       return {
         data: rowToEditorData(
-          {
-            ...input.project,
-            author,
-            currentSnapshotId: updatedProjectRow.current_snapshot_id,
-            description,
-            language: normalizeProjectLanguage(updatedProjectRow.language),
-            lastEditedAt: updatedProjectRow.last_edited_at,
-            latestRevision: updatedProjectRow.latest_revision,
-            status,
-            title,
-            updatedAt: updatedProjectRow.updated_at,
-          },
+          rowToProject(updatedProjectRow),
           {
             created_at: now,
             document_data: document as unknown as Json,
             document_id: document.document.id,
             document_schema_version: document.schema.version,
-            id: snapshotId,
-            owner_profile_id: input.project.ownerProfileId,
-            project_id: input.project.id,
+            id: updatedProjectRow.current_snapshot_id ?? snapshotId,
+            owner_profile_id: updatedProjectRow.owner_profile_id,
+            project_id: updatedProjectRow.id,
             revision: document.document.revision,
             snapshot_kind: input.snapshotKind ?? "autosave",
           },
