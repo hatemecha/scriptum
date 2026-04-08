@@ -158,6 +158,13 @@ type EditorSeed = {
   title: string;
 };
 
+type EditorFindDomMatch = {
+  blockElement: HTMLElement | null;
+};
+
+const EDITOR_FIND_MATCH_ATTR = "data-editor-find-match";
+const EDITOR_FIND_ACTIVE_ATTR = "data-editor-find-active";
+
 function getStatusClassName(tone: SaveTone): string {
   switch (tone) {
     case "danger":
@@ -180,6 +187,98 @@ function SaveStatusTooltipBody({ label, detail }: { label: string; detail: strin
   );
 }
 
+function clearEditorFindMarkers(root: ParentNode | null | undefined): void {
+  if (!root) {
+    return;
+  }
+
+  for (const element of root.querySelectorAll<HTMLElement>(
+    `[${EDITOR_FIND_MATCH_ATTR}], [${EDITOR_FIND_ACTIVE_ATTR}]`,
+  )) {
+    element.removeAttribute(EDITOR_FIND_MATCH_ATTR);
+    element.removeAttribute(EDITOR_FIND_ACTIVE_ATTR);
+  }
+}
+
+function updateEditorFindMarkers(
+  root: ParentNode,
+  matches: readonly EditorFindDomMatch[],
+  activeIndex: number,
+): void {
+  clearEditorFindMarkers(root);
+
+  if (matches.length === 0) {
+    return;
+  }
+
+  const matchedBlocks = new Set<HTMLElement>();
+  for (const match of matches) {
+    const blockElement = match.blockElement;
+    if (!blockElement || matchedBlocks.has(blockElement)) {
+      continue;
+    }
+
+    matchedBlocks.add(blockElement);
+    blockElement.setAttribute(EDITOR_FIND_MATCH_ATTR, "true");
+  }
+
+  matches[activeIndex]?.blockElement?.setAttribute(EDITOR_FIND_ACTIVE_ATTR, "true");
+}
+
+function collectEditorFindMatches(root: HTMLElement, rawQuery: string): EditorFindDomMatch[] {
+  const query = rawQuery.trim().toLocaleLowerCase();
+
+  if (query.length === 0) {
+    return [];
+  }
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const text = node.textContent ?? "";
+      if (text.trim().length === 0) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const matches: EditorFindDomMatch[] = [];
+  let current = walker.nextNode();
+
+  while (current) {
+    const textNode = current as Text;
+    const content = textNode.textContent ?? "";
+    const haystack = content.toLocaleLowerCase();
+    const blockElement = textNode.parentElement?.closest(
+      "[data-screenplay-block-type]",
+    ) as HTMLElement | null;
+
+    if (!blockElement) {
+      current = walker.nextNode();
+      continue;
+    }
+
+    let searchStart = 0;
+
+    while (searchStart <= haystack.length - query.length) {
+      const start = haystack.indexOf(query, searchStart);
+      if (start === -1) {
+        break;
+      }
+
+      matches.push({
+        blockElement,
+      });
+
+      searchStart = start + Math.max(query.length, 1);
+    }
+
+    current = walker.nextNode();
+  }
+
+  return matches;
+}
+
 function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
   const common = {
     className: styles.editorSaveStatusGlyph,
@@ -191,18 +290,29 @@ function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
 
   switch (kind) {
     case "saved":
-      return (
-        <svg {...common}>
-          <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-        </svg>
-      );
     case "unsaved":
+    case "offline":
+    case "local":
+    case "error":
       return (
         <svg {...common}>
           <path
-            fill="currentColor"
-            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            d="M5.5 4.5h9.2l3.8 3.8v11.2H5.5z"
           />
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            d="M8 4.5v5h7v-5M8.5 18h7"
+          />
+          <circle className={styles.editorSaveStatusDot} cx="18.2" cy="18.2" r="3.2" />
         </svg>
       );
     case "saving":
@@ -212,36 +322,22 @@ function SaveStatusGlyph({ kind }: { kind: SaveStatusIconKind }) {
           className={cn(styles.editorSaveStatusGlyph, styles.editorSaveStatusGlyphSpin)}
         >
           <path
-            fill="currentColor"
-            d="M12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6V4zm0-2v4l2.5-2.5L12 2z"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            d="M5.5 4.5h9.2l3.8 3.8v11.2H5.5z"
           />
-        </svg>
-      );
-    case "offline":
-      return (
-        <svg {...common}>
           <path
-            fill="currentColor"
-            d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.65 1.65A5.5 5.5 0 0 1 12 6c3.04 0 5.5 2.46 5.5 5.5v.5h1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H12c-2.21 0-4-1.79-4-4 0-1.1.45-2.1 1.17-2.83L3 4.41 1.59 5.83 18.17 22.41 19.59 21l-4.1-4.1zM12 18h8.17l-8.17-8.17V18z"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            d="M8 4.5v5h7v-5M8.5 18h7"
           />
-        </svg>
-      );
-    case "local":
-      return (
-        <svg {...common}>
-          <path
-            fill="currentColor"
-            d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2zm0 2 2 2h8v10H4V6h6V4zm2 8v2h8v-2h-8zm0-4v2h5V8h-5z"
-          />
-        </svg>
-      );
-    case "error":
-      return (
-        <svg {...common}>
-          <path
-            fill="currentColor"
-            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-          />
+          <circle className={styles.editorSaveStatusDot} cx="18.2" cy="18.2" r="3.2" />
         </svg>
       );
     default: {
@@ -275,9 +371,10 @@ function isLikelyTransientPersistError(error: Error | null | undefined): boolean
     return false;
   }
   const message = error.message.toLowerCase();
-  const code = "code" in error && typeof (error as { code?: string }).code === "string"
-    ? (error as { code: string }).code
-    : "";
+  const code =
+    "code" in error && typeof (error as { code?: string }).code === "string"
+      ? (error as { code: string }).code
+      : "";
   return (
     error.name === "TypeError" ||
     code === "401" ||
@@ -569,21 +666,24 @@ function EditorLoadingScreen({ title }: { title: string }) {
       <header className={styles.editorHeader}>
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
-            <div className={styles.editorHeaderIdentity}>
-              <Link href={routes.projects} className={styles.editorBack}>
-                ← Proyectos
-              </Link>
-              <div className={styles.editorTitleRow}>
-                <Skeleton height="1.5rem" width="min(16rem, 52vw)" radius="0.35rem" />
-                <Skeleton height="2.25rem" width="2.25rem" radius="0.65rem" />
-              </div>
+            <Link href={routes.projects} className={styles.editorBack}>
+              ← Proyectos
+            </Link>
+          </div>
+
+          <div className={styles.editorHeaderCenter}>
+            <div className={styles.editorTitleRow}>
+              <span className={styles.editorTitleBalanceSpacer} aria-hidden="true" />
+              <Skeleton height="1.45rem" width="min(16rem, 52vw)" radius="0.35rem" />
+              <Skeleton height="1rem" width="1rem" radius="999px" />
             </div>
           </div>
 
           <div className={styles.editorHeaderTrailing}>
             <div className={styles.editorHeaderFileCluster}>
-              <Skeleton height="2.25rem" width="4.5rem" radius="0.65rem" />
-              <Skeleton height="2.25rem" width="5.5rem" radius="0.75rem" />
+              <Skeleton height="1rem" width="4.25rem" radius="999px" />
+              <Skeleton height="1rem" width="4.5rem" radius="999px" />
+              <Skeleton height="1rem" width="4.75rem" radius="999px" />
             </div>
           </div>
         </div>
@@ -621,7 +721,7 @@ function EditorLoadingScreen({ title }: { title: string }) {
           <div className={styles.editorWorkspaceSideSlot}>
             <aside className={styles.editorMetaSidebar}>
               <div className={styles.editorMetaSidebarHeader}>
-                <p className="foundation-kicker">Datos del guion</p>
+                <p className={styles.editorSidebarKicker}>Datos del guion</p>
               </div>
               <div className={styles.editorMetaSidebarBody}>
                 <div className={styles.skeletonList}>
@@ -682,6 +782,8 @@ export function EditorScreen({
   const lexicalEditorRef = useRef<LexicalEditor | null>(null);
   const editorCanvasRef = useRef<HTMLElement | null>(null);
   const editorFocusRootRef = useRef<HTMLElement | null>(null);
+  const findInputRef = useRef<HTMLInputElement | null>(null);
+  const editorFindMatchesRef = useRef<readonly EditorFindDomMatch[]>([]);
   const activeSceneNavButtonRef = useRef<HTMLButtonElement | null>(null);
   const prevBlocksForFormatHintRef = useRef<readonly SerializedBlock[] | null>(null);
   const contextHintDebounceRef = useRef<number | null>(null);
@@ -720,6 +822,10 @@ export function EditorScreen({
     estimateScreenplayPageCount(initialSeed.blocks),
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isFindModalOpen, setIsFindModalOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState("");
+  const [findMatchCount, setFindMatchCount] = useState(0);
+  const [activeFindIndex, setActiveFindIndex] = useState(0);
   const [exportPhase, setExportPhase] = useState<ExportModalPhase>("ready");
   const [exportLayoutPages, setExportLayoutPages] = useState(estimatedPages);
   const exportDownloadUrlRef = useRef<string | null>(null);
@@ -996,7 +1102,10 @@ export function EditorScreen({
     }
 
     const normalizedTitle = normalizeEditableProjectTitle(projectTitleRef.current);
-    const nextSignature = persistComparisonSignature(projectTitleRef.current, editorBlocksRef.current);
+    const nextSignature = persistComparisonSignature(
+      projectTitleRef.current,
+      editorBlocksRef.current,
+    );
     const requestedTitle = normalizedTitle;
 
     if (nextSignature === lastPersistedSignatureRef.current) {
@@ -1354,6 +1463,44 @@ export function EditorScreen({
     });
   }, []);
 
+  const closeFindBar = useCallback(() => {
+    setIsFindModalOpen(false);
+    setFindQuery("");
+    setFindMatchCount(0);
+    setActiveFindIndex(0);
+    editorFindMatchesRef.current = [];
+    clearEditorFindMarkers(editorFocusRootRef.current);
+  }, []);
+
+  const scrollToActiveFindMatch = useCallback((index: number) => {
+    const match = editorFindMatchesRef.current[index];
+    if (!match) {
+      return;
+    }
+
+    match.blockElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
+  const cycleFindMatch = useCallback(
+    (direction: 1 | -1) => {
+      const total = editorFindMatchesRef.current.length;
+      if (total === 0) {
+        return;
+      }
+
+      setActiveFindIndex((current) => {
+        const next = (current + direction + total) % total;
+        const focusRoot = editorFocusRootRef.current;
+        if (focusRoot) {
+          updateEditorFindMarkers(focusRoot, editorFindMatchesRef.current, next);
+        }
+        scrollToActiveFindMatch(next);
+        return next;
+      });
+    },
+    [scrollToActiveFindMatch],
+  );
+
   useEffect(() => {
     const focusRoot = editorFocusRootRef.current;
     if (!focusRoot) {
@@ -1424,6 +1571,94 @@ export function EditorScreen({
   }, [projectTitle]);
 
   useEffect(() => {
+    function handleEditorShortcuts(event: KeyboardEvent): void {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f" && !event.shiftKey) {
+        event.preventDefault();
+        if (!isFindModalOpen) {
+          setIsFindModalOpen(true);
+        } else {
+          window.setTimeout(() => {
+            findInputRef.current?.focus();
+            findInputRef.current?.select();
+          }, 0);
+        }
+        return;
+      }
+
+      if (prototypeMode) {
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && !event.shiftKey) {
+        event.preventDefault();
+        if (!projectRecordRef.current || isSavingRef.current) {
+          return;
+        }
+
+        void persistLatestDraftRef.current();
+      }
+    }
+
+    window.addEventListener("keydown", handleEditorShortcuts);
+    return () => {
+      window.removeEventListener("keydown", handleEditorShortcuts);
+    };
+  }, [isFindModalOpen, prototypeMode]);
+
+  useEffect(() => {
+    if (!isFindModalOpen) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      findInputRef.current?.focus();
+      findInputRef.current?.select();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isFindModalOpen]);
+
+  useEffect(() => {
+    const focusRoot = editorFocusRootRef.current;
+
+    if (!isFindModalOpen) {
+      clearEditorFindMarkers(focusRoot);
+      editorFindMatchesRef.current = [];
+      return;
+    }
+
+    if (!focusRoot) {
+      editorFindMatchesRef.current = [];
+      setFindMatchCount(0);
+      setActiveFindIndex(0);
+      return;
+    }
+
+    const contentRoot =
+      (focusRoot.querySelector("[contenteditable='true']") as HTMLElement | null) ?? focusRoot;
+    const matches = collectEditorFindMatches(contentRoot, findQuery);
+
+    editorFindMatchesRef.current = matches;
+    setFindMatchCount(matches.length);
+
+    if (matches.length === 0) {
+      setActiveFindIndex(0);
+      clearEditorFindMarkers(contentRoot);
+      return;
+    }
+
+    const clampedIndex = Math.min(activeFindIndex, matches.length - 1);
+    if (clampedIndex !== activeFindIndex) {
+      setActiveFindIndex(clampedIndex);
+    }
+
+    updateEditorFindMarkers(contentRoot, matches, clampedIndex);
+    scrollToActiveFindMatch(clampedIndex);
+  }, [activeFindIndex, editorBlocks, findQuery, isFindModalOpen, scrollToActiveFindMatch]);
+
+  useEffect(() => {
     if (prototypeMode) {
       return undefined;
     }
@@ -1461,7 +1696,10 @@ export function EditorScreen({
         if (!navigator.onLine) {
           return;
         }
-        const nextSignature = persistComparisonSignature(projectTitleRef.current, editorBlocksRef.current);
+        const nextSignature = persistComparisonSignature(
+          projectTitleRef.current,
+          editorBlocksRef.current,
+        );
         if (nextSignature === lastPersistedSignatureRef.current) {
           return;
         }
@@ -1743,8 +1981,7 @@ export function EditorScreen({
   const hasContextHint =
     tipsContextStripEnabled && (formatAutoMessage != null || contextHint != null);
   const hasHelpBarLeading = tipsContextStripEnabled;
-  const showMobileHelpCollapsed =
-    tipsEnabled && isMobileEditorLayout && !mobileEditorHelpExpanded;
+  const showMobileHelpCollapsed = tipsEnabled && isMobileEditorLayout && !mobileEditorHelpExpanded;
 
   function handleTitleChange(nextTitle: string) {
     setProjectTitle(nextTitle);
@@ -1868,7 +2105,9 @@ export function EditorScreen({
       dragHandleLabel="Arrastrar datos del guion al otro lateral"
       headerTrailing={
         <>
-          <p className={cn("foundation-kicker", styles.editorSidebarTitleWrap)}>Datos del guion</p>
+          <p className={cn(styles.editorSidebarKicker, styles.editorSidebarTitleWrap)}>
+            Datos del guion
+          </p>
           <EditorPanelVisibilityEye
             isOpen={isDataPanelVisible}
             panel="data"
@@ -1963,51 +2202,53 @@ export function EditorScreen({
       <header className={styles.editorHeader}>
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
-            <div className={styles.editorHeaderIdentity}>
-              <Link
-                href={routes.projects}
-                className={styles.editorBack}
-                onClick={(event) => {
-                  if (!prototypeMode && hasUnsavedChanges) {
-                    event.preventDefault();
-                    setLeaveModalError(null);
-                    setLeaveTargetHref(routes.projects);
-                  }
-                }}
+            <Link
+              href={routes.projects}
+              className={styles.editorBack}
+              onClick={(event) => {
+                if (!prototypeMode && hasUnsavedChanges) {
+                  event.preventDefault();
+                  setLeaveModalError(null);
+                  setLeaveTargetHref(routes.projects);
+                }
+              }}
+            >
+              ← Proyectos
+            </Link>
+          </div>
+
+          <div className={styles.editorHeaderCenter}>
+            <div className={styles.editorTitleRow}>
+              <span className={styles.editorTitleBalanceSpacer} aria-hidden="true" />
+              <input
+                type="text"
+                className={styles.editorTitleInput}
+                aria-label="Título del proyecto"
+                value={projectTitle}
+                onChange={(event) => handleTitleChange(event.target.value)}
+                onBlur={handleTitleBlur}
+              />
+              <span
+                className={styles.visuallyHidden}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
               >
-                ← Proyectos
-              </Link>
-              <div className={styles.editorTitleRow}>
-                <input
-                  type="text"
-                  className={styles.editorTitleInput}
-                  aria-label="Título del proyecto"
-                  value={projectTitle}
-                  onChange={(event) => handleTitleChange(event.target.value)}
-                  onBlur={handleTitleBlur}
-                />
-                <span
-                  className={styles.visuallyHidden}
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
+                {status.label}
+              </span>
+              <HoverDelayTip
+                className={styles.editorSaveStatusTipWrap}
+                content={<SaveStatusTooltipBody label={status.label} detail={status.detail} />}
+                delayMs={560}
+              >
+                <button
+                  type="button"
+                  className={cn(styles.editorSaveStatusTrigger, getStatusClassName(status.tone))}
+                  aria-label={status.label}
                 >
-                  {status.label}
-                </span>
-                <HoverDelayTip
-                  className={styles.editorSaveStatusTipWrap}
-                  content={<SaveStatusTooltipBody label={status.label} detail={status.detail} />}
-                  delayMs={560}
-                >
-                  <button
-                    type="button"
-                    className={cn(styles.editorSaveStatusTrigger, getStatusClassName(status.tone))}
-                    aria-label={status.label}
-                  >
-                    <SaveStatusGlyph kind={status.icon} />
-                  </button>
-                </HoverDelayTip>
-              </div>
+                  <SaveStatusGlyph kind={status.icon} />
+                </button>
+              </HoverDelayTip>
             </div>
           </div>
 
@@ -2027,21 +2268,91 @@ export function EditorScreen({
                 Ajustes
               </Link>
               {!prototypeMode ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
+                  type="button"
+                  className={cn(styles.editorHeaderQuiet, styles.editorHeaderActionPrimary)}
                   disabled={!hasUnsavedChanges || persistState === "saving" || !projectRecord}
                   onClick={() => void persistLatestDraftRef.current()}
                 >
                   {persistState === "saving" ? "Guardando…" : "Guardar"}
-                </Button>
+                </button>
               ) : null}
-              <Button variant="secondary" size="sm" onClick={handleOpenExportModal}>
+              <button
+                type="button"
+                className={styles.editorHeaderQuiet}
+                onClick={handleOpenExportModal}
+              >
                 Exportar
-              </Button>
+              </button>
             </div>
           </div>
         </div>
+
+        {isFindModalOpen ? (
+          <div className={styles.editorFindInlineBar} role="search" aria-label="Buscar en el guion">
+            <input
+              ref={findInputRef}
+              type="search"
+              name="editorFindQuery"
+              value={findQuery}
+              placeholder="Buscar…"
+              autoComplete="off"
+              spellCheck={false}
+              className={cn("ui-input", styles.editorFindInlineInput)}
+              onChange={(event) => {
+                setFindQuery(event.target.value);
+                setActiveFindIndex(0);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  closeFindBar();
+                  return;
+                }
+
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  cycleFindMatch(event.shiftKey ? -1 : 1);
+                }
+              }}
+            />
+
+            <span className={styles.editorFindInlineMeta} aria-live="polite">
+              {findQuery.trim().length > 0 && findMatchCount > 0
+                ? `${activeFindIndex + 1}/${findMatchCount}`
+                : findQuery.trim().length > 0
+                  ? "0"
+                  : ""}
+            </span>
+
+            <button
+              type="button"
+              className={styles.editorFindInlineButton}
+              disabled={findMatchCount === 0}
+              aria-label="Coincidencia anterior"
+              onClick={() => cycleFindMatch(-1)}
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              className={styles.editorFindInlineButton}
+              disabled={findMatchCount === 0}
+              aria-label="Siguiente coincidencia"
+              onClick={() => cycleFindMatch(1)}
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              className={styles.editorFindInlineButton}
+              aria-label="Cerrar búsqueda"
+              onClick={closeFindBar}
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
 
         {tipsEnabled ? (
           showMobileHelpCollapsed ? (
@@ -2069,7 +2380,11 @@ export function EditorScreen({
                       {formatAutoMessage ?? contextHint}
                     </p>
                   ) : (
-                    <div className={styles.editorContextHintInline} role="status" aria-live="polite">
+                    <div
+                      className={styles.editorContextHintInline}
+                      role="status"
+                      aria-live="polite"
+                    >
                       <span>Abrí el </span>
                       <button
                         type="button"
@@ -2080,7 +2395,8 @@ export function EditorScreen({
                       </button>
                       <span>
                         {" "}
-                        y buscá qué querés hacer (escena, diálogo, personaje, INT./EXT., transición…).
+                        y buscá qué querés hacer (escena, diálogo, personaje, INT./EXT.,
+                        transición…).
                       </span>
                     </div>
                   )
