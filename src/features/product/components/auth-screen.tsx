@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { AppBoneyardSkeleton } from "@/components/ui/boneyard-skeleton";
 import { Input } from "@/components/ui/input";
 import { appEnvironment } from "@/config/env";
 import { routes } from "@/config/routes";
@@ -208,7 +209,7 @@ export function AuthScreen({
     }
   }
 
-  return (
+  const content = (
     <section className={styles.page}>
       <div className={styles.card}>
         <header className={styles.cardHeader}>
@@ -297,5 +298,19 @@ export function AuthScreen({
         ) : null}
       </div>
     </section>
+  );
+
+  if (!isForcedLoading) {
+    return content;
+  }
+
+  return (
+    <AppBoneyardSkeleton
+      fallback={content}
+      loading={true}
+      name={isRegister ? "auth-register-screen" : "auth-login-screen"}
+    >
+      {content}
+    </AppBoneyardSkeleton>
   );
 }

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { AppBoneyardSkeleton } from "@/components/ui/boneyard-skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { routes } from "@/config/routes";
 import { type ProjectsViewState } from "@/features/product/view-states";
@@ -45,19 +45,69 @@ function getFilteredProjects(projects: UserProject[], filter: ProjectFilter): Us
   }
 }
 
-function ProjectsLoadingState() {
+function ProjectsLoadingFixture() {
+  return (
+    <div className={styles.projectList} aria-hidden="true">
+      {[
+        {
+          meta: "Borrador · 9 escenas",
+          summary: "La escaleta ya está armada y queda revisar el clímax.",
+          time: "Hace 5 min",
+          title: "El editor silencioso",
+        },
+        {
+          meta: "Tratamiento · 4 escenas",
+          summary: "Revisión de tono y presentación para el productor.",
+          time: "Ayer",
+          title: "Ciudad de papel",
+        },
+        {
+          meta: "Outline · 12 escenas",
+          summary: "Ideas sueltas sobre la investigación y el giro final.",
+          time: "Hace 3 días",
+          title: "La última toma",
+        },
+      ].map((project) => (
+        <article key={project.title} className={styles.projectRow}>
+          <div className={styles.projectRowLink}>
+            <div className={styles.projectRowMain}>
+              <p className={styles.projectRowTitle}>{project.title}</p>
+              <p className={styles.projectRowMeta}>{project.meta}</p>
+              <p className={styles.projectRowSummary}>{project.summary}</p>
+            </div>
+            <span className={styles.projectRowTime}>{project.time}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ProjectsLoadingFallback() {
   return (
     <div className={styles.skeletonList} aria-label="Cargando proyectos">
       {Array.from({ length: 3 }).map((_, index) => (
         <div key={`project-skeleton-${index}`} className={styles.skeletonRow}>
           <div className={styles.skeletonRowMain}>
-            <Skeleton height="1rem" width="42%" radius="999px" />
-            <Skeleton height="0.9rem" width="74%" radius="999px" />
+            <div className="ui-skeleton" style={{ borderRadius: "999px", height: "1rem", width: "42%" }} />
+            <div className="ui-skeleton" style={{ borderRadius: "999px", height: "0.9rem", width: "74%" }} />
           </div>
-          <Skeleton height="0.9rem" width="6.5rem" radius="999px" />
+          <div className="ui-skeleton" style={{ borderRadius: "999px", height: "0.9rem", width: "6.5rem" }} />
         </div>
       ))}
     </div>
+  );
+}
+
+function ProjectsLoadingState() {
+  return (
+    <AppBoneyardSkeleton
+      fallback={<ProjectsLoadingFallback />}
+      loading={true}
+      name="projects-loading-screen"
+    >
+      <ProjectsLoadingFixture />
+    </AppBoneyardSkeleton>
   );
 }
 

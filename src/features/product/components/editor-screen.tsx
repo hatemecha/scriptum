@@ -15,10 +15,10 @@ import {
 import { $getNodeByKey, type EditorState, type LexicalEditor } from "lexical";
 import { Eye, EyeOff, GripVertical } from "lucide-react";
 
+import { AppBoneyardSkeleton } from "@/components/ui/boneyard-skeleton";
 import { Button } from "@/components/ui/button";
 import { HoverDelayTip } from "@/components/ui/hover-delay-tip";
 import { Modal } from "@/components/ui/modal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { ScreenplayEditor } from "@/features/editor/components/ScreenplayEditor";
 import {
@@ -660,7 +660,126 @@ function EditorSidePanelCollapsedStrip({
   );
 }
 
-function EditorLoadingScreen({ title }: { title: string }) {
+function EditorLoadingFixture({ title }: { title: string }) {
+  return (
+    <div className={styles.editorShell} aria-hidden="true">
+      <header className={styles.editorHeader}>
+        <div className={styles.editorHeaderTop}>
+          <div className={styles.editorHeaderLeading}>
+            <span className={styles.editorBack}>← Proyectos</span>
+          </div>
+
+          <div className={styles.editorHeaderCenter}>
+            <div className={styles.editorTitleRow}>
+              <span className={styles.editorTitleBalanceSpacer} aria-hidden="true" />
+              <span className={styles.editorHeaderQuiet}>{title}</span>
+              <span className={styles.editorTitleBalanceSpacer} aria-hidden="true" />
+            </div>
+          </div>
+
+          <div className={styles.editorHeaderTrailing}>
+            <div className={styles.editorHeaderFileCluster}>
+              <span className={styles.editorHeaderQuiet}>Buscar</span>
+              <span className={styles.editorHeaderQuiet}>Exportar</span>
+              <span className={cn(styles.editorHeaderQuiet, styles.editorHeaderActionPrimary)}>
+                Guardar
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className={cn(styles.editorWorkspace, styles.editorWorkspaceTriple)}>
+        <div className={styles.editorWorkspaceTripleInner}>
+          <div className={styles.editorWorkspaceSideSlot}>
+            <aside className={styles.editorSidebar} aria-label="Lista de escenas">
+              <div className={styles.editorSidebarHeader}>
+                <p className={cn(styles.editorSidebarKicker, styles.editorSidebarTitleWrap)}>
+                  Escenas
+                </p>
+              </div>
+              <div className={styles.editorSidebarBody}>
+                <div className={styles.skeletonList}>
+                  {[
+                    "INT. DEPARTAMENTO - NOCHE",
+                    "INT. ASCENSOR - CONTINUO",
+                    "EXT. CALLE VACÍA - MADRUGADA",
+                  ].map((scene) => (
+                    <div key={scene} className={styles.skeletonRowMain}>
+                      <p className={styles.editorSidebarKicker}>ESCENA</p>
+                      <p className={styles.projectRowMeta}>{scene}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <main className={styles.editorCanvas}>
+            <div className={styles.editorCanvasStage}>
+              <div className={cn(styles.editorPaper, styles.editorPaperLoading)}>
+                <div>
+                  <p className={cn(styles.editorLine, styles.editorLineSceneHeading)}>
+                    INT. DEPARTAMENTO DE LUCÍA - NOCHE
+                  </p>
+                  <p className={styles.editorLine}>
+                    La lluvia golpea la ventana mientras la máquina de escribir sigue encendida.
+                  </p>
+                  <p className={cn(styles.editorLine, styles.editorLineCharacter)}>LUCÍA</p>
+                  <p className={styles.editorLine}>Necesito terminar esta escena antes del amanecer.</p>
+                </div>
+                <p className={styles.editorLoadingCopy}>Cargando documento…</p>
+              </div>
+            </div>
+          </main>
+
+          <div className={styles.editorWorkspaceSideSlot}>
+            <aside className={styles.editorMetaSidebar}>
+              <div className={styles.editorMetaSidebarHeader}>
+                <p className={styles.editorSidebarKicker}>Datos del guion</p>
+              </div>
+              <div className={styles.editorMetaSidebarBody}>
+                <div className={styles.skeletonList}>
+                  {[
+                    ["Estado", "Borrador activo"],
+                    ["Versión", "Revisión 12"],
+                    ["Palabras", "3.482"],
+                    ["Páginas", "24 aprox."],
+                  ].map(([label, value]) => (
+                    <div key={label} className={styles.skeletonRowMain}>
+                      <p className={styles.editorSidebarKicker}>{label}</p>
+                      <p className={styles.projectRowMeta}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <footer className={styles.editorFooter}>
+        <div className={styles.editorFooterMeta}>
+          <span>Documento</span>
+          <span>{title}</span>
+        </div>
+        <div className={styles.editorFooterMeta} aria-label="Estadísticas del guion">
+          <span>482 palabras</span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>2.941 caracteres</span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>2.301 letras</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function EditorLoadingFallback({ title }: { title: string }) {
   return (
     <div className={styles.editorShell}>
       <header className={styles.editorHeader}>
@@ -674,16 +793,31 @@ function EditorLoadingScreen({ title }: { title: string }) {
           <div className={styles.editorHeaderCenter}>
             <div className={styles.editorTitleRow}>
               <span className={styles.editorTitleBalanceSpacer} aria-hidden="true" />
-              <Skeleton height="1.45rem" width="min(16rem, 52vw)" radius="0.35rem" />
-              <Skeleton height="1rem" width="1rem" radius="999px" />
+              <div
+                className="ui-skeleton"
+                style={{ borderRadius: "0.35rem", height: "1.45rem", width: "min(16rem, 52vw)" }}
+              />
+              <div
+                className="ui-skeleton"
+                style={{ borderRadius: "999px", height: "1rem", width: "1rem" }}
+              />
             </div>
           </div>
 
           <div className={styles.editorHeaderTrailing}>
             <div className={styles.editorHeaderFileCluster}>
-              <Skeleton height="1rem" width="4.25rem" radius="999px" />
-              <Skeleton height="1rem" width="4.5rem" radius="999px" />
-              <Skeleton height="1rem" width="4.75rem" radius="999px" />
+              <div
+                className="ui-skeleton"
+                style={{ borderRadius: "999px", height: "1rem", width: "4.25rem" }}
+              />
+              <div
+                className="ui-skeleton"
+                style={{ borderRadius: "999px", height: "1rem", width: "4.5rem" }}
+              />
+              <div
+                className="ui-skeleton"
+                style={{ borderRadius: "999px", height: "1rem", width: "4.75rem" }}
+              />
             </div>
           </div>
         </div>
@@ -696,8 +830,14 @@ function EditorLoadingScreen({ title }: { title: string }) {
               <div className={styles.skeletonList}>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <div key={`scene-skeleton-${index}`} className={styles.skeletonRowMain}>
-                    <Skeleton height="0.85rem" width="34%" radius="999px" />
-                    <Skeleton height="1.05rem" width="88%" radius="0.75rem" />
+                    <div
+                      className="ui-skeleton"
+                      style={{ borderRadius: "999px", height: "0.85rem", width: "34%" }}
+                    />
+                    <div
+                      className="ui-skeleton"
+                      style={{ borderRadius: "0.75rem", height: "1.05rem", width: "88%" }}
+                    />
                   </div>
                 ))}
               </div>
@@ -708,10 +848,18 @@ function EditorLoadingScreen({ title }: { title: string }) {
             <div className={styles.editorCanvasStage}>
               <div className={cn(styles.editorPaper, styles.editorPaperLoading)}>
                 <div className={styles.skeletonList}>
-                  <Skeleton height="0.95rem" width="26%" radius="999px" />
-                  <Skeleton height="0.95rem" width="92%" radius="999px" />
-                  <Skeleton height="0.95rem" width="84%" radius="999px" />
-                  <Skeleton height="0.95rem" width="36%" radius="999px" />
+                  {[
+                    ["26%", "0.95rem"],
+                    ["92%", "0.95rem"],
+                    ["84%", "0.95rem"],
+                    ["36%", "0.95rem"],
+                  ].map(([width, height], index) => (
+                    <div
+                      key={`paper-skeleton-${index}`}
+                      className="ui-skeleton"
+                      style={{ borderRadius: "999px", height, width }}
+                    />
+                  ))}
                 </div>
                 <p className={styles.editorLoadingCopy}>Cargando...</p>
               </div>
@@ -727,8 +875,14 @@ function EditorLoadingScreen({ title }: { title: string }) {
                 <div className={styles.skeletonList}>
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div key={`meta-skeleton-${index}`} className={styles.skeletonRowMain}>
-                      <Skeleton height="0.8rem" width="40%" radius="999px" />
-                      <Skeleton height="1rem" width="72%" radius="0.75rem" />
+                      <div
+                        className="ui-skeleton"
+                        style={{ borderRadius: "999px", height: "0.8rem", width: "40%" }}
+                      />
+                      <div
+                        className="ui-skeleton"
+                        style={{ borderRadius: "0.75rem", height: "1rem", width: "72%" }}
+                      />
                     </div>
                   ))}
                 </div>
@@ -756,6 +910,18 @@ function EditorLoadingScreen({ title }: { title: string }) {
         </div>
       </footer>
     </div>
+  );
+}
+
+function EditorLoadingScreen({ title }: { title: string }) {
+  return (
+    <AppBoneyardSkeleton
+      fallback={<EditorLoadingFallback title={title} />}
+      loading={true}
+      name="editor-loading-screen"
+    >
+      <EditorLoadingFixture title={title} />
+    </AppBoneyardSkeleton>
   );
 }
 

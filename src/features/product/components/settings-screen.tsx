@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { AppBoneyardSkeleton } from "@/components/ui/boneyard-skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { routes } from "@/config/routes";
 import { type SettingsViewState } from "@/features/product/view-states";
@@ -81,23 +81,76 @@ function formatCreatedAtLabel(iso: string): string {
   }
 }
 
-function SettingsLoadingState() {
+function SettingsLoadingFixture() {
+  return (
+    <div className={styles.settingsLayout} aria-hidden="true">
+      <section className={styles.sectionCard}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Perfil</h2>
+          <p className={styles.sectionDescription}>
+            Ajusta tu nombre visible y la información básica de tu cuenta.
+          </p>
+        </div>
+
+        <div className={styles.fieldRow}>
+          <div className="ui-input">Marina Rojas</div>
+          <p className={styles.sectionDescription}>Se mostrará en portadas y exportaciones.</p>
+        </div>
+      </section>
+
+      <section className={styles.sectionCard}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Editor</h2>
+          <p className={styles.sectionDescription}>
+            Define ayudas, glosario y guardado automático para la escritura.
+          </p>
+        </div>
+
+        <div className={styles.fieldRow}>
+          <div className={styles.settingsToggleRow}>
+            <div className={styles.settingsToggleCopy}>
+              <p className={styles.settingsToggleTitle}>Mostrar ayudas contextuales</p>
+              <p className={styles.settingsToggleDescription}>
+                Pistas breves según el bloque activo y el momento del guion.
+              </p>
+            </div>
+          </div>
+          <p className={styles.sectionDescription}>Modo detallado activado.</p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SettingsLoadingFallback() {
   return (
     <div className={styles.settingsLayout} aria-label="Cargando ajustes">
       {Array.from({ length: 2 }).map((_, index) => (
         <section key={`settings-skeleton-${index}`} className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
-            <Skeleton height="1rem" width="26%" radius="999px" />
-            <Skeleton height="0.85rem" width="54%" radius="999px" />
+            <div className="ui-skeleton" style={{ borderRadius: "999px", height: "1rem", width: "26%" }} />
+            <div className="ui-skeleton" style={{ borderRadius: "999px", height: "0.85rem", width: "54%" }} />
           </div>
 
           <div className={styles.fieldRow}>
-            <Skeleton height="3rem" radius="0.75rem" />
-            <Skeleton height="0.9rem" width="48%" radius="999px" />
+            <div className="ui-skeleton" style={{ borderRadius: "0.75rem", height: "3rem", width: "100%" }} />
+            <div className="ui-skeleton" style={{ borderRadius: "999px", height: "0.9rem", width: "48%" }} />
           </div>
         </section>
       ))}
     </div>
+  );
+}
+
+function SettingsLoadingState() {
+  return (
+    <AppBoneyardSkeleton
+      fallback={<SettingsLoadingFallback />}
+      loading={true}
+      name="settings-loading-screen"
+    >
+      <SettingsLoadingFixture />
+    </AppBoneyardSkeleton>
   );
 }
 
