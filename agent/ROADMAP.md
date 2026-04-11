@@ -677,15 +677,15 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 39 — QA visual
 
-- [ ] Revisar consistencia visual general
-- [ ] Revisar responsive web básico
-- [ ] Revisar errores de foco
-- [ ] Revisar estados de carga/error/vacío
-- [ ] Revisar coherencia de tipografía y espaciado
+- [x] Revisar consistencia visual general
+- [x] Revisar responsive web básico
+- [x] Revisar errores de foco
+- [x] Revisar estados de carga/error/vacío
+- [x] Revisar coherencia de tipografía y espaciado
 
 ### Validación
 
-- [ ] La app se siente limpia y consistente
+- [x] La app se siente limpia y consistente — *2026-04-11: pase sobre landing (público), layouts, `StatePanel` (404/errores), dashboard; ajustes de foco en nav pública/dashboard, botones de error a ancho completo en ≤640px, `prefers-reduced-motion` vía `useSyncExternalStore`; `npm run lint` + `npm run typecheck` OK.*
 
 ---
 

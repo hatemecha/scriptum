@@ -1954,6 +1954,15 @@
     padding: 1.2rem;
   }
 
+  .statePanelActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .statePanelActions :global(.ui-button) {
+    width: 100%;
+  }
+
   .editorHeaderTop,
   .editorHelpDismissBar,
   .editorFooter {

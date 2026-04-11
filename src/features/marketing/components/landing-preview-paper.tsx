@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { type PreviewLine } from "@/features/product/preview-data";
 import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 import styles from "./landing-page.module.css";
 
@@ -20,20 +21,6 @@ const DIALOGUE_ALTERNATES = [
   "Dejá el borrador abierto. El silencio también es parte de la escena.",
   "Una línea honesta. La siguiente ya sabe dónde apoyarse.",
 ] as const;
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-
-  return reduced;
-}
 
 type LandingPreviewPaperProps = {
   lines: readonly PreviewLine[];

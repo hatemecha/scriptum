@@ -1009,11 +1009,21 @@ button:disabled {
 .theme-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
   border: 0;
   background: transparent;
   color: inherit;
-  padding: 0;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 
 .theme-toggle__glyph {

@@ -63,6 +63,12 @@
   text-decoration: none;
 }
 
+.publicBrand:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 4px;
+  border-radius: 0.2rem;
+}
+
 .publicNav {
   display: flex;
   align-items: center;
@@ -124,6 +130,12 @@
 
 .publicLink:hover {
   color: var(--color-accent);
+}
+
+.publicLink:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  border-radius: 0.35rem;
 }
 
 .publicMain {
@@ -231,6 +243,12 @@
 .userLink:hover {
   border-color: var(--color-accent-soft-strong);
   background: var(--color-accent-soft);
+}
+
+.dashboardLink:focus-visible,
+.userLink:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 
 .dashboardLinkActive {
