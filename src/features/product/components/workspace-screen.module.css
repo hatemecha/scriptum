@@ -409,7 +409,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(12rem, 28rem) minmax(0, 1fr);
   align-items: center;
   gap: 1rem;
-  padding: 0.52rem clamp(1rem, 3vw, 2rem) 0.42rem;
+  padding: 0.58rem clamp(1rem, 3vw, 2rem) 0.72rem;
 }
 
 .editorBlockTypeCluster {
@@ -430,7 +430,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 0.24rem;
-  padding: 0.12rem clamp(1rem, 3vw, 2rem) 0.44rem;
+  padding: 0.42rem clamp(1rem, 3vw, 2rem) 0.48rem;
   border-top: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 62%, transparent);
 }
 
@@ -948,7 +948,7 @@
   min-width: 0;
   max-width: 100%;
   margin: 0;
-  padding: 0.06rem 0 0.28rem;
+  padding: 0.12rem 0 0.22rem;
   border: none;
   border-radius: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--color-editor-chrome-border) 68%, transparent);
@@ -985,7 +985,7 @@
   outline: none;
   border-bottom-width: 2px;
   border-bottom-color: var(--color-accent);
-  padding-bottom: calc(0.44rem - 1px);
+  padding-bottom: calc(0.38rem - 1px);
   box-shadow: none;
 }
 
@@ -1857,7 +1857,7 @@
   .editorHeaderTop {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.55rem;
-    padding-block: 0.45rem;
+    padding: 0.52rem clamp(1rem, 3vw, 2rem) 0.65rem;
   }
 
   .editorHeaderLeading,
@@ -1897,7 +1897,8 @@
   }
 
   .editorHelpDismissBar {
-    padding-top: 0.45rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.5rem;
     gap: 0.5rem;
   }
 
