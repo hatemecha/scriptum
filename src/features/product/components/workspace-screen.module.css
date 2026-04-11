@@ -18,6 +18,7 @@
 
 .pageHeaderCopy {
   max-width: 40rem;
+  min-width: 0;
 }
 
 .pageTitle {
@@ -79,6 +80,7 @@
 
 .filterBar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.35rem;
 }
 
@@ -1070,6 +1072,7 @@
 .editorWorkspace {
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   padding: 1.1rem clamp(1rem, 2.2vw, 2rem) 1.2rem;
   background: var(--color-background);
   display: grid;
@@ -1842,6 +1845,13 @@
 
   .editorLineParenthetical {
     margin-left: 21%;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+  .editorWorkspaceTriple {
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr) minmax(13rem, 16rem);
+    column-gap: clamp(0.65rem, 1.5vw, 1rem);
   }
 }
 

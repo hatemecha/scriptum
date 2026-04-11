@@ -52,6 +52,7 @@
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
+  min-width: 0;
 }
 
 .heroKicker {
@@ -65,18 +66,21 @@
 
 .headline {
   margin: 0;
+  max-width: 100%;
   font-size: clamp(2.6rem, 6.5vw, 4rem);
   line-height: 0.98;
   letter-spacing: -0.04em;
   color: var(--color-foreground);
+  overflow-wrap: break-word;
 }
 
 .subheadline {
   margin: 1.15rem 0 0;
-  max-width: 42ch;
+  max-width: min(42ch, 100%);
   color: color-mix(in srgb, var(--color-foreground) 78%, transparent);
   font-size: clamp(0.95rem, 2.8vw, 1.1rem);
   line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
 .heroProof {

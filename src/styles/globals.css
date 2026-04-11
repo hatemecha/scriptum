@@ -297,6 +297,12 @@ html {
   min-width: 0;
 }
 
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -408,6 +414,11 @@ button:disabled {
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(280px, 340px);
   gap: var(--space-5);
   align-items: start;
+  min-width: 0;
+}
+
+.app-shell__main {
+  min-width: 0;
 }
 
 .app-shell__sidebar,
@@ -416,6 +427,7 @@ button:disabled {
   gap: var(--space-5);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  min-width: 0;
 }
 
 .app-shell__main,
@@ -431,6 +443,12 @@ button:disabled {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-5);
+  min-width: 0;
+}
+
+.workspace-header__copy,
+.workspace-header__actions {
+  min-width: 0;
 }
 
 .workspace-header__copy {
@@ -910,10 +928,12 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
   padding: 0.95rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--color-surface-strong);
+  min-width: 0;
 }
 
 .modal-preview__row span {
@@ -1134,6 +1154,12 @@ button:disabled {
   align-items: flex-start;
   justify-content: space-between;
   gap: 2rem;
+  min-width: 0;
+}
+
+.foundation-header__copy,
+.foundation-header__actions {
+  min-width: 0;
 }
 
 .foundation-header__copy {
@@ -1235,9 +1261,16 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  max-width: 100%;
+  min-width: 0;
   color: var(--color-fg-muted);
   font-size: 0.92rem;
   white-space: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 0.15rem;
 }
 
 .foundation-breadcrumbs__current {
@@ -1564,14 +1597,23 @@ button:disabled {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0 2.5rem;
+  min-width: 0;
 }
 
 .studio-breadcrumbs {
   display: flex;
   align-items: center;
   gap: 0.95rem;
+  max-width: 100%;
+  min-width: 0;
   color: var(--color-fg-muted);
   font-size: 0.95rem;
+  white-space: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 0.15rem;
 }
 
 .studio-breadcrumbs__current {
@@ -1827,10 +1869,12 @@ button:disabled {
 .export-sheet__row {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
   padding: 0.95rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--color-surface-strong);
+  min-width: 0;
 }
 
 .export-sheet__row span {
