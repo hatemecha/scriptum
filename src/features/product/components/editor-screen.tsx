@@ -42,7 +42,10 @@ import {
 import { getSceneHeadingAutoDetectReason } from "@/features/screenplay/editor-help/scene-heading-detect";
 import { getTransitionAutoDetectReason } from "@/features/screenplay/editor-help/transition-detect";
 import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
-import { buildScreenplayPdfFromBlocks } from "@/features/screenplay/screenplay-pdf";
+import {
+  buildScreenplayPdfFromBlocks,
+  type ScreenplayPdfTitlePageInput,
+} from "@/features/screenplay/screenplay-pdf";
 import { layoutScreenplayForExport } from "@/features/screenplay/screenplay-layout";
 import {
   clearStoredEditorDraft,
@@ -52,6 +55,12 @@ import {
 import { getPreviewLines, getPreviewProject, previewUser } from "@/features/product/preview-data";
 import { type EditorViewState } from "@/features/product/view-states";
 import { mapPersistErrorForDisplay } from "@/features/projects/persist-user-messages";
+import {
+  emptyExportTitlePageFields,
+  normalizeExportTitlePageFields,
+  normalizeProjectAuthor,
+  type ExportTitlePageFields,
+} from "@/features/projects/project-contract";
 import {
   normalizeSerializedBlocksForPersist,
   saveProjectSnapshot,
@@ -352,18 +361,27 @@ function normalizeEditableProjectTitle(value: string): string {
   return normalizedValue.length > 0 ? normalizedValue : "Sin título";
 }
 
-function createPersistSignature(title: string, blocks: readonly SerializedEditorBlock[]): string {
-  return JSON.stringify({ blocks, title });
+function createPersistSignature(
+  title: string,
+  blocks: readonly SerializedEditorBlock[],
+  author: string | null,
+  exportTitlePage: ExportTitlePageFields,
+): string {
+  return JSON.stringify({ author, blocks, exportTitlePage, title });
 }
 
 /** Same shaping as `saveProjectSnapshot` so “dirty” matches what actually syncs (avoids false unsaved after guardar). */
 function persistComparisonSignature(
   titleInput: string,
   blocks: readonly SerializedEditorBlock[],
+  authorInput: string | null,
+  exportTitlePageInput: ExportTitlePageFields,
 ): string {
   const title = normalizeEditableProjectTitle(titleInput);
   const normalizedBlocks = normalizeSerializedBlocksForPersist(blocks);
-  return createPersistSignature(title, normalizedBlocks);
+  const author = normalizeProjectAuthor(authorInput);
+  const exportTitlePage = normalizeExportTitlePageFields(exportTitlePageInput);
+  return createPersistSignature(title, normalizedBlocks, author, exportTitlePage);
 }
 
 function isLikelyTransientPersistError(error: Error | null | undefined): boolean {
@@ -940,7 +958,15 @@ export function EditorScreen({
   );
   const initialProjectRecord = initialData?.project ?? null;
   const initialTitle = initialSeed.title;
-  const initialSignature = persistComparisonSignature(initialTitle, initialSeed.blocks);
+  const initialAuthorForSignature = initialProjectRecord?.author ?? initialSeed.author ?? null;
+  const initialExportTitlePageForSignature =
+    initialProjectRecord?.exportTitlePage ?? emptyExportTitlePageFields();
+  const initialSignature = persistComparisonSignature(
+    initialTitle,
+    initialSeed.blocks,
+    initialAuthorForSignature,
+    initialExportTitlePageForSignature,
+  );
   const router = useRouter();
 
   const autosaveTimeoutRef = useRef<number | null>(null);
@@ -955,6 +981,12 @@ export function EditorScreen({
   const contextHintDebounceRef = useRef<number | null>(null);
   const persistLatestDraftRef = useRef<() => Promise<boolean>>(async () => true);
   const projectRecordRef = useRef(initialProjectRecord);
+  const prototypeAuthorRef = useRef<string | null>(
+    initialProjectRecord?.author ?? initialSeed.author ?? null,
+  );
+  const prototypeExportTitlePageRef = useRef<ExportTitlePageFields>(
+    initialProjectRecord?.exportTitlePage ?? emptyExportTitlePageFields(),
+  );
   const documentIdRef = useRef(initialData?.documentId ?? null);
   const editorBlocksRef = useRef<readonly SerializedEditorBlock[]>(initialSeed.blocks);
   const projectTitleRef = useRef(initialTitle);
@@ -965,6 +997,7 @@ export function EditorScreen({
   const restoredLocalDraftRef = useRef(false);
   const savingIndicatorDelayRef = useRef<number | null>(null);
   const titlePersistTimeoutRef = useRef<number | null>(null);
+  const metadataPersistTimeoutRef = useRef<number | null>(null);
   const editorAutosaveEnabledRef = useRef(initialEditorAutosaveEnabled);
   const onlineReconnectPersistTimeoutRef = useRef<number | null>(null);
   const autoCollapsedSidebarRef = useRef(false);
@@ -1203,8 +1236,22 @@ export function EditorScreen({
   }, [editorBlocks, estimatedPages, isExportModalOpen]);
   const [editorInstanceKey, setEditorInstanceKey] = useState(0);
   const [projectRecord, setProjectRecord] = useState(initialProjectRecord);
+  const [prototypeAuthor, setPrototypeAuthor] = useState<string | null>(
+    initialProjectRecord?.author ?? initialSeed.author ?? null,
+  );
+  const [prototypeExportTitlePage, setPrototypeExportTitlePage] = useState<ExportTitlePageFields>(
+    () => initialProjectRecord?.exportTitlePage ?? emptyExportTitlePageFields(),
+  );
   const [documentId, setDocumentId] = useState(initialData?.documentId ?? null);
   const [editorRevision, setEditorRevision] = useState(initialData?.revision ?? 0);
+
+  useEffect(() => {
+    prototypeAuthorRef.current = prototypeAuthor;
+  }, [prototypeAuthor]);
+
+  useEffect(() => {
+    prototypeExportTitlePageRef.current = prototypeExportTitlePage;
+  }, [prototypeExportTitlePage]);
 
   const handleBlockTypeChange = useCallback((blockType: ScreenplayBlockType) => {
     setActiveBlockType(blockType);
@@ -1271,6 +1318,8 @@ export function EditorScreen({
     const nextSignature = persistComparisonSignature(
       projectTitleRef.current,
       editorBlocksRef.current,
+      projectRecordRef.current?.author ?? prototypeAuthorRef.current,
+      projectRecordRef.current?.exportTitlePage ?? prototypeExportTitlePageRef.current,
     );
     const requestedTitle = normalizedTitle;
 
@@ -1386,6 +1435,8 @@ export function EditorScreen({
     lastPersistedSignatureRef.current = persistComparisonSignature(
       result.data.project.title,
       result.data.blocks,
+      result.data.project.author,
+      result.data.project.exportTitlePage,
     );
     clearStoredEditorDraft(projectId);
     projectRecordRef.current = result.data.project;
@@ -1415,6 +1466,8 @@ export function EditorScreen({
       const latestSignature = persistComparisonSignature(
         projectTitleRef.current,
         editorBlocksRef.current,
+        projectRecordRef.current?.author ?? prototypeAuthorRef.current,
+        projectRecordRef.current?.exportTitlePage ?? prototypeExportTitlePageRef.current,
       );
 
       if (latestSignature !== lastPersistedSignatureRef.current) {
@@ -1865,6 +1918,8 @@ export function EditorScreen({
         const nextSignature = persistComparisonSignature(
           projectTitleRef.current,
           editorBlocksRef.current,
+          projectRecordRef.current?.author ?? prototypeAuthorRef.current,
+          projectRecordRef.current?.exportTitlePage ?? prototypeExportTitlePageRef.current,
         );
         if (nextSignature === lastPersistedSignatureRef.current) {
           return;
@@ -1968,7 +2023,12 @@ export function EditorScreen({
     }
 
     const normalizedTitle = normalizeEditableProjectTitle(projectTitle);
-    const nextSignature = persistComparisonSignature(projectTitle, editorBlocks);
+    const nextSignature = persistComparisonSignature(
+      projectTitle,
+      editorBlocks,
+      projectRecord?.author ?? prototypeAuthor,
+      projectRecord?.exportTitlePage ?? prototypeExportTitlePage,
+    );
     const isDirty = nextSignature !== lastPersistedSignatureRef.current;
 
     setHasUnsavedChanges(isDirty);
@@ -2005,6 +2065,8 @@ export function EditorScreen({
     persistLatestDraft,
     projectRecord,
     projectTitle,
+    prototypeAuthor,
+    prototypeExportTitlePage,
     prototypeMode,
     viewState,
   ]);
@@ -2027,6 +2089,10 @@ export function EditorScreen({
         window.clearTimeout(titlePersistTimeoutRef.current);
       }
 
+      if (metadataPersistTimeoutRef.current !== null) {
+        window.clearTimeout(metadataPersistTimeoutRef.current);
+      }
+
       if (onlineReconnectPersistTimeoutRef.current !== null) {
         window.clearTimeout(onlineReconnectPersistTimeoutRef.current);
       }
@@ -2044,7 +2110,23 @@ export function EditorScreen({
 
     try {
       const blocks = serializeScreenplayBlocks(editor.getEditorState());
-      const bytes = await buildScreenplayPdfFromBlocks(blocks);
+      const exportTitlePageMerged = normalizeExportTitlePageFields(
+        projectRecordRef.current?.exportTitlePage ?? prototypeExportTitlePageRef.current,
+      );
+      const authorForPdf = normalizeProjectAuthor(
+        projectRecordRef.current?.author ?? prototypeAuthorRef.current,
+      );
+      const titlePage: ScreenplayPdfTitlePageInput = {
+        address: exportTitlePageMerged.address,
+        author: authorForPdf,
+        companyName: exportTitlePageMerged.companyName,
+        companyRegistration: exportTitlePageMerged.companyRegistration,
+        contactEmail: exportTitlePageMerged.contactEmail,
+        revisedBy: exportTitlePageMerged.revisedBy,
+        revisionLabel: exportTitlePageMerged.revisionLabel,
+        title: normalizeEditableProjectTitle(projectTitleRef.current),
+      };
+      const bytes = await buildScreenplayPdfFromBlocks(blocks, { titlePage });
       const copy = new Uint8Array(bytes.byteLength);
       copy.set(bytes);
       const blob = new Blob([copy], { type: "application/pdf" });
@@ -2141,7 +2223,8 @@ export function EditorScreen({
     : isBrowserOffline || viewState === "offline";
   const activeEditorScene =
     editorScenes.find((scene) => scene.id === displayActiveSceneKey) ?? null;
-  const exportAuthor = projectRecord?.author ?? initialSeed.author ?? previewUser.name;
+  const exportAuthor =
+    projectRecord?.author ?? prototypeAuthor ?? initialSeed.author ?? previewUser.name;
   const blockTypeGlossaryEntry = getGlossaryEntryForBlockType(activeBlockType);
   const pageMinuteGlossaryEntry = getGlossaryEntryById("page-minute");
   const hasContextHint =
@@ -2186,6 +2269,69 @@ export function EditorScreen({
     }
 
     void persistLatestDraftRef.current();
+  }
+
+  function scheduleMetadataPersist(): void {
+    if (prototypeMode) {
+      queuePrototypeSaveConfirmation();
+      return;
+    }
+
+    if (!editorAutosaveEnabled) {
+      return;
+    }
+
+    if (metadataPersistTimeoutRef.current !== null) {
+      window.clearTimeout(metadataPersistTimeoutRef.current);
+    }
+
+    metadataPersistTimeoutRef.current = window.setTimeout(() => {
+      metadataPersistTimeoutRef.current = null;
+      void persistLatestDraftRef.current();
+    }, 2800);
+  }
+
+  function handleAuthorInputChange(raw: string) {
+    if (projectRecord) {
+      setProjectRecord((prev) => {
+        if (!prev) {
+          return prev;
+        }
+        const next = { ...prev, author: raw };
+        projectRecordRef.current = next;
+        return next;
+      });
+    } else {
+      setPrototypeAuthor(raw.length > 0 ? raw : null);
+    }
+
+    scheduleMetadataPersist();
+  }
+
+  function handleTitlePageFieldChange<K extends keyof ExportTitlePageFields>(
+    key: K,
+    raw: string,
+  ) {
+    const next = raw.trim().length === 0 ? null : raw.trim();
+    const patch = { [key]: next } as Pick<ExportTitlePageFields, K>;
+
+    if (projectRecord) {
+      setProjectRecord((prev) => {
+        if (!prev) {
+          return prev;
+        }
+        const merged = normalizeExportTitlePageFields({ ...prev.exportTitlePage, ...patch });
+        const updated = { ...prev, exportTitlePage: merged };
+        projectRecordRef.current = updated;
+        return updated;
+      });
+    } else {
+      setPrototypeExportTitlePage((prev) =>
+        normalizeExportTitlePageFields({ ...prev, ...patch }),
+      );
+    }
+
+    scheduleMetadataPersist();
   }
 
   async function handleLeaveSaveAndNavigate() {
@@ -2288,25 +2434,97 @@ export function EditorScreen({
               <span>Título</span>
               <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
             </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Autor</span>
-              <strong>{exportAuthor ?? "Sin definir"}</strong>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-author">
+                Autor
+              </label>
+              <input
+                id="editor-meta-author"
+                type="text"
+                className={styles.editorMetaInput}
+                autoComplete="name"
+                placeholder="Nombre del autor"
+                value={projectRecord?.author ?? prototypeAuthor ?? ""}
+                onChange={(event) => handleAuthorInputChange(event.target.value)}
+              />
             </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Escenas</span>
-              <strong>{editorScenes.length}</strong>
+            <p className={styles.editorMetaCoverKicker}>Portada del PDF</p>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revised-by">
+                Revisado por
+              </label>
+              <input
+                id="editor-meta-revised-by"
+                type="text"
+                className={styles.editorMetaInput}
+                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisedBy ?? ""}
+                onChange={(event) => handleTitlePageFieldChange("revisedBy", event.target.value)}
+              />
             </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Páginas (aprox.)</span>
-              <strong>~{estimatedPages}</strong>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revision">
+                Revisión
+              </label>
+              <input
+                id="editor-meta-revision"
+                type="text"
+                className={styles.editorMetaInput}
+                placeholder="p. ej. borrador, fecha"
+                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisionLabel ?? ""}
+                onChange={(event) => handleTitlePageFieldChange("revisionLabel", event.target.value)}
+              />
             </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Escena activa</span>
-              <strong>{activeEditorScene ? activeEditorScene.indexLabel : "—"}</strong>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-company">
+                Empresa / sello
+              </label>
+              <input
+                id="editor-meta-company"
+                type="text"
+                className={styles.editorMetaInput}
+                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyName ?? ""}
+                onChange={(event) => handleTitlePageFieldChange("companyName", event.target.value)}
+              />
             </div>
-            <div className={styles.modalSummaryRow}>
-              <span>Bloque activo</span>
-              <strong>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</strong>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-address">
+                Dirección
+              </label>
+              <textarea
+                id="editor-meta-address"
+                className={styles.editorMetaTextarea}
+                rows={2}
+                placeholder="Varias líneas permitidas"
+                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).address ?? ""}
+                onChange={(event) => handleTitlePageFieldChange("address", event.target.value)}
+              />
+            </div>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-reg">
+                N.º de registro
+              </label>
+              <input
+                id="editor-meta-reg"
+                type="text"
+                className={styles.editorMetaInput}
+                value={
+                  (projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyRegistration ?? ""
+                }
+                onChange={(event) => handleTitlePageFieldChange("companyRegistration", event.target.value)}
+              />
+            </div>
+            <div className={styles.editorMetaFieldBlock}>
+              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-email">
+                Email de contacto
+              </label>
+              <input
+                id="editor-meta-email"
+                type="email"
+                className={styles.editorMetaInput}
+                autoComplete="email"
+                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).contactEmail ?? ""}
+                onChange={(event) => handleTitlePageFieldChange("contactEmail", event.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -2437,7 +2655,9 @@ export function EditorScreen({
                 <button
                   type="button"
                   className={cn(styles.editorHeaderQuiet, styles.editorHeaderActionPrimary)}
-                  disabled={!hasUnsavedChanges || persistState === "saving" || !projectRecord}
+                  disabled={
+                    !hasUnsavedChanges || persistState === "saving" || projectRecord == null
+                  }
                   onClick={() => void persistLatestDraftRef.current()}
                 >
                   {persistState === "saving" ? "Guardando…" : "Guardar"}
@@ -2709,7 +2929,17 @@ export function EditorScreen({
       </div>
 
       <footer className={styles.editorFooter}>
-        <div className={styles.editorFooterMeta}>
+        <div className={styles.editorFooterMeta} aria-label="Contexto del guion">
+          <span>
+            {editorScenes.length} {editorScenes.length === 1 ? "escena" : "escenas"}
+          </span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
+          <span>Act. {activeEditorScene ? activeEditorScene.indexLabel : "—"}</span>
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
           {tipsHoverEnabled && blockTypeGlossaryEntry ? (
             <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
               <span className={styles.editorTipDotted}>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
@@ -2717,6 +2947,9 @@ export function EditorScreen({
           ) : (
             <span>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
           )}
+          <span className={styles.editorFooterStatSep} aria-hidden>
+            ·
+          </span>
           {tipsHoverEnabled && pageMinuteGlossaryEntry ? (
             <HoverDelayTip content={<GlossaryTooltipBody entry={pageMinuteGlossaryEntry} />}>
               <span className={styles.editorTipDotted}>~{estimatedPages} páginas</span>

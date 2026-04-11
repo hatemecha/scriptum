@@ -55,6 +55,7 @@ export type Database = {
           title: string;
           author: string | null;
           description: string | null;
+          export_title_page: Json;
           language: string;
           status: string;
           current_snapshot_id: string | null;
@@ -71,6 +72,7 @@ export type Database = {
           title: string;
           author?: string | null;
           description?: string | null;
+          export_title_page?: Json;
           language?: string;
           status?: string;
           current_snapshot_id?: string | null;
@@ -87,6 +89,7 @@ export type Database = {
           title?: string;
           author?: string | null;
           description?: string | null;
+          export_title_page?: Json;
           language?: string;
           status?: string;
           current_snapshot_id?: string | null;
@@ -157,6 +160,7 @@ export type Database = {
           p_language: string;
           p_status: string;
           p_saved_at: string;
+          p_export_title_page?: Json;
         };
         Returns: Database["public"]["Tables"]["projects"]["Row"];
       };

@@ -1,16 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  normalizeExportTitlePageFields,
   normalizeProjectAuthor,
   normalizeProjectDescription,
   normalizeProjectLanguage,
   normalizeProjectStatus,
   normalizeProjectTitle,
+  type ExportTitlePageFields,
   type ProjectLanguage,
   type ProjectStatus,
 } from "@/features/projects/project-contract";
 import { createScreenplayEntityId } from "@/features/screenplay/document-model";
-import { type Database } from "@/lib/supabase/types";
+import { type Database, type Json } from "@/lib/supabase/types";
 
 export { formatProjectStatusLabel } from "@/features/projects/project-contract";
 
@@ -20,6 +22,7 @@ export type UserProject = {
   title: string;
   author: string | null;
   description: string | null;
+  exportTitlePage: ExportTitlePageFields;
   language: ProjectLanguage;
   status: ProjectStatus;
   currentSnapshotId: string | null;
@@ -42,6 +45,7 @@ export type UpdateProjectMetadataInput = {
   title?: string;
   author?: string | null;
   description?: string | null;
+  exportTitlePage?: ExportTitlePageFields;
   language?: ProjectLanguage;
   status?: ProjectStatus;
 };
@@ -71,6 +75,7 @@ export function rowToProject(row: ProjectRow): UserProject {
     title: row.title,
     author: row.author,
     description: row.description,
+    exportTitlePage: normalizeExportTitlePageFields(row.export_title_page),
     language: safeRowLanguage(row.language),
     status: safeRowStatus(row.status),
     currentSnapshotId: row.current_snapshot_id,
@@ -202,6 +207,10 @@ export async function updateProjectMetadata(
 
     if (input.description !== undefined) {
       patch.description = normalizeProjectDescription(input.description);
+    }
+
+    if (input.exportTitlePage !== undefined) {
+      patch.export_title_page = input.exportTitlePage as unknown as Json;
     }
 
     if (input.language !== undefined) {

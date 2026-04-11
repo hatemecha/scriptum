@@ -15,7 +15,60 @@ export const projectMetadataLimits = {
   authorMaxLength: 200,
   descriptionMaxLength: 500,
   titleMaxLength: 200,
+  exportTitlePageAddressMaxLength: 500,
+  exportTitlePageLineMaxLength: 220,
 } as const;
+
+/** Optional fields for the PDF cover page (stored as JSON on `projects.export_title_page`). */
+export type ExportTitlePageFields = {
+  address: string | null;
+  companyName: string | null;
+  companyRegistration: string | null;
+  contactEmail: string | null;
+  revisedBy: string | null;
+  revisionLabel: string | null;
+};
+
+export function emptyExportTitlePageFields(): ExportTitlePageFields {
+  return {
+    address: null,
+    companyName: null,
+    companyRegistration: null,
+    contactEmail: null,
+    revisedBy: null,
+    revisionLabel: null,
+  };
+}
+
+export function normalizeExportTitlePageFields(value: unknown): ExportTitlePageFields {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) {
+    return emptyExportTitlePageFields();
+  }
+
+  const o = value as Record<string, unknown>;
+  const max = projectMetadataLimits.exportTitlePageLineMaxLength;
+
+  return {
+    address: normalizeOptionalMultilineText(
+      o.address as string | null | undefined,
+      projectMetadataLimits.exportTitlePageAddressMaxLength,
+      "Address",
+    ),
+    companyName: normalizeOptionalText(o.companyName as string | null | undefined, max, "Company name"),
+    companyRegistration: normalizeOptionalText(
+      o.companyRegistration as string | null | undefined,
+      max,
+      "Company registration",
+    ),
+    contactEmail: normalizeOptionalText(o.contactEmail as string | null | undefined, max, "Contact email"),
+    revisedBy: normalizeOptionalText(o.revisedBy as string | null | undefined, max, "Revised by"),
+    revisionLabel: normalizeOptionalText(
+      o.revisionLabel as string | null | undefined,
+      max,
+      "Revision label",
+    ),
+  };
+}
 
 function isProjectStatus(value: string): value is ProjectStatus {
   return projectStatusValues.includes(value as ProjectStatus);
@@ -27,6 +80,32 @@ function isProjectLanguage(value: string): value is ProjectLanguage {
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeOptionalMultilineText(
+  value: string | null | undefined,
+  maxLength: number,
+  fieldLabel: string,
+): string | null {
+  if (value == null) {
+    return null;
+  }
+
+  const lines = value
+    .split(/\n/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter((line) => line.length > 0);
+  const normalizedValue = lines.join("\n").trim();
+
+  if (normalizedValue.length === 0) {
+    return null;
+  }
+
+  if (normalizedValue.length > maxLength) {
+    throw new Error(`${fieldLabel} cannot exceed ${maxLength} characters.`);
+  }
+
+  return normalizedValue;
 }
 
 function normalizeOptionalText(

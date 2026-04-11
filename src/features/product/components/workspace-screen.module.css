@@ -1617,6 +1617,56 @@
   color: var(--color-fg-muted);
 }
 
+.editorMetaCoverKicker {
+  margin: 0.35rem 0 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-fg-muted) 88%, transparent);
+}
+
+.editorMetaFieldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--color-overlay-border) 82%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--color-foreground) 2.5%, transparent);
+}
+
+.editorMetaFieldLabel {
+  font-size: 0.78rem;
+  color: var(--color-fg-muted);
+}
+
+.editorMetaInput,
+.editorMetaTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-overlay-border) 70%, transparent);
+  background: color-mix(in srgb, var(--color-background) 86%, transparent);
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.editorMetaInput:focus-visible,
+.editorMetaTextarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.editorMetaTextarea {
+  resize: vertical;
+  min-height: 2.6rem;
+}
+
 .modalMessage {
   margin: 0;
   font-size: 0.94rem;

@@ -11,6 +11,7 @@ import { type ScreenplayBlockType } from "@/features/screenplay/blocks";
 import { type Json, type Database } from "@/lib/supabase/types";
 
 import {
+  normalizeExportTitlePageFields,
   normalizeProjectAuthor,
   normalizeProjectDescription,
   normalizeProjectLanguage,
@@ -219,6 +220,7 @@ export async function saveProjectSnapshot(
   try {
     const title = normalizeProjectTitle(input.title ?? input.project.title, "Sin título");
     const author = normalizeProjectAuthor(input.project.author);
+    const exportTitlePage = normalizeExportTitlePageFields(input.project.exportTitlePage);
     const description = normalizeProjectDescription(input.description ?? input.project.description);
     const language = normalizeProjectLanguage(input.language ?? input.project.language);
     const status = normalizeProjectStatus(input.status ?? input.project.status);
@@ -272,6 +274,7 @@ export async function saveProjectSnapshot(
         p_document_data: document as unknown as Json,
         p_document_id: document.document.id,
         p_document_schema_version: document.schema.version,
+        p_export_title_page: exportTitlePage as unknown as Json,
         p_language: language,
         p_project_id: input.project.id,
         p_revision: document.document.revision,

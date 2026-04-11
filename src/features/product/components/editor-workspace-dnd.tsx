@@ -9,7 +9,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,9 @@ export function EditorWorkspaceDnd({
   onScenePanelSideChange,
   scenePanelSide,
 }: EditorWorkspaceDndProps) {
+  /** Stable across SSR + hydration — avoids @dnd-kit's module-level id counter mismatch (DndDescribedBy-0 vs -1). */
+  const dndContextId = useId();
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 10 },
@@ -63,7 +66,7 @@ export function EditorWorkspaceDnd({
   }
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext id={dndContextId} sensors={sensors} onDragEnd={handleDragEnd}>
       {children}
     </DndContext>
   );
