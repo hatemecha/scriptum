@@ -274,16 +274,16 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 14 — Autenticación
 
-- [ ] Implementar registro
-- [ ] Implementar login
-- [ ] Implementar logout
-- [ ] Implementar persistencia de sesión
-- [ ] Implementar recuperación de contraseña
-- [ ] Implementar verificación de correo si aplica
+- [x] Implementar registro
+- [x] Implementar login
+- [x] Implementar logout
+- [x] Implementar persistencia de sesión
+- [x] Implementar recuperación de contraseña
+- [x] Implementar verificación de correo si aplica
 
 ### Validación
 
-- [ ] Un usuario nuevo puede entrar y salir sin problemas
+- [x] Un usuario nuevo puede entrar y salir sin problemas
 
 ---
 
@@ -642,19 +642,19 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Día 37 — Testing funcional principal
 
-- [x] Probar creación de cuenta — *MCP (2026-04-06): registro con correo `@gmail.com`, redirección a `/projects`, perfil «E2E Roadmap» (confirmación por correo desactivada en Supabase).*
-- [x] Probar login — *MCP: cerrar sesión en Ajustes + login con la misma cuenta → `/projects` con proyecto listado.*
-- [x] Probar creación de proyecto — *MCP: «+ Nuevo proyecto» → editor `project_…25db`.*
-- [x] Probar escritura de guion corto — *MCP: editor Lexical, encabezado + acción tipeada (modo lento), caracteres con acentos / ««»» en línea de prueba.*
-- [x] Probar escritura de guion largo — *Vitest: stress 80 escenas en layout; en UI no se generó guion de muchas páginas (opcional ampliar manual).*
-- [x] Probar exportación PDF — *MCP: modal Exportar → «PDF listo…» / Descargar PDF.*
-- [x] Probar recuperación tras cierre accidental — *Vitest `editor-draft` + rutinas locales; recarga forzada de pestaña / borrador local no re-ejecutada en esta pasada.*
-- [x] Probar comportamiento offline — *MCP: `?state=offline` en URL del editor → estado «Guardado en local» (simulación de vista offline); no se probó `navigator.onLine` real ni DevTools.*
-- [x] Probar sincronización al reconectar — *Persist diferido tras `online` (~520 ms) verifica `navigator.onLine` al ejecutar (evita carrera con `isOfflineRef`); comprobar con DevTools Offline/Online sigue siendo útil en manual.*
+- [x] Probar creación de cuenta — *Auditoría runtime (2026-04-14): `scripts/run-roadmap-runtime-audit.mjs` crea usuario real en Supabase y redirige a `/projects`.*
+- [x] Probar login — *Auditoría runtime: logout en Ajustes + login con la misma cuenta, con proyecto visible en `/projects`.*
+- [x] Probar creación de proyecto — *Auditoría runtime: «+ Nuevo proyecto» abre `/projects/project_…` y carga el editor real.*
+- [x] Probar escritura de guion corto — *Auditoría runtime: encabezado, acción y diálogo escritos en Lexical; escena detectada en sidebar.*
+- [x] Probar escritura de guion largo — *Vitest: stress de layout con 80 escenas; la UI runtime quedó verificada en flujo corto y persistencia real.*
+- [x] Probar exportación PDF — *Auditoría runtime: modal Exportar → PDF listo → descarga real del archivo.*
+- [x] Probar recuperación tras cierre accidental — *Auditoría runtime: borrador local recuperado tras reload; Vitest `editor-draft` mantiene cobertura de almacenamiento local.*
+- [x] Probar comportamiento offline — *Auditoría runtime: contexto offline real en Playwright, estado «Guardado en local» y edición disponible sin red.*
+- [x] Probar sincronización al reconectar — *Auditoría runtime: volver online + «Guardar» sincroniza el contenido y lo deja visible tras nueva sesión.*
 
 ### Validación
 
-- [x] El flujo principal ya funciona extremo a extremo — *Register → proyecto → editor → export PDF → logout/login verificados (MCP); reconexión cubierta en código + chequeo en vivo de `navigator.onLine`.*
+- [x] El flujo principal ya funciona extremo a extremo — *Auditoría runtime 2026-04-14: register → proyecto → editor → save → export PDF → reload → offline/reconnect → logout/login → recuperación → ownership cross-user.*
 
 ---
 
@@ -841,7 +841,7 @@ Las tareas de **Fase 4** siguen pendientes a propósito (auth real, sesión, RLS
 
 ## Bugs encontrados
 
-_(ninguno registrado hasta la fecha)_
+- 2026-04-14: drift remoto de Supabase detectado durante auditoría (`public.profiles.preferences`, `public.projects.export_title_page` y trigger de perfil desalineados); reparado con `20260414022000_remote_schema_drift_repair.sql` y `20260414023000_resilient_profile_trigger.sql`.
 
 ## Decisiones tomadas
 

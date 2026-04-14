@@ -1,0 +1,135 @@
+{
+  "generatedAt": "2026-04-14T02:31:59.679Z",
+  "baseUrl": "http://localhost:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z",
+  "projectTitle": "Audit Script 2026-04-14T02-29-57-043Z",
+  "primaryEmail": "scriptum.audit.1776133797044+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776133797044+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": true,
+      "details": "Redirected to http://localhost:3000/login without preserving next.",
+      "durationMs": 7118
+    },
+    {
+      "name": "register-primary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776133797044+a@gmail.com",
+      "durationMs": 7527
+    },
+    {
+      "name": "supabase-sign-up-api-probe",
+      "ok": true,
+      "details": "Sign-up probe unexpectedly succeeded for scriptum.audit.1776133811946+probe@gmail.com.",
+      "durationMs": 557
+    },
+    {
+      "name": "create-project-and-open-editor",
+      "ok": true,
+      "details": "Opened http://localhost:3000/projects/project_3d6865d09d4e43b9a43e85d2c609f82f",
+      "durationMs": 7786
+    },
+    {
+      "name": "write-screenplay-and-detect-scene",
+      "ok": true,
+      "details": "Typed screenplay sample and detected scene in sidebar.",
+      "durationMs": 2165
+    },
+    {
+      "name": "save-project-snapshot",
+      "ok": false,
+      "error": "locator.click: Error: strict mode violation: getByRole('button', { name: 'Guardar' }) resolved to 2 elements:\n    1) <button type=\"button\" aria-label=\"Sin guardar\" class=\"workspace-screen_editorSaveStatusTrigger__kY5GS workspace-screen_editorStatusWarning__68SVU\">…</button> aka getByRole('button', { name: 'Sin guardar' })\n    2) <button type=\"button\" class=\"workspace-screen_editorHeaderQuiet___9RYS workspace-screen_editorHeaderActionPrimary__JjMHI\">Guardar</button> aka getByRole('button', { name: 'Guardar', exact: true })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Guardar' })\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\save-project-snapshot-failure.png",
+      "durationMs": 171
+    },
+    {
+      "name": "export-pdf",
+      "ok": true,
+      "details": "PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\screenplay-export.pdf",
+      "durationMs": 667
+    },
+    {
+      "name": "local-draft-recovery",
+      "ok": false,
+      "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[contenteditable=\"true\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"textbox\" spellcheck=\"false\" aria-hidden=\"true\" contenteditable=\"true\" data-lexical-editor=\"true\" aria-label=\"Screenplay editor\" class=\"screenplay-editor_editorRoot__olWm7 screenplay-editor-root\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  55 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\local-draft-recovery-failure.png",
+      "durationMs": 30189
+    },
+    {
+      "name": "offline-local-state-and-reconnect",
+      "ok": false,
+      "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[contenteditable=\"true\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"textbox\" spellcheck=\"false\" aria-hidden=\"true\" contenteditable=\"true\" data-lexical-editor=\"true\" aria-label=\"Screenplay editor\" class=\"screenplay-editor_editorRoot__olWm7 screenplay-editor-root\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"ui-modal__header\">…</div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m    12 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"ui-modal__header\">…</div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"ui-modal__header\">…</div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div data-open=\"\" aria-hidden=\"true\" role=\"presentation\" data-base-ui-inert=\"\" class=\"fixed inset-0 z-0 bg-[var(--color-backdrop)] backdrop-blur-[12px]\"></div> from <div id=\"_r_l_\" data-base-ui-portal=\"\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\offline-local-state-and-reconnect-failure.png",
+      "durationMs": 30558
+    },
+    {
+      "name": "logout-and-login-primary-user",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/settings\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/settings\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\logout-and-login-primary-user-failure.png",
+      "durationMs": 188
+    },
+    {
+      "name": "forgot-password-request",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/forgot-password\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/forgot-password\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\forgot-password-request-failure.png",
+      "durationMs": 58
+    },
+    {
+      "name": "reopen-project-after-login",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/login\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\reopen-project-after-login-failure.png",
+      "durationMs": 52
+    },
+    {
+      "name": "register-secondary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776133797044+b@gmail.com",
+      "durationMs": 2666
+    },
+    {
+      "name": "block-cross-user-project-access",
+      "ok": true,
+      "details": "Secondary user redirected to http://localhost:3000/projects",
+      "durationMs": 2502
+    },
+    {
+      "name": "delete-audit-project-cleanup",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/projects\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/projects\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\delete-audit-project-cleanup-failure.png",
+      "durationMs": 42
+    },
+    {
+      "name": "playground-editor-scene-sidebar",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/playground/editor/roadmap-audit\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/playground/editor/roadmap-audit\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\playground-editor-scene-sidebar-failure.png",
+      "durationMs": 36
+    },
+    {
+      "name": "playground-export-pdf",
+      "ok": false,
+      "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Exportar' })\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\playground-export-pdf-failure.png",
+      "durationMs": 30030
+    },
+    {
+      "name": "playground-offline-visual-state",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/playground/editor/roadmap-audit?state=offline\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/playground/editor/roadmap-audit?state=offline\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\playground-offline-visual-state-failure.png",
+      "durationMs": 55
+    },
+    {
+      "name": "playground-save-error-visual-state",
+      "ok": false,
+      "error": "page.goto: net::ERR_INTERNET_DISCONNECTED at http://localhost:3000/playground/editor/roadmap-audit?state=save-error\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/playground/editor/roadmap-audit?state=save-error\", waiting until \"networkidle\"\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-29-57-043Z\\playground-save-error-visual-state-failure.png",
+      "durationMs": 47
+    }
+  ]
+}

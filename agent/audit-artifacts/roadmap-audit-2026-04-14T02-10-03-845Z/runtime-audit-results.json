@@ -1,0 +1,126 @@
+{
+  "generatedAt": "2026-04-14T02:10:57.865Z",
+  "baseUrl": "http://localhost:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-10-03-845Z",
+  "projectTitle": "Audit Script 2026-04-14T02-10-03-845Z",
+  "primaryEmail": "scriptum.audit.1776132603846+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776132603846+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": false,
+      "error": "Timed out waiting for URL /\\/login(?:\\?.*)?$/. Last URL: http://localhost:3000/projects",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-10-03-845Z\\unauthenticated-projects-redirect-failure.png",
+      "durationMs": 23307
+    },
+    {
+      "name": "register-primary-user",
+      "ok": false,
+      "error": "Timed out waiting for URL /\\/projects$/. Last URL: http://localhost:3000/register",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-10-03-845Z\\register-primary-user-failure.png",
+      "durationMs": 22335
+    },
+    {
+      "name": "supabase-sign-up-api-probe",
+      "ok": true,
+      "details": "Supabase sign-up returned 500 unexpected_failure: Database error saving new user",
+      "durationMs": 487
+    },
+    {
+      "name": "create-project-and-open-editor",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "write-screenplay-and-detect-scene",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "save-project-snapshot",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "export-pdf",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "local-draft-recovery",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "offline-local-state-and-reconnect",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "logout-and-login-primary-user",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "forgot-password-request",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "reopen-project-after-login",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "register-secondary-user",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "block-cross-user-project-access",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "delete-audit-project-cleanup",
+      "ok": false,
+      "error": "Skipped: primary registration failed against Supabase.",
+      "durationMs": 0
+    },
+    {
+      "name": "playground-editor-scene-sidebar",
+      "ok": true,
+      "details": "Prototype editor rendered blocks and scene sidebar.",
+      "durationMs": 3242
+    },
+    {
+      "name": "playground-export-pdf",
+      "ok": true,
+      "details": "Prototype PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-10-03-845Z\\playground-screenplay-export.pdf",
+      "durationMs": 1388
+    },
+    {
+      "name": "playground-offline-visual-state",
+      "ok": true,
+      "details": "Offline editor state rendered in prototype mode.",
+      "durationMs": 1655
+    },
+    {
+      "name": "playground-save-error-visual-state",
+      "ok": true,
+      "details": "Save error state rendered in prototype mode.",
+      "durationMs": 1329
+    }
+  ]
+}

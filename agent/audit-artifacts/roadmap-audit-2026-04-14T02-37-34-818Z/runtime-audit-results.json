@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-04-14T02:38:48.913Z",
+  "baseUrl": "http://localhost:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-37-34-818Z",
+  "projectTitle": "Audit Script 2026-04-14T02-37-34-818Z",
+  "primaryEmail": "scriptum.audit.1776134254819+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776134254819+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": true,
+      "details": "Redirected to http://localhost:3000/login?next=%2Fprojects",
+      "durationMs": 2549
+    },
+    {
+      "name": "register-primary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776134254819+a@gmail.com",
+      "durationMs": 3684
+    },
+    {
+      "name": "supabase-sign-up-api-probe",
+      "ok": true,
+      "details": "Supabase sign-up succeeded for scriptum.audit.1776134261326+probe@gmail.com.",
+      "durationMs": 459
+    },
+    {
+      "name": "create-project-and-open-editor",
+      "ok": true,
+      "details": "Opened http://localhost:3000/projects/project_440c3135ef35463096f241c396745bb3",
+      "durationMs": 2562
+    },
+    {
+      "name": "write-screenplay-and-detect-scene",
+      "ok": true,
+      "details": "Typed screenplay sample and detected scene in sidebar.",
+      "durationMs": 1426
+    },
+    {
+      "name": "save-project-snapshot",
+      "ok": true,
+      "details": "Manual save completed.",
+      "durationMs": 1755
+    },
+    {
+      "name": "export-pdf",
+      "ok": true,
+      "details": "PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-37-34-818Z\\screenplay-export.pdf",
+      "durationMs": 494
+    },
+    {
+      "name": "local-draft-recovery",
+      "ok": true,
+      "details": "Unsaved draft survived reload.",
+      "durationMs": 4087
+    },
+    {
+      "name": "offline-local-state-and-reconnect",
+      "ok": true,
+      "details": "Offline write kept local state and synced after reconnect.",
+      "durationMs": 1436
+    },
+    {
+      "name": "logout-and-login-primary-user",
+      "ok": true,
+      "details": "Primary user logged out and back in.",
+      "durationMs": 6783
+    },
+    {
+      "name": "forgot-password-request",
+      "ok": true,
+      "details": "Password recovery email request accepted.",
+      "durationMs": 6732
+    },
+    {
+      "name": "reopen-project-after-login",
+      "ok": false,
+      "error": "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('BORRADOR LOCAL 2026-04-14T02-37-34-818Z').first() to be visible\u001b[22m\n",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-37-34-818Z\\reopen-project-after-login-failure.png",
+      "durationMs": 23842
+    },
+    {
+      "name": "register-secondary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776134254819+b@gmail.com",
+      "durationMs": 3081
+    },
+    {
+      "name": "block-cross-user-project-access",
+      "ok": true,
+      "details": "Secondary user redirected to http://localhost:3000/projects",
+      "durationMs": 2556
+    },
+    {
+      "name": "delete-audit-project-cleanup",
+      "ok": true,
+      "details": "Audit project removed via UI cleanup.",
+      "durationMs": 2122
+    },
+    {
+      "name": "playground-editor-scene-sidebar",
+      "ok": true,
+      "details": "Prototype editor rendered blocks and scene sidebar.",
+      "durationMs": 5592
+    },
+    {
+      "name": "playground-export-pdf",
+      "ok": true,
+      "details": "Prototype PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-37-34-818Z\\playground-screenplay-export.pdf",
+      "durationMs": 1406
+    },
+    {
+      "name": "playground-offline-visual-state",
+      "ok": true,
+      "details": "Offline editor state rendered in prototype mode.",
+      "durationMs": 1684
+    },
+    {
+      "name": "playground-save-error-visual-state",
+      "ok": true,
+      "details": "Save error state rendered in prototype mode.",
+      "durationMs": 1585
+    }
+  ]
+}

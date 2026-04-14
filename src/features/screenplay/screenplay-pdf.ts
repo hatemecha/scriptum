@@ -260,7 +260,7 @@ function drawTitlePage(
   type Segment = { height: number };
   const segments: Segment[] = [];
 
-  for (const _ of titleLines) {
+  for (let index = 0; index < titleLines.length; index++) {
     segments.push({ height: titleLineHeight });
   }
   segments.push({ height: gapAfterTitle });
@@ -270,7 +270,7 @@ function drawTitlePage(
     segments.push({ height: labelLineHeight });
     segments.push({ height: gapLabelToValue });
     const valueWrapped = wrapPlainTextToWidth(sec.value, bodyFont, valueSize, maxTextW);
-    for (const _ of valueWrapped) {
+    for (let index = 0; index < valueWrapped.length; index++) {
       segments.push({ height: valueLineHeight });
     }
     if (s < creditSections.length - 1) {
@@ -284,7 +284,7 @@ function drawTitlePage(
     }
     for (let c = 0; c < companyLines.length; c++) {
       const wrapped = wrapPlainTextToWidth(companyLines[c]!, bodyFont, companySize, maxTextW);
-      for (const _ of wrapped) {
+      for (let index = 0; index < wrapped.length; index++) {
         segments.push({ height: companyLineHeight });
       }
       if (c < companyLines.length - 1) {

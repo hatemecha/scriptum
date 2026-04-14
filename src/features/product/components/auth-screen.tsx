@@ -129,6 +129,10 @@ export function AuthScreen({
       return "Ese correo no es aceptado para registrarse (los dominios de prueba como example.com suelen rechazarse). Usá un correo real.";
     }
 
+    if (normalizedMessage.includes("database error saving new user")) {
+      return "No pudimos terminar de crear tu cuenta en la base de datos. Reintentá después de aplicar la migración pendiente de perfiles.";
+    }
+
     return "No se pudo completar la solicitud. Intenta de nuevo.";
   }
 

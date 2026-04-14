@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-04-14T02:02:26.465Z",
+  "baseUrl": "http://localhost:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-02-03-275Z",
+  "projectTitle": "Audit Script 2026-04-14T02-02-03-275Z",
+  "primaryEmail": "scriptum.audit.1776132123276+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776132123276+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": true,
+      "details": "Redirected to http://localhost:3000/login without preserving next.",
+      "durationMs": 1462
+    },
+    {
+      "name": "register-primary-user",
+      "ok": false,
+      "error": "Timed out waiting for URL /\\/projects$/. Last URL: http://localhost:3000/register",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-02-03-275Z\\register-primary-user-failure.png",
+      "durationMs": 21310
+    }
+  ]
+}

@@ -51,3 +51,12 @@ export function getSafeRedirectPathFromSearchParam(
   const raw = Array.isArray(value) ? value[0] : value;
   return getSafeRedirectPath(raw, fallback);
 }
+
+export function buildLoginRedirectPath(nextPath: string | null | undefined): string {
+  const redirectPath = getSafeRedirectPath(nextPath, routes.projects);
+  const searchParams = new URLSearchParams({
+    next: redirectPath,
+  });
+
+  return `${routes.login}?${searchParams.toString()}`;
+}

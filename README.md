@@ -54,6 +54,52 @@ npm run dev
 - `npm run validate:data-architecture`: validate the data architecture reference graph
 - `npm run validate:security-base`: validate the security base specification
 
+## Codex + Supabase MCP
+
+To let Codex inspect and validate the remote Supabase project during audits or implementation work:
+
+1. Add the remote MCP server:
+
+```bash
+codex mcp add supabase --url https://mcp.supabase.com/mcp?project_ref=tzgvljgnzogcucqytzsb
+```
+
+2. Enable remote MCP clients in `~/.codex/config.toml`:
+
+```toml
+[mcp]
+remote_mcp_client_enabled = true
+```
+
+3. Authenticate:
+
+```bash
+codex mcp login supabase
+```
+
+4. Verify the connection with `codex mcp list` or `/mcp` inside Codex.
+
+Optional:
+
+```bash
+npx skills add supabase/agent-skills
+```
+
+Notes:
+
+- This configuration lives on the operator machine, not in this repository.
+- Use `http://localhost:3000` for local runtime audits unless `127.0.0.1` is added to Next.js `allowedDevOrigins`.
+
+## Roadmap Audit
+
+Runtime audit helper:
+
+```bash
+node scripts/run-roadmap-runtime-audit.mjs
+```
+
+Artifacts are written to `agent/audit-artifacts/roadmap-audit-*/`.
+
 ## Environment Variables
 
 The app shell requires the public application metadata, and authenticated flows require Supabase:

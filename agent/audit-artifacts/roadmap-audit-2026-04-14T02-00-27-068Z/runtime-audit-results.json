@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-14T02:00:49.193Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-00-27-068Z",
+  "projectTitle": "Audit Script 2026-04-14T02-00-27-068Z",
+  "primaryEmail": "scriptum.audit.1776132027069+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776132027069+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": false,
+      "error": "Timed out waiting for URL /\\/login\\?next=%2Fprojects$/. Last URL: http://127.0.0.1:3000/login",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-00-27-068Z\\unauthenticated-projects-redirect-failure.png",
+      "durationMs": 21731
+    }
+  ]
+}

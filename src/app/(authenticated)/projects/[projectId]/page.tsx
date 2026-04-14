@@ -11,6 +11,7 @@ import {
   resolveEditorTipsDetailLevel,
   resolveEditorTipsEnabled,
 } from "@/features/user/profile";
+import { buildLoginRedirectPath } from "@/lib/routing/safe-redirect-path";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type ProjectEditorPageProps = {
@@ -29,7 +30,7 @@ export default async function ProjectEditorPage({ params, searchParams }: Projec
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(routes.login);
+    redirect(buildLoginRedirectPath(routes.projectEditor(projectId)));
   }
 
   const allowed = await canAccessProjectEditor(supabase, user.id, projectId);

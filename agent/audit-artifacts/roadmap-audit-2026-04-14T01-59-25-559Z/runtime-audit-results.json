@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-14T01:59:52.052Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T01-59-25-559Z",
+  "projectTitle": "Audit Script 2026-04-14T01-59-25-559Z",
+  "primaryEmail": "scriptum.audit.1776131965560+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776131965560+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": false,
+      "error": "page.waitForURL: Timeout 20000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+      "screenshot": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T01-59-25-559Z\\unauthenticated-projects-redirect-failure.png",
+      "durationMs": 25371
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-04-14T02:41:00.222Z",
+  "baseUrl": "http://localhost:3000",
+  "artifactDirectory": "C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-40-08-915Z",
+  "projectTitle": "Audit Script 2026-04-14T02-40-08-915Z",
+  "primaryEmail": "scriptum.audit.1776134408916+a@gmail.com",
+  "secondaryEmail": "scriptum.audit.1776134408916+b@gmail.com",
+  "results": [
+    {
+      "name": "unauthenticated-projects-redirect",
+      "ok": true,
+      "details": "Redirected to http://localhost:3000/login?next=%2Fprojects",
+      "durationMs": 1823
+    },
+    {
+      "name": "register-primary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776134408916+a@gmail.com",
+      "durationMs": 3562
+    },
+    {
+      "name": "supabase-sign-up-api-probe",
+      "ok": true,
+      "details": "Supabase sign-up succeeded for scriptum.audit.1776134414687+probe@gmail.com.",
+      "durationMs": 512
+    },
+    {
+      "name": "create-project-and-open-editor",
+      "ok": true,
+      "details": "Opened http://localhost:3000/projects/project_cb5702ed43504594ae6cfcceeaeba72d",
+      "durationMs": 3275
+    },
+    {
+      "name": "write-screenplay-and-detect-scene",
+      "ok": true,
+      "details": "Typed screenplay sample and detected scene in sidebar.",
+      "durationMs": 2741
+    },
+    {
+      "name": "save-project-snapshot",
+      "ok": true,
+      "details": "Manual save completed.",
+      "durationMs": 884
+    },
+    {
+      "name": "export-pdf",
+      "ok": true,
+      "details": "PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-40-08-915Z\\screenplay-export.pdf",
+      "durationMs": 694
+    },
+    {
+      "name": "local-draft-recovery",
+      "ok": true,
+      "details": "Unsaved draft survived reload.",
+      "durationMs": 4571
+    },
+    {
+      "name": "offline-local-state-and-reconnect",
+      "ok": true,
+      "details": "Offline write kept local state and synced after reconnect.",
+      "durationMs": 1534
+    },
+    {
+      "name": "logout-and-login-primary-user",
+      "ok": true,
+      "details": "Primary user logged out and back in.",
+      "durationMs": 5729
+    },
+    {
+      "name": "forgot-password-request",
+      "ok": true,
+      "details": "Password recovery email request accepted.",
+      "durationMs": 6062
+    },
+    {
+      "name": "reopen-project-after-login",
+      "ok": true,
+      "details": "Persisted content visible after new session login.",
+      "durationMs": 4766
+    },
+    {
+      "name": "register-secondary-user",
+      "ok": true,
+      "details": "Registered scriptum.audit.1776134408916+b@gmail.com",
+      "durationMs": 2706
+    },
+    {
+      "name": "block-cross-user-project-access",
+      "ok": true,
+      "details": "Secondary user redirected to http://localhost:3000/projects",
+      "durationMs": 2670
+    },
+    {
+      "name": "delete-audit-project-cleanup",
+      "ok": true,
+      "details": "Audit project removed via UI cleanup.",
+      "durationMs": 2277
+    },
+    {
+      "name": "playground-editor-scene-sidebar",
+      "ok": true,
+      "details": "Prototype editor rendered blocks and scene sidebar.",
+      "durationMs": 3235
+    },
+    {
+      "name": "playground-export-pdf",
+      "ok": true,
+      "details": "Prototype PDF exported to C:\\Users\\hatemecha\\Desktop\\Proyectos\\scriptum\\agent\\audit-artifacts\\roadmap-audit-2026-04-14T02-40-08-915Z\\playground-screenplay-export.pdf",
+      "durationMs": 715
+    },
+    {
+      "name": "playground-offline-visual-state",
+      "ok": true,
+      "details": "Offline editor state rendered in prototype mode.",
+      "durationMs": 1723
+    },
+    {
+      "name": "playground-save-error-visual-state",
+      "ok": true,
+      "details": "Save error state rendered in prototype mode.",
+      "durationMs": 1467
+    }
+  ]
+}
