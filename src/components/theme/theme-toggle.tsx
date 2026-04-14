@@ -29,7 +29,14 @@ export function ThemeToggle({ className, onAfterThemeChange }: ThemeToggleProps)
       aria-pressed={resolvedTheme === "dark"}
     >
       <span className="theme-toggle__glyph" aria-hidden="true">
-        {resolvedTheme === "dark" ? "◐" : "◑"}
+        <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          {resolvedTheme === "dark" ? (
+            <path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor" />
+          ) : (
+            <path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor" />
+          )}
+        </svg>
       </span>
       <span className="theme-toggle__label">{resolvedTheme === "dark" ? "Dark" : "Light"}</span>
     </button>

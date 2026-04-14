@@ -271,6 +271,184 @@
   max-width: min(100%, 16rem);
 }
 
+.userMenu {
+  grid-column: 3;
+  justify-self: end;
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.userMenu > .userLink {
+  grid-column: auto;
+  justify-self: auto;
+}
+
+.userMenuPopup {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  width: min(20rem, calc(100vw - 1.5rem));
+  max-height: min(26rem, calc(100vh - 6rem));
+  overflow: auto;
+  margin-top: 0.15rem;
+  padding: 0.35rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--color-overlay-border);
+  background: var(--color-surface-overlay-strong);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
+  z-index: 40;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-base),
+    transform var(--transition-base),
+    visibility var(--transition-base);
+}
+
+.userMenuPopupOpen {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.userMenuHeader {
+  padding: 0.5rem 0.6rem 0.65rem;
+}
+
+.userMenuIdentity {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.userMenuName {
+  color: var(--color-foreground);
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.userMenuEmail {
+  color: var(--color-fg-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userMenuGroup {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.userMenuSeparator {
+  height: 1px;
+  margin: 0.6rem 0;
+  background: color-mix(in srgb, var(--color-border-subtle) 90%, transparent);
+}
+
+.userMenuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.6rem;
+  color: var(--color-foreground);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 650;
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-base);
+}
+
+.userMenuItem:hover {
+  background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+}
+
+.userMenuItem:active {
+  transform: translateY(0.5px);
+}
+
+.userMenuItem:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.userMenuItemInline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.userMenuItemLabel {
+  color: var(--color-foreground);
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.userMenuThemeToggle {
+  min-height: 2.1rem;
+  padding: 0.4rem 0.65rem;
+}
+
+.userMenuDangerItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-danger);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--transition-base),
+    transform var(--transition-base);
+}
+
+.userMenuDangerItem:hover:enabled {
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+}
+
+.userMenuDangerItem:active:enabled {
+  transform: translateY(0.5px);
+}
+
+.userMenuDangerItem:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-shadow);
+}
+
+.userMenuDangerItem:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.userMenuNotice {
+  margin: 0.15rem 0.1rem 0.45rem;
+  color: var(--color-danger);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .userAvatar {
   width: 2.35rem;
   height: 2.35rem;
@@ -322,6 +500,11 @@
     max-width: min(55vw, 14rem);
   }
 
+  .userMenu {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .dashboardNav {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -338,6 +521,15 @@
 
   .publicNav {
     justify-content: space-between;
+  }
+
+  .userMenuPopup {
+    position: fixed;
+    left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+    right: calc(var(--space-3) + env(safe-area-inset-right, 0px));
+    top: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+    width: auto;
+    max-height: calc(100vh - (env(safe-area-inset-top, 0px) + 5.5rem));
   }
 }
 
