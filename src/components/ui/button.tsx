@@ -30,8 +30,8 @@ export const buttonVariants = cva(
           "hover:bg-[var(--color-accent-soft)] hover:shadow-[inset_0_0_0_1px_var(--color-accent-soft-strong)]",
         ].join(" "),
         success: [
-          "border-[color-mix(in_srgb,var(--color-success)_28%,transparent)] bg-[var(--color-success)] text-[#f4efe8]",
-          "hover:bg-[color-mix(in_srgb,var(--color-success)_88%,black)] hover:shadow-[0_8px_20px_rgba(51,98,75,0.18),0_0_0_2px_var(--color-success-soft)]",
+          "border-[color-mix(in_srgb,var(--color-success)_28%,transparent)] bg-[var(--color-success)] text-[var(--color-on-success)]",
+          "hover:bg-[color-mix(in_srgb,var(--color-success)_88%,black)] hover:shadow-[0_8px_20px_var(--color-success-shadow),0_0_0_2px_var(--color-success-soft)]",
         ].join(" "),
         danger: [
           "border-[color-mix(in_srgb,var(--color-danger)_28%,transparent)] bg-transparent text-destructive",

@@ -8,8 +8,8 @@ import {
 
 configureBoneyard({
   animate: "pulse",
-  color: "rgba(18, 22, 31, 0.08)",
-  darkColor: "rgba(255, 255, 255, 0.08)",
+  color: "var(--skeleton-base)",
+  darkColor: "var(--skeleton-base)",
 });
 
 type AppBoneyardSkeletonProps = BoneyardSkeletonProps;

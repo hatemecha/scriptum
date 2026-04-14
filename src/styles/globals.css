@@ -61,6 +61,8 @@
   --color-danger-soft: rgba(146, 53, 53, 0.09);
   --color-success: #1e6644;
   --color-success-soft: rgba(30, 102, 68, 0.09);
+  --color-on-success: #f4efe8;
+  --color-success-shadow: rgba(51, 98, 75, 0.18);
   --color-warning: #8a5e18;
   --color-warning-soft: rgba(138, 94, 24, 0.09);
 
@@ -93,6 +95,10 @@
   /* Skeletons */
   --skeleton-base: rgba(185, 177, 166, 0.5);
   --skeleton-shimmer: rgba(255, 255, 255, 0.6);
+
+  /* Masks (functional, not UI palette) */
+  --mask-ink: #000;
+  --mask-ink-fade: rgba(0, 0, 0, 0.55);
 
   /* Shadows */
   --shadow-soft: 0 24px 64px rgba(26, 24, 21, 0.1);
@@ -224,6 +230,8 @@ html[data-theme="dark"] {
   --color-placeholder: rgba(172, 170, 173, 0.72);
   --color-success: #c0caad;
   --color-success-soft: rgba(192, 202, 173, 0.12);
+  --color-on-success: #3a432d;
+  --color-success-shadow: rgba(0, 0, 0, 0.12);
   --color-surface: #131315;
   --color-surface-strong: rgba(37, 38, 40, 0.82);
   --color-surface-overlay: rgba(19, 19, 21, 0.9);

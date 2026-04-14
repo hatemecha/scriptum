@@ -14,6 +14,7 @@
     "validate:screenplay": "tsx scripts/validate-screenplay-foundation.ts",
     "validate:data-architecture": "tsx scripts/validate-data-architecture.ts",
     "validate:security-base": "tsx scripts/validate-security-base.ts",
+    "validate:design": "tsx scripts/validate-design-tokens.ts",
     "bones:build": "boneyard-js build http://localhost:3000/playground/bones --out ./src/bones --force",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
