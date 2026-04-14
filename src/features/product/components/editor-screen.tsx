@@ -42,10 +42,7 @@ import {
 import { getSceneHeadingAutoDetectReason } from "@/features/screenplay/editor-help/scene-heading-detect";
 import { getTransitionAutoDetectReason } from "@/features/screenplay/editor-help/transition-detect";
 import { estimateScreenplayPageCount } from "@/features/screenplay/page-estimate";
-import {
-  buildScreenplayPdfFromBlocks,
-  type ScreenplayPdfTitlePageInput,
-} from "@/features/screenplay/screenplay-pdf";
+import type { ScreenplayPdfTitlePageInput } from "@/features/screenplay/screenplay-pdf";
 import { layoutScreenplayForExport } from "@/features/screenplay/screenplay-layout";
 import {
   clearStoredEditorDraft,
@@ -931,7 +928,7 @@ function EditorLoadingFallback({ title }: { title: string }) {
   );
 }
 
-function EditorLoadingScreen({ title }: { title: string }) {
+export function EditorLoadingScreen({ title }: { title: string }) {
   return (
     <AppBoneyardSkeleton
       fallback={<EditorLoadingFallback title={title} />}
@@ -2109,6 +2106,9 @@ export function EditorScreen({
     setExportPhase("exporting");
 
     try {
+      const { buildScreenplayPdfFromBlocks } = await import(
+        "@/features/screenplay/screenplay-pdf"
+      );
       const blocks = serializeScreenplayBlocks(editor.getEditorState());
       const exportTitlePageMerged = normalizeExportTitlePageFields(
         projectRecordRef.current?.exportTitlePage ?? prototypeExportTitlePageRef.current,

@@ -3,26 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { appEnvironment } from "@/config/env";
 import { routes } from "@/config/routes";
-import { getSafeRedirectPath } from "@/lib/routing/safe-redirect-path";
-import { securityBaseProtectedRoutePrefixes } from "@/features/security/security-base";
 
 import { type Database } from "./types";
-
-const authPublicRoutes = new Set<string>([
-  routes.login,
-  routes.register,
-  routes.forgotPassword,
-  routes.resetPassword,
-]);
-const authRedirectRoutes = new Set<string>([routes.login, routes.register, routes.forgotPassword]);
-
-const openPublicRoutes = new Set<string>([routes.home, routes.authCallback]);
-
-function isProtectedRoute(pathname: string): boolean {
-  return securityBaseProtectedRoutePrefixes.some(
-    (routePrefix) => pathname === routePrefix || pathname.startsWith(`${routePrefix}/`),
-  );
-}
 
 function getSupabasePublicConfiguration() {
   const { publishableKey, url } = appEnvironment.public.supabase;
@@ -39,7 +21,6 @@ function getSupabasePublicConfiguration() {
 
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   let response = NextResponse.next({
     request,
   });
@@ -55,11 +36,7 @@ export async function updateSession(request: NextRequest) {
   };
 
   if (!supabaseConfig) {
-    if (isProtectedRoute(pathname)) {
-      return redirectUnauthenticatedToLogin();
-    }
-
-    return NextResponse.next({ request });
+    return redirectUnauthenticatedToLogin();
   }
 
   const supabase = createServerClient<Database>(supabaseConfig.url, supabaseConfig.publishableKey, {
@@ -86,22 +63,9 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isPublicPath = authPublicRoutes.has(pathname) || openPublicRoutes.has(pathname);
-
-  if (!user && isProtectedRoute(pathname)) {
+ 
+  if (!user) {
     return redirectUnauthenticatedToLogin();
-  }
-
-  if (user && authRedirectRoutes.has(pathname)) {
-    const redirectUrl = request.nextUrl.clone();
-    const nextRaw = request.nextUrl.searchParams.get("next");
-    redirectUrl.pathname = getSafeRedirectPath(nextRaw, routes.projects);
-    redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  if (!isPublicPath && !isProtectedRoute(pathname)) {
-    return response;
   }
 
   return response;

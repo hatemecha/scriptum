@@ -4,7 +4,7 @@ import { routes } from "@/config/routes";
 import { AuthScreen } from "@/features/product/components/auth-screen";
 import { getAuthViewState, type RouteSearchParams } from "@/features/product/view-states";
 import { getSafeRedirectPathFromSearchParam } from "@/lib/routing/safe-redirect-path";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestSessionUser } from "@/lib/supabase/request-user";
 
 type RegisterPageProps = {
   searchParams: Promise<RouteSearchParams>;
@@ -17,10 +17,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
     routes.projects,
   );
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getRequestSessionUser();
 
   if (user) {
     redirect(redirectAfterAuth);

@@ -3,16 +3,14 @@ import { redirect } from "next/navigation";
 import { routes } from "@/config/routes";
 import { EditorScreen } from "@/features/product/components/editor-screen";
 import { getEditorViewState, type RouteSearchParams } from "@/features/product/view-states";
-import { canAccessProjectEditor } from "@/features/projects/project-access";
 import { getProjectEditorData } from "@/features/projects/project-snapshots";
 import {
-  ensureUserProfile,
   resolveEditorAutosaveEnabled,
   resolveEditorTipsDetailLevel,
   resolveEditorTipsEnabled,
 } from "@/features/user/profile";
 import { buildLoginRedirectPath } from "@/lib/routing/safe-redirect-path";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestAppUser } from "@/lib/supabase/request-user";
 
 type ProjectEditorPageProps = {
   params: Promise<{ projectId: string }>;
@@ -24,19 +22,10 @@ export default async function ProjectEditorPage({ params, searchParams }: Projec
   const resolvedSearchParams = await searchParams;
   let viewState = getEditorViewState(resolvedSearchParams);
 
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { profile, supabase, user } = await getRequestAppUser();
 
   if (!user) {
     redirect(buildLoginRedirectPath(routes.projectEditor(projectId)));
-  }
-
-  const allowed = await canAccessProjectEditor(supabase, user.id, projectId);
-
-  if (!allowed) {
-    redirect(routes.projects);
   }
 
   let initialData = null;
@@ -44,14 +33,16 @@ export default async function ProjectEditorPage({ params, searchParams }: Projec
   if (viewState !== "error" && viewState !== "loading") {
     const result = await getProjectEditorData(supabase, projectId);
 
-    if (result.error || !result.data) {
+    if (!result.data) {
+      if (!result.error) {
+        redirect(routes.projects);
+      }
       viewState = "error";
     } else {
       initialData = result.data;
     }
   }
 
-  const profile = await ensureUserProfile(supabase, user);
   const editorTipsEnabled = resolveEditorTipsEnabled(profile?.preferences);
   const editorTipsDetailLevel = resolveEditorTipsDetailLevel(profile?.preferences);
   const editorAutosaveEnabled = resolveEditorAutosaveEnabled(profile?.preferences);

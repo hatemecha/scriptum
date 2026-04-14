@@ -2,13 +2,10 @@ import { redirect } from "next/navigation";
 
 import { routes } from "@/config/routes";
 import { PasswordRecoveryScreen } from "@/features/product/components/password-recovery-screen";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestSessionUser } from "@/lib/supabase/request-user";
 
 export default async function ForgotPasswordPage() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getRequestSessionUser();
 
   if (user) {
     redirect(routes.projects);

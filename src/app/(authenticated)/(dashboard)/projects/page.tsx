@@ -5,7 +5,7 @@ import { ProjectsScreen } from "@/features/product/components/projects-screen";
 import { getProjectsViewState, type RouteSearchParams } from "@/features/product/view-states";
 import { listUserProjects, type UserProject } from "@/features/projects/projects";
 import { buildLoginRedirectPath } from "@/lib/routing/safe-redirect-path";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestSessionUser } from "@/lib/supabase/request-user";
 
 type ProjectsPageProps = {
   searchParams: Promise<RouteSearchParams>;
@@ -14,10 +14,7 @@ type ProjectsPageProps = {
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const resolvedSearchParams = await searchParams;
   let viewState = getProjectsViewState(resolvedSearchParams);
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getRequestSessionUser();
 
   let projects: UserProject[] = [];
 

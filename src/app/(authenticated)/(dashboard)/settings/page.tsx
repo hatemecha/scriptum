@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { routes } from "@/config/routes";
 import { SettingsScreen } from "@/features/product/components/settings-screen";
 import { getSettingsViewState, type RouteSearchParams } from "@/features/product/view-states";
-import { ensureUserProfile, type UserAppProfile } from "@/features/user/profile";
+import { type UserAppProfile } from "@/features/user/profile";
 import { buildLoginRedirectPath } from "@/lib/routing/safe-redirect-path";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestAppUser, getRequestSessionUser } from "@/lib/supabase/request-user";
 
 type SettingsPageProps = {
   searchParams: Promise<RouteSearchParams>;
@@ -14,10 +14,7 @@ type SettingsPageProps = {
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const resolvedSearchParams = await searchParams;
   const viewState = getSettingsViewState(resolvedSearchParams);
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user } = await getRequestSessionUser();
 
   let accountEmail: string | null = null;
   let initialProfile: UserAppProfile | null = null;
@@ -30,11 +27,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   }
 
   try {
+    const { profile } = await getRequestAppUser();
+
     accountEmail = user.email ?? null;
     passwordAuthAvailable = (user.identities ?? []).some(
       (identity) => identity.provider === "email",
     );
-    const profile = await ensureUserProfile(supabase, user);
     if (profile) {
       initialProfile = profile;
     } else {

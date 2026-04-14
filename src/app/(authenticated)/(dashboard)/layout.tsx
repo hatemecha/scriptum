@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ensureUserProfile, type UserAppProfile } from "@/features/user/profile";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestAppUser } from "@/lib/supabase/request-user";
 
 type AuthenticatedDashboardLayoutProps = {
   children: ReactNode;
@@ -13,18 +12,13 @@ export default async function AuthenticatedDashboardLayout({
 }: AuthenticatedDashboardLayoutProps) {
   let userDisplayName: string | null = null;
   let userEmail: string | null = null;
-  let userProfile: UserAppProfile | null = null;
 
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { profile, user } = await getRequestAppUser();
 
     if (user) {
       userEmail = user.email ?? null;
-      userProfile = await ensureUserProfile(supabase, user);
-      userDisplayName = userProfile?.displayName ?? null;
+      userDisplayName = profile?.displayName ?? null;
     }
   } catch {
   }
