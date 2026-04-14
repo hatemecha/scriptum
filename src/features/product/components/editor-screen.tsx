@@ -13,7 +13,7 @@ import {
 } from "react";
 
 import { $getNodeByKey, type EditorState, type LexicalEditor } from "lexical";
-import { Eye, EyeOff, GripVertical } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, FileText, GripVertical, ListOrdered, X } from "lucide-react";
 
 import { AppBoneyardSkeleton } from "@/components/ui/boneyard-skeleton";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,7 @@ type SaveTone = "danger" | "muted" | "success" | "warning";
 type ExportModalPhase = "error" | "exporting" | "ready" | "success";
 
 const MOBILE_EDITOR_MEDIA_QUERY = "(max-width: 768px)";
+const COMPACT_EDITOR_MEDIA_QUERY = "(max-width: 1100px)";
 
 const SCENE_PANEL_SIDE_STORAGE_KEY = "scriptum:editor-scene-panel-side";
 
@@ -601,6 +602,68 @@ function GlossaryTooltipBody({ entry }: { entry: ScreenplayGlossaryEntry }) {
 
 type EditorPanelKind = "data" | "scenes";
 
+function EditorPanelToggleButton({
+  isOpen,
+  label,
+  onClick,
+  panel,
+}: {
+  isOpen: boolean;
+  label: string;
+  onClick: () => void;
+  panel: EditorPanelKind;
+}) {
+  const icon =
+    panel === "scenes" ? (
+      <ListOrdered className={styles.editorPanelToggleIcon} aria-hidden="true" />
+    ) : (
+      <FileText className={styles.editorPanelToggleIcon} aria-hidden="true" />
+    );
+
+  return (
+    <button
+      type="button"
+      className={cn(styles.editorPanelToggleButton, isOpen && styles.editorPanelToggleButtonActive)}
+      aria-pressed={isOpen}
+      onClick={onClick}
+    >
+      {icon}
+      <span className={styles.editorPanelToggleLabel}>{label}</span>
+    </button>
+  );
+}
+
+function EditorSheet({
+  children,
+  onClose,
+  title,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+  title: string;
+}) {
+  return (
+    <div className={styles.editorSheetBackdrop} role="presentation" onClick={onClose}>
+      <div
+        className={styles.editorSheet}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={styles.editorSheetHandle} aria-hidden="true" />
+        <header className={styles.editorSheetHeader}>
+          <p className={styles.editorSheetTitle}>{title}</p>
+          <button type="button" className={styles.editorSheetClose} onClick={onClose} aria-label="Cerrar">
+            <X className={styles.editorSheetCloseIcon} aria-hidden="true" />
+          </button>
+        </header>
+        <div className={styles.editorSheetBody}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function EditorPanelVisibilityEye({
   className,
   compact,
@@ -681,7 +744,10 @@ function EditorLoadingFixture({ title }: { title: string }) {
       <header className={styles.editorHeader}>
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
-            <span className={styles.editorBack}>← Proyectos</span>
+            <span className={styles.editorBack}>
+              <ArrowLeft className={styles.editorBackIcon} aria-hidden="true" />
+              Proyectos
+            </span>
           </div>
 
           <div className={styles.editorHeaderCenter}>
@@ -801,7 +867,8 @@ function EditorLoadingFallback({ title }: { title: string }) {
         <div className={styles.editorHeaderTop}>
           <div className={styles.editorHeaderLeading}>
             <Link href={routes.projects} className={styles.editorBack}>
-              ← Proyectos
+              <ArrowLeft className={styles.editorBackIcon} aria-hidden="true" />
+              Proyectos
             </Link>
           </div>
 
@@ -1045,6 +1112,7 @@ export function EditorScreen({
     initialEditorTipsDetailLevel,
   );
   const [isMobileEditorLayout, setIsMobileEditorLayout] = useState(false);
+  const [isCompactEditorLayout, setIsCompactEditorLayout] = useState(false);
   const [mobileEditorHelpExpanded, setMobileEditorHelpExpanded] = useState(false);
   const tipsHoverEnabled = tipsEnabled && tipsDetailLevel === "full";
   const tipsContextStripEnabled = tipsEnabled && tipsDetailLevel === "full";
@@ -1142,14 +1210,20 @@ export function EditorScreen({
     }
 
     const mediaQuery = window.matchMedia(MOBILE_EDITOR_MEDIA_QUERY);
+    const compactQuery = window.matchMedia(COMPACT_EDITOR_MEDIA_QUERY);
 
-    function syncSidebarVisibility(matches: boolean) {
-      setIsMobileEditorLayout(matches);
-      if (!matches) {
+    function syncSidebarVisibility() {
+      const isMobile = mediaQuery.matches;
+      const isCompact = !isMobile && compactQuery.matches;
+
+      setIsMobileEditorLayout(isMobile);
+      setIsCompactEditorLayout(isCompact);
+
+      if (!isMobile) {
         setMobileEditorHelpExpanded(false);
       }
 
-      if (matches) {
+      if (isMobile || isCompact) {
         setIsScenesPanelVisible((current) => {
           if (current) {
             autoCollapsedSidebarRef.current = true;
@@ -1172,16 +1246,58 @@ export function EditorScreen({
       }
     }
 
-    syncSidebarVisibility(mediaQuery.matches);
-    const onChange = (event: MediaQueryListEvent) => {
-      syncSidebarVisibility(event.matches);
+    syncSidebarVisibility();
+    const onChange = () => {
+      syncSidebarVisibility();
     };
 
     mediaQuery.addEventListener("change", onChange);
+    compactQuery.addEventListener("change", onChange);
     return () => {
       mediaQuery.removeEventListener("change", onChange);
+      compactQuery.removeEventListener("change", onChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isCompactEditorLayout) {
+      return;
+    }
+    if (!isScenesPanelVisible && !isDataPanelVisible) {
+      return;
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsScenesPanelVisible(false);
+        setIsDataPanelVisible(false);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCompactEditorLayout, isScenesPanelVisible, isDataPanelVisible]);
+
+  useEffect(() => {
+    if (!isMobileEditorLayout) {
+      return;
+    }
+    if (!isScenesPanelVisible && !isDataPanelVisible) {
+      return;
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsScenesPanelVisible(false);
+        setIsDataPanelVisible(false);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileEditorLayout, isScenesPanelVisible, isDataPanelVisible]);
 
   useEffect(() => {
     if (prototypeMode || typeof navigator === "undefined" || !navigator.onLine) {
@@ -2402,6 +2518,12 @@ export function EditorScreen({
     />
   );
 
+  const scenesHeaderSheet = (
+    <p className={cn(styles.editorSidebarKicker, styles.editorSidebarTitleWrap)}>
+      Escenas <span className={styles.editorSceneCount}>{editorScenes.length}</span>
+    </p>
+  );
+
   const scenesPanelEl = (
     <DraggableScenesPanel
       dragHandle={<GripVertical size={18} strokeWidth={2} aria-hidden />}
@@ -2409,6 +2531,107 @@ export function EditorScreen({
       headerTrailing={scenesHeaderPlain}
       body={<div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>}
     />
+  );
+
+  const scriptMetaBody = (
+    <div className={styles.editorMetaSidebarBody}>
+      <div className={styles.modalSummary}>
+        <div className={styles.modalSummaryRow}>
+          <span>Título</span>
+          <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-author">
+            Autor
+          </label>
+          <input
+            id="editor-meta-author"
+            type="text"
+            className={styles.editorMetaInput}
+            autoComplete="name"
+            placeholder="Nombre del autor"
+            value={projectRecord?.author ?? prototypeAuthor ?? ""}
+            onChange={(event) => handleAuthorInputChange(event.target.value)}
+          />
+        </div>
+        <p className={styles.editorMetaCoverKicker}>Portada del PDF</p>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revised-by">
+            Revisado por
+          </label>
+          <input
+            id="editor-meta-revised-by"
+            type="text"
+            className={styles.editorMetaInput}
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisedBy ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("revisedBy", event.target.value)}
+          />
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revision">
+            Revisión
+          </label>
+          <input
+            id="editor-meta-revision"
+            type="text"
+            className={styles.editorMetaInput}
+            placeholder="p. ej. borrador, fecha"
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisionLabel ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("revisionLabel", event.target.value)}
+          />
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-company">
+            Empresa / sello
+          </label>
+          <input
+            id="editor-meta-company"
+            type="text"
+            className={styles.editorMetaInput}
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyName ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("companyName", event.target.value)}
+          />
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-address">
+            Dirección
+          </label>
+          <textarea
+            id="editor-meta-address"
+            className={styles.editorMetaTextarea}
+            rows={2}
+            placeholder="Varias líneas permitidas"
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).address ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("address", event.target.value)}
+          />
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-reg">
+            N.º de registro
+          </label>
+          <input
+            id="editor-meta-reg"
+            type="text"
+            className={styles.editorMetaInput}
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyRegistration ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("companyRegistration", event.target.value)}
+          />
+        </div>
+        <div className={styles.editorMetaFieldBlock}>
+          <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-email">
+            Email de contacto
+          </label>
+          <input
+            id="editor-meta-email"
+            type="email"
+            className={styles.editorMetaInput}
+            autoComplete="email"
+            value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).contactEmail ?? ""}
+            onChange={(event) => handleTitlePageFieldChange("contactEmail", event.target.value)}
+          />
+        </div>
+      </div>
+    </div>
   );
 
   const scriptMetaAside = (
@@ -2427,108 +2650,7 @@ export function EditorScreen({
           />
         </>
       }
-      body={
-        <div className={styles.editorMetaSidebarBody}>
-          <div className={styles.modalSummary}>
-            <div className={styles.modalSummaryRow}>
-              <span>Título</span>
-              <strong>{normalizeEditableProjectTitle(projectTitle)}</strong>
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-author">
-                Autor
-              </label>
-              <input
-                id="editor-meta-author"
-                type="text"
-                className={styles.editorMetaInput}
-                autoComplete="name"
-                placeholder="Nombre del autor"
-                value={projectRecord?.author ?? prototypeAuthor ?? ""}
-                onChange={(event) => handleAuthorInputChange(event.target.value)}
-              />
-            </div>
-            <p className={styles.editorMetaCoverKicker}>Portada del PDF</p>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revised-by">
-                Revisado por
-              </label>
-              <input
-                id="editor-meta-revised-by"
-                type="text"
-                className={styles.editorMetaInput}
-                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisedBy ?? ""}
-                onChange={(event) => handleTitlePageFieldChange("revisedBy", event.target.value)}
-              />
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-revision">
-                Revisión
-              </label>
-              <input
-                id="editor-meta-revision"
-                type="text"
-                className={styles.editorMetaInput}
-                placeholder="p. ej. borrador, fecha"
-                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).revisionLabel ?? ""}
-                onChange={(event) => handleTitlePageFieldChange("revisionLabel", event.target.value)}
-              />
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-company">
-                Empresa / sello
-              </label>
-              <input
-                id="editor-meta-company"
-                type="text"
-                className={styles.editorMetaInput}
-                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyName ?? ""}
-                onChange={(event) => handleTitlePageFieldChange("companyName", event.target.value)}
-              />
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-address">
-                Dirección
-              </label>
-              <textarea
-                id="editor-meta-address"
-                className={styles.editorMetaTextarea}
-                rows={2}
-                placeholder="Varias líneas permitidas"
-                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).address ?? ""}
-                onChange={(event) => handleTitlePageFieldChange("address", event.target.value)}
-              />
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-reg">
-                N.º de registro
-              </label>
-              <input
-                id="editor-meta-reg"
-                type="text"
-                className={styles.editorMetaInput}
-                value={
-                  (projectRecord?.exportTitlePage ?? prototypeExportTitlePage).companyRegistration ?? ""
-                }
-                onChange={(event) => handleTitlePageFieldChange("companyRegistration", event.target.value)}
-              />
-            </div>
-            <div className={styles.editorMetaFieldBlock}>
-              <label className={styles.editorMetaFieldLabel} htmlFor="editor-meta-email">
-                Email de contacto
-              </label>
-              <input
-                id="editor-meta-email"
-                type="email"
-                className={styles.editorMetaInput}
-                autoComplete="email"
-                value={(projectRecord?.exportTitlePage ?? prototypeExportTitlePage).contactEmail ?? ""}
-                onChange={(event) => handleTitlePageFieldChange("contactEmail", event.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      }
+      body={scriptMetaBody}
     />
   );
 
@@ -2597,7 +2719,8 @@ export function EditorScreen({
                 }
               }}
             >
-              ← Proyectos
+              <ArrowLeft className={styles.editorBackIcon} aria-hidden="true" />
+              Proyectos
             </Link>
           </div>
 
@@ -2837,11 +2960,11 @@ export function EditorScreen({
       <div
         className={cn(
           styles.editorWorkspace,
-          !isMobileEditorLayout && styles.editorWorkspaceTriple,
-          isMobileEditorLayout && styles.editorWorkspaceSceneCollapsed,
+          !isMobileEditorLayout && !isCompactEditorLayout && styles.editorWorkspaceTriple,
+          (isMobileEditorLayout || isCompactEditorLayout) && styles.editorWorkspaceSceneCollapsed,
         )}
       >
-        {!isMobileEditorLayout ? (
+        {!isMobileEditorLayout && !isCompactEditorLayout ? (
           <EditorWorkspaceDnd
             onScenePanelSideChange={setScenePanelSide}
             scenePanelSide={scenePanelSide}
@@ -2879,6 +3002,67 @@ export function EditorScreen({
               </DroppableEditorSide>
             </div>
           </EditorWorkspaceDnd>
+        ) : isCompactEditorLayout ? (
+          <>
+            <div
+              className={styles.editorWorkspaceMobilePanelBar}
+              role="group"
+              aria-label="Mostrar u ocultar paneles del editor"
+            >
+              <EditorPanelToggleButton
+                panel="scenes"
+                label="Escenas"
+                isOpen={isScenesPanelVisible}
+                onClick={() => {
+                  setIsScenesPanelVisible((v) => !v);
+                  setIsDataPanelVisible(false);
+                }}
+              />
+              <EditorPanelToggleButton
+                panel="data"
+                label="Datos"
+                isOpen={isDataPanelVisible}
+                onClick={() => {
+                  setIsDataPanelVisible((v) => !v);
+                  setIsScenesPanelVisible(false);
+                }}
+              />
+            </div>
+
+            {isScenesPanelVisible ? (
+              <EditorSheet title="Escenas" onClose={() => setIsScenesPanelVisible(false)}>
+                <aside className={styles.editorSidebar} aria-label="Sidebar de escenas">
+                  <div className={styles.editorSidebarHeader}>{scenesHeaderSheet}</div>
+                  <div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>
+                </aside>
+              </EditorSheet>
+            ) : null}
+
+            {isDataPanelVisible ? (
+              <EditorSheet title="Datos del guion" onClose={() => setIsDataPanelVisible(false)}>
+                {scriptMetaBody}
+              </EditorSheet>
+            ) : null}
+
+            <main ref={editorCanvasRef} className={styles.editorCanvas}>
+              <div className={styles.editorCanvasStage}>
+                <article ref={editorFocusRootRef} className={styles.editorPaper}>
+                  <ScreenplayEditor
+                    key={`screenplay-editor-${editorInstanceKey}`}
+                    initialBlocks={toScreenplayEditorSeedBlocks(editorSeedBlocks)}
+                    onEditorReady={handleEditorReady}
+                    onChange={handleEditorChange}
+                    onBlockTypeChange={handleBlockTypeChange}
+                    onEnterPersist={
+                      prototypeMode || !editorAutosaveEnabled ? undefined : schedulePersistOnEnter
+                    }
+                    persistOnEnterEnabled={!prototypeMode && editorAutosaveEnabled}
+                    placeholder="Empieza a escribir tu guión..."
+                  />
+                </article>
+              </div>
+            </main>
+          </>
         ) : (
           <>
             <div
@@ -2886,26 +3070,41 @@ export function EditorScreen({
               role="group"
               aria-label="Mostrar u ocultar paneles del editor"
             >
-              <EditorPanelVisibilityEye
-                compact
-                isOpen={isScenesPanelVisible}
+              <EditorPanelToggleButton
                 panel="scenes"
-                onToggle={() => handleScenesPanelVisibleChange((v) => !v)}
+                label="Escenas"
+                isOpen={isScenesPanelVisible}
+                onClick={() => {
+                  handleScenesPanelVisibleChange((v) => !v);
+                  handleDataPanelVisibleChange(false);
+                }}
               />
-              <EditorPanelVisibilityEye
-                compact
-                isOpen={isDataPanelVisible}
+              <EditorPanelToggleButton
                 panel="data"
-                onToggle={() => handleDataPanelVisibleChange((v) => !v)}
+                label="Datos"
+                isOpen={isDataPanelVisible}
+                onClick={() => {
+                  handleDataPanelVisibleChange((v) => !v);
+                  handleScenesPanelVisibleChange(false);
+                }}
               />
             </div>
+
             {isScenesPanelVisible ? (
-              <aside className={styles.editorSidebar} aria-label="Sidebar de escenas">
-                <div className={styles.editorSidebarHeader}>{scenesHeaderPlain}</div>
-                <div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>
-              </aside>
+              <EditorSheet title="Escenas" onClose={() => handleScenesPanelVisibleChange(false)}>
+                <aside className={styles.editorSidebar} aria-label="Sidebar de escenas">
+                  <div className={styles.editorSidebarHeader}>{scenesHeaderSheet}</div>
+                  <div className={styles.editorSidebarBody}>{scenesSidebarBody}</div>
+                </aside>
+              </EditorSheet>
             ) : null}
-            {isDataPanelVisible ? scriptMetaAside : null}
+
+            {isDataPanelVisible ? (
+              <EditorSheet title="Datos del guion" onClose={() => handleDataPanelVisibleChange(false)}>
+                {scriptMetaBody}
+              </EditorSheet>
+            ) : null}
+
             <main ref={editorCanvasRef} className={styles.editorCanvas}>
               <div className={styles.editorCanvasStage}>
                 <article ref={editorFocusRootRef} className={styles.editorPaper}>
@@ -2929,54 +3128,63 @@ export function EditorScreen({
       </div>
 
       <footer className={styles.editorFooter}>
-        <div className={styles.editorFooterMeta} aria-label="Contexto del guion">
-          <span>
-            {editorScenes.length} {editorScenes.length === 1 ? "escena" : "escenas"}
-          </span>
-          <span className={styles.editorFooterStatSep} aria-hidden>
-            ·
-          </span>
-          <span>Act. {activeEditorScene ? activeEditorScene.indexLabel : "—"}</span>
-          <span className={styles.editorFooterStatSep} aria-hidden>
-            ·
-          </span>
-          {tipsHoverEnabled && blockTypeGlossaryEntry ? (
-            <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
-              <span className={styles.editorTipDotted}>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
-            </HoverDelayTip>
-          ) : (
-            <span>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
-          )}
-          <span className={styles.editorFooterStatSep} aria-hidden>
-            ·
-          </span>
-          {tipsHoverEnabled && pageMinuteGlossaryEntry ? (
-            <HoverDelayTip content={<GlossaryTooltipBody entry={pageMinuteGlossaryEntry} />}>
-              <span className={styles.editorTipDotted}>~{estimatedPages} páginas</span>
-            </HoverDelayTip>
-          ) : (
-            <span>~{estimatedPages} páginas</span>
-          )}
-        </div>
-        <div className={styles.editorFooterMeta} aria-label="Estadísticas del guion">
-          <span>
-            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.words)}{" "}
-            {scriptStats.words === 1 ? "palabra" : "palabras"}
-          </span>
-          <span className={styles.editorFooterStatSep} aria-hidden>
-            ·
-          </span>
-          <span>
-            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.characters)}{" "}
-            {scriptStats.characters === 1 ? "carácter" : "caracteres"}
-          </span>
-          <span className={styles.editorFooterStatSep} aria-hidden>
-            ·
-          </span>
-          <span>
-            {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.letters)}{" "}
-            {scriptStats.letters === 1 ? "letra" : "letras"}
-          </span>
+        <div className={styles.editorFooterInner}>
+          <div className={styles.editorFooterMeta} aria-label="Contexto del guion">
+            <span className={styles.editorFooterPrimaryStat}>
+              {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.words)}{" "}
+              {scriptStats.words === 1 ? "palabra" : "palabras"}
+            </span>
+            <span className={styles.editorFooterStatSep} aria-hidden>
+              ·
+            </span>
+            {tipsHoverEnabled && pageMinuteGlossaryEntry ? (
+              <HoverDelayTip content={<GlossaryTooltipBody entry={pageMinuteGlossaryEntry} />}>
+                <span className={cn(styles.editorTipDotted, styles.editorFooterPrimaryStat)}>
+                  ~{estimatedPages} páginas
+                </span>
+              </HoverDelayTip>
+            ) : (
+              <span className={styles.editorFooterPrimaryStat}>~{estimatedPages} páginas</span>
+            )}
+            <span className={cn(styles.editorFooterStatSep, styles.editorFooterHideOnNarrow)} aria-hidden>
+              ·
+            </span>
+            <span className={styles.editorFooterHideOnNarrow}>
+              {editorScenes.length} {editorScenes.length === 1 ? "escena" : "escenas"}
+            </span>
+            <span className={cn(styles.editorFooterStatSep, styles.editorFooterHideOnNarrow)} aria-hidden>
+              ·
+            </span>
+            <span className={styles.editorFooterHideOnNarrow}>
+              Act. {activeEditorScene ? activeEditorScene.indexLabel : "—"}
+            </span>
+            <span className={cn(styles.editorFooterStatSep, styles.editorFooterHideOnNarrow)} aria-hidden>
+              ·
+            </span>
+            <span className={styles.editorFooterHideOnNarrow}>
+              {tipsHoverEnabled && blockTypeGlossaryEntry ? (
+                <HoverDelayTip content={<GlossaryTooltipBody entry={blockTypeGlossaryEntry} />}>
+                  <span className={styles.editorTipDotted}>{BLOCK_TYPE_LABEL_ES[activeBlockType]}</span>
+                </HoverDelayTip>
+              ) : (
+                BLOCK_TYPE_LABEL_ES[activeBlockType]
+              )}
+            </span>
+          </div>
+
+          <div className={cn(styles.editorFooterMeta, styles.editorFooterSecondary)} aria-label="Detalles">
+            <span className={styles.editorFooterHideOnNarrow}>
+              {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.characters)}{" "}
+              {scriptStats.characters === 1 ? "carácter" : "caracteres"}
+            </span>
+            <span className={cn(styles.editorFooterStatSep, styles.editorFooterHideOnNarrow)} aria-hidden>
+              ·
+            </span>
+            <span className={styles.editorFooterHideOnNarrow}>
+              {SCRIPT_STATS_NUMBER_FORMAT.format(scriptStats.letters)}{" "}
+              {scriptStats.letters === 1 ? "letra" : "letras"}
+            </span>
+          </div>
         </div>
       </footer>
 
