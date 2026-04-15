@@ -1,10 +1,47 @@
+import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 
+function ensureSafeBaseUrl(baseUrlValue) {
+  const allowNonLocalhost = process.env.AUDIT_ALLOW_NON_LOCALHOST === "true";
+
+  if (allowNonLocalhost) {
+    return;
+  }
+
+  let url;
+  try {
+    url = new URL(baseUrlValue);
+  } catch {
+    throw new Error(`AUDIT_BASE_URL must be a valid URL. Received: ${String(baseUrlValue)}`);
+  }
+
+  const hostname = url.hostname;
+  if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+    throw new Error(
+      `Refusing to run audit against non-localhost host "${hostname}". ` +
+        `Set AUDIT_ALLOW_NON_LOCALHOST=true to override.`,
+    );
+  }
+}
+
+function generatePassword() {
+  return `ScriptumAudit!${randomBytes(12).toString("base64url")}`;
+}
+
+function resolveAuditPassword(envName, fallback) {
+  const value = process.env[envName];
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+  return fallback;
+}
+
 const baseUrl = process.env.AUDIT_BASE_URL ?? "http://localhost:3000";
+ensureSafeBaseUrl(baseUrl);
 const auditToken = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
 const artifactDirectory =
   process.env.AUDIT_ARTIFACT_DIR ??
@@ -13,12 +50,12 @@ const artifactDirectory =
 const testAccounts = {
   primary: {
     email: `scriptum.audit.${Date.now()}+a@gmail.com`,
-    password: "ScriptumAudit!2026A",
+    password: resolveAuditPassword("AUDIT_PASSWORD_PRIMARY", generatePassword()),
     displayName: "Scriptum Audit A",
   },
   secondary: {
     email: `scriptum.audit.${Date.now()}+b@gmail.com`,
-    password: "ScriptumAudit!2026B",
+    password: resolveAuditPassword("AUDIT_PASSWORD_SECONDARY", generatePassword()),
     displayName: "Scriptum Audit B",
   },
 };
@@ -65,7 +102,7 @@ async function probeSupabaseSignUp() {
   const probeEmail = `scriptum.audit.${Date.now()}+probe@gmail.com`;
   const result = await probeClient.auth.signUp({
     email: probeEmail,
-    password: "ScriptumAudit!2026Probe",
+    password: resolveAuditPassword("AUDIT_PASSWORD_PROBE", generatePassword()),
   });
 
   if (result.error) {
@@ -73,6 +110,79 @@ async function probeSupabaseSignUp() {
   }
 
   return `Supabase sign-up succeeded for ${probeEmail}.`;
+}
+
+function parseProjectIdFromUrl(projectUrl) {
+  let url;
+  try {
+    url = new URL(projectUrl);
+  } catch {
+    throw new Error(`Cannot parse project URL: ${String(projectUrl)}`);
+  }
+
+  const parts = url.pathname.split("/").filter(Boolean);
+  const projectIndex = parts.indexOf("projects");
+  const projectId = projectIndex >= 0 ? parts[projectIndex + 1] : undefined;
+  if (!projectId) {
+    throw new Error(`Cannot extract project id from URL: ${url.pathname}`);
+  }
+  return projectId;
+}
+
+async function createSupabaseClientFromDotEnv() {
+  const env = await readDotEnvFile();
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !publishableKey) {
+    throw new Error("Public Supabase environment variables are missing in .env.local.");
+  }
+
+  return createClient(url, publishableKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+async function probeCrossOwnerSnapshotInsert(projectUrlValue) {
+  const projectId = parseProjectIdFromUrl(projectUrlValue);
+  const supabase = await createSupabaseClientFromDotEnv();
+
+  const signInResult = await supabase.auth.signInWithPassword({
+    email: testAccounts.secondary.email,
+    password: testAccounts.secondary.password,
+  });
+
+  if (signInResult.error) {
+    throw new Error(
+      `Secondary sign-in failed (${signInResult.error.status ?? "unknown"} ${signInResult.error.code ?? "unknown"}): ${signInResult.error.message}`,
+    );
+  }
+
+  const userId = signInResult.data.user?.id;
+  if (!userId) {
+    throw new Error("Secondary sign-in did not return a user id.");
+  }
+
+  const { error } = await supabase.from("document_snapshots").insert({
+    id: `audit_cross_owner_${auditToken}`,
+    project_id: projectId,
+    owner_profile_id: userId,
+    document_id: "audit-cross-owner",
+    revision: 999_999,
+    snapshot_kind: "audit",
+    document_schema_version: 1,
+    document_data: { auditToken, kind: "cross-owner-insert" },
+    created_at: new Date().toISOString(),
+  });
+
+  if (!error) {
+    throw new Error("Cross-owner snapshot insert unexpectedly succeeded.");
+  }
+
+  return `Cross-owner snapshot insert was blocked (${error.code ?? "unknown"}): ${error.message}`;
 }
 
 async function saveJsonReport() {
@@ -364,10 +474,18 @@ async function main() {
               const redirectedUrl = await waitForUrl(pageB, /\/projects$/);
               return `Secondary user redirected to ${redirectedUrl}`;
             });
+
+            await runStep("block-cross-owner-snapshot-insert", null, async () => {
+              return probeCrossOwnerSnapshotInsert(projectUrl);
+            });
           } else {
             recordSkippedStep(
               "block-cross-user-project-access",
               "secondary registration failed, so ownership redirect could not be exercised.",
+            );
+            recordSkippedStep(
+              "block-cross-owner-snapshot-insert",
+              "secondary registration failed, so RLS cross-owner snapshot insert could not be exercised.",
             );
           }
 
